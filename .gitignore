@@ -1,0 +1,8 @@
+# WeChat 开发者工具本机私有配置（可能含上传密钥，勿入库）
+project.private.config.json
+
+# 依赖
+node_modules/
+
+# 系统文件
+.DS_Store
