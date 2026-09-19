@@ -21,6 +21,7 @@
         </view>
       </view>
       <view class="index-side">
+        <view class="index-tip">{{indexTip}}</view>
         <view class="index-metrics">
           <view class="metric">
             <text class="metric-num">{{outdoorText}}</text>
@@ -60,12 +61,13 @@
   <view class="card slot">
     <view class="sec">推荐出门时段</view>
     <view class="win-list">
-      <view class="win-row" wx:for="{{slots}}" wx:key="t">
+      <view class="win-row {{item.best ? 'best' : ''}}" wx:for="{{slots}}" wx:key="t">
         <text class="wt">{{item.t}}</text>
         <text class="wv">{{item.v}}</text>
         <text class="wn">{{item.n}}</text>
       </view>
     </view>
+    <view class="slot__sub muted">按 UV / 高温 / 雨情推算全天窗口 · 上午晒足自然光最护远视储备</view>
   </view>
 
   <!-- 4 宫格快捷入口 -->

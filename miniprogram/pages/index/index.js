@@ -15,6 +15,7 @@ Page({
     babyName: '',
     updatedAt: '',
     indexPercent: 0,        // 户外完成度 0~100（环进度）
+    indexTip: '',
     timerRunning: false,
     timerMode: 'outdoor',   // 当前计时模式：outdoor / indoor
     indoorText: '00:00',
@@ -24,7 +25,8 @@ Page({
     playCount: 0,
     slots: [
       { t: '清晨', v: '07:00 – 08:30', n: '凉爽·人少' },
-      { t: '上午', v: '09:00 – 11:00', n: '日照充足' },
+      { t: '上午', v: '09:00 – 11:00', n: '最佳·自然光足', best: true },
+      { t: '傍晚', v: '17:00 – 18:30', n: '避高温·落日' },
     ],
   },
 
@@ -75,10 +77,15 @@ Page({
     const goalSec = (o.goal || 60) * 60;
     let pct = Math.round((o.outdoor / goalSec) * 100);
     if (pct > 100) pct = 100;
+    const tip = pct >= 100 ? '今天户外达标，太棒了！'
+      : pct >= 60 ? '还差一点就达标啦，出门转转～'
+      : pct >= 30 ? '今天户外还不多，趁好天气出门吧'
+      : '多带娃出门晒晒太阳吧';
     this.setData({
       indoorText: fmt(o.indoor),
       outdoorText: fmt(o.outdoor),
       indexPercent: pct,
+      indexTip: tip,
       goalMin: o.goal || 60,
     });
     this.drawRing();
@@ -111,7 +118,7 @@ Page({
     this.setData({ timerMode: mode });
   },
 
-  // canvas 环形进度（底环 + 进度环）
+  // canvas 环形进度（底环 + 进度环），84px 视口对齐 v15
   drawRing() {
     const q = wx.createSelectorQuery();
     q.select('#indexRing').fields({ node: true, size: true }).exec((res) => {
@@ -124,20 +131,20 @@ Page({
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       ctx.scale(dpr, dpr);
-      const cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - 9;
+      const cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - 7;
       ctx.clearRect(0, 0, w, h);
       // 底环
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.strokeStyle = '#F1F7F3'; // --green-l2
-      ctx.lineWidth = 9;
+      ctx.lineWidth = 7;
       ctx.stroke();
       // 进度环
       const pct = this.data.indexPercent / 100;
       ctx.beginPath();
       ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pct);
       ctx.strokeStyle = '#2C6848'; // --green-d
-      ctx.lineWidth = 9;
+      ctx.lineWidth = 7;
       ctx.lineCap = 'round';
       ctx.stroke();
     });

@@ -7,24 +7,33 @@
 .row { display: flex; align-items: center; }
 .between { justify-content: space-between; }
 
-/* 遛娃指数环 */
-.index-main { display: flex; align-items: center; gap: 16px; margin-top: 10px; }
-.ring-wrap { position: relative; width: 120px; height: 120px; flex: 0 0 120px; }
-.ring-canvas { width: 120px; height: 120px; display: block; }
+/* 遛娃指数环 —— 84px 视口对齐 v15，浅绿渐变卡片 */
+.index-main { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+.ring-wrap { position: relative; width: 84px; height: 84px; flex: 0 0 84px; }
+.ring-canvas { width: 84px; height: 84px; display: block; }
+.index-card {
+  background: linear-gradient(160deg, var(--green-l), var(--green-l2));
+  border: 1px solid #dcebe2;
+}
 .ring-center {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
-.ring-num { font-size: 28px; font-weight: 800; color: var(--green-d); line-height: 1; }
+.ring-num { font-size: 24px; font-weight: 800; color: var(--green-d); line-height: 1; }
 .ring-cap { font-size: var(--fs-meta); margin-top: 2px; }
 .index-side { flex: 1; min-width: 0; }
+.index-tip { font-size: var(--fs-sm); color: var(--ink2); line-height: 1.5; margin-bottom: 10px; }
 .index-metrics { display: flex; gap: 10px; }
 .metric { flex: 1; background: var(--green-l); border-radius: var(--r-sm); padding: 10px; text-align: center; }
 .metric-num { display: block; font-size: 18px; font-weight: 700; color: var(--green-d); font-variant-numeric: tabular-nums; }
 .metric-cap { font-size: var(--fs-meta); }
 .index-note { margin-top: 10px; }
 
-/* 户外双计时 */
+/* 户外双计时 —— 浅绿渐变卡片 */
+.outdoor {
+  background: linear-gradient(135deg, var(--card), var(--green-l2));
+  border: 1px solid #e6efe9;
+}
 .outdoor__row { display: flex; gap: var(--gap-md); margin: 10px 0; }
 .outdoor__cell {
   flex: 1; background: var(--sand); border-radius: var(--r-sm);
@@ -53,6 +62,10 @@
 .wt { width: 44px; font-weight: 700; color: var(--ink); flex: 0 0 44px; }
 .wv { flex: 1; color: var(--ink2); font-size: var(--fs-sm); }
 .wn { font-size: var(--fs-xs); color: var(--green-d); background: var(--green-l); padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.win-row.best { background: var(--green-l); border-radius: var(--r-sm); border-bottom: none; padding-left: 8px; padding-right: 8px; }
+.win-row.best .wt { color: var(--green-d); }
+.win-row.best .wn { background: var(--green); color: #fff; }
+.slot__sub { margin-top: 10px; line-height: 1.5; }
 
 /* 4 宫格 */
 .grid { display: flex; flex-wrap: wrap; gap: var(--gap-md); margin-top: var(--gap-lg); }
@@ -60,16 +73,22 @@
   width: calc(50% - var(--gap-md) / 2); box-sizing: border-box;
   display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 0; position: relative;
 }
-.grid__ic { position: relative; }
+.grid__ic {
+  width: 48px; height: 48px; border-radius: 16px;
+  background: var(--green-l); display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
 .grid__label { font-size: var(--fs-sm); color: var(--ink2); }
 .badge {
   position: absolute; top: -6px; right: -12px; min-width: 18px; height: 18px; padding: 0 4px;
   border-radius: 999px; background: var(--peach-d); color: #fff; font-size: 11px; line-height: 18px; text-align: center;
 }
 
-/* 关怀版横幅 */
+/* 关怀版横幅 —— 浅绿 slim pill */
 .elder-banner {
   display: flex; align-items: center; gap: 12px; margin-top: var(--gap-lg);
-  background: linear-gradient(135deg, var(--peach-l), #fff);
+  background: var(--green-l); border: 1px solid #dcebe2;
+  padding: 12px 16px;
 }
 .elder-banner__text { flex: 1; }
+.elder-banner .sec { font-size: var(--fs-md); }
