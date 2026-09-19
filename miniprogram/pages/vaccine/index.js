@@ -8,6 +8,10 @@ const TABS = [
   { key: 'adult', label: '仅成人' },
 ];
 
+// 「粤苗」小程序 appId —— 微信搜「粤苗」→ 右上角 … → 关于，可查 appId；
+// 并到小程序后台「设置 - 第三方设置 - 跳转其他小程序」加入白名单，否则 navigateToMiniProgram 会失败。
+const YUEMIAO_APPID = 'wx6af1989a3ae918a0';
+
 // 把云函数返回的 spot 收敛成本页卡片所需的字段
 function enrich(s) {
   const coords = (s.coord && s.coord.coordinates) || [];
@@ -110,5 +114,19 @@ Page({
 
   onReport() {
     wx.showToast({ title: '已提交纠错，感谢反馈', icon: 'none' });
+  },
+
+  // 打开「粤苗」小程序（接种预约官方平台）。腾讯系内跳转最稳，但需配置 appId + 后台白名单。
+  onYueMiao() {
+    if (!YUEMIAO_APPID) {
+      wx.showToast({ title: '请微信搜索「粤苗」小程序', icon: 'none' });
+      return;
+    }
+    wx.navigateToMiniProgram({
+      appId: YUEMIAO_APPID,
+      fail() {
+        wx.showToast({ title: '跳转失败，请微信搜索「粤苗」', icon: 'none' });
+      },
+    });
   },
 });

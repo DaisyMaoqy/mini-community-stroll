@@ -13,7 +13,7 @@
   <!-- 提示条 -->
   <view class="tip">
     <svg-icon name="clock" size="15"></svg-icon>
-    <text class="tip__txt">接种时间以「粤苗」App 或各点官方公众号公示为准，到院前建议先线上确认。</text>
+    <text class="tip__txt">接种预约请使用「粤苗」小程序（点下方「打开粤苗」直达）；各点时间以官方公示为准。</text>
   </view>
 
   <!-- 筛选 tabs -->
@@ -41,14 +41,14 @@
 
       <view class="poi__row"><svg-icon name="pin" size="14"></svg-icon><text>{{item.address}}</text></view>
       <view class="poi__row" wx:if="{{item.busText}}"><svg-icon name="bus" size="14"></svg-icon><text>{{item.busText}}</text></view>
-      <view class="poi__row verify {{item.verified ? 'is-ok' : 'is-pending'}}">
+      <view class="poi__row verify {{item.verified ? 'is-ok' : 'is-pending'}}" data-idx="{{index}}" bindtap="onBook" hover-class="row-hover">
         <svg-icon name="{{item.verified ? 'check' : 'warn'}}" size="14"></svg-icon>
-        <text>{{item.verified ? '已核实' : '待核实'}}{{item.verifySource ? ' · ' + item.verifySource : ''}}</text>
+        <text class="verify__txt">{{item.verified ? '已核实' : '待核实'}}{{item.verifySource ? ' · ' + item.verifySource : ''}} ›</text>
       </view>
 
       <view class="poi__actions">
         <view class="btn btn-ghost" data-idx="{{index}}" bindtap="onNav">到这里</view>
-        <view class="btn btn-primary" data-idx="{{index}}" bindtap="onBook">官方信息</view>
+        <view class="btn btn-primary" data-idx="{{index}}" bindtap="onYueMiao">打开粤苗</view>
       </view>
       <view class="poi__fix" data-idx="{{index}}" bindtap="onReport">信息有误？反馈</view>
     </view>

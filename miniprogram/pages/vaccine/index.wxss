@@ -43,6 +43,9 @@
 .poi__sub { margin-top: 4px; font-size: var(--fs-sm); color: var(--ink2); }
 .poi__row { display: flex; align-items: flex-start; gap: 6px; margin-top: 8px; font-size: var(--fs-sm); color: var(--ink2); line-height: 1.5; }
 .poi__row svg-icon { margin-top: 2px; flex: 0 0 auto; }
+.poi__row.verify { transition: opacity .12s; }
+.verify__txt { flex: 1; }
+.row-hover { opacity: .55; }
 .poi__row.verify.is-ok { color: var(--green-d); }
 .poi__row.verify.is-pending { color: var(--amber); }
 
