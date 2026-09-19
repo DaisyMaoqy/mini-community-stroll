@@ -1,6 +1,58 @@
-<!-- pages/vaccine/index.wxml 接种提醒（M0 骨架，M4 填充） -->
-<view class="container">
-  <view class="sec">接种提醒</view>
-  <view class="muted">宝宝疫苗日程与到期提醒</view>
-  <view class="card placeholder">接种记录占位（M4 接入 spots / 数据库）</view>
+<!-- pages/vaccine/index.wxml 接种页（M4：接种类 POI 卡片 + 预约/导航入口） -->
+<view class="container vac-page">
+
+  <!-- Hero -->
+  <view class="hero card">
+    <view class="hero__ic"><svg-icon name="vaccine" size="30"></svg-icon></view>
+    <view class="hero__txt">
+      <view class="hero__title">接种点查询</view>
+      <view class="hero__sub">{{babyName ? '为 ' + babyName + ' 找接种点' : '祈福新邨儿童 / 成人疫苗接种'}}</view>
+    </view>
+  </view>
+
+  <!-- 提示条 -->
+  <view class="tip">
+    <svg-icon name="clock" size="15"></svg-icon>
+    <text class="tip__txt">接种时间以「粤苗」App 或各点官方公众号公示为准，到院前建议先线上确认。</text>
+  </view>
+
+  <!-- 筛选 tabs -->
+  <view class="tabs">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="key"
+      class="tab {{activeTab === item.key ? 'on' : ''}}"
+      data-key="{{item.key}}"
+      bindtap="onTab"
+    >{{item.label}}<text class="tab__c">{{item.count}}</text></view>
+  </view>
+
+  <!-- 接种点列表 -->
+  <view class="poi-list" wx:if="{{list.length}}">
+    <view class="card poi" wx:for="{{list}}" wx:key="id">
+      <view class="poi__top">
+        <view class="poi__name">{{item.name}}</view>
+        <view class="poi__badges">
+          <text wx:if="{{item.adultOnly}}" class="tag tag-amber">仅成人</text>
+          <text wx:if="{{item.external}}" class="tag tag-gray">社区外</text>
+        </view>
+      </view>
+      <view class="poi__sub" wx:if="{{item.subType}}">{{item.subType}}</view>
+
+      <view class="poi__row"><svg-icon name="pin" size="14"></svg-icon><text>{{item.address}}</text></view>
+      <view class="poi__row" wx:if="{{item.busText}}"><svg-icon name="bus" size="14"></svg-icon><text>{{item.busText}}</text></view>
+      <view class="poi__row verify {{item.verified ? 'is-ok' : 'is-pending'}}">
+        <svg-icon name="{{item.verified ? 'check' : 'warn'}}" size="14"></svg-icon>
+        <text>{{item.verified ? '已核实' : '待核实'}}{{item.verifySource ? ' · ' + item.verifySource : ''}}</text>
+      </view>
+
+      <view class="poi__actions">
+        <view class="btn btn-ghost" data-idx="{{index}}" bindtap="onNav">到这里</view>
+        <view class="btn btn-primary" data-idx="{{index}}" bindtap="onBook">官方信息</view>
+      </view>
+      <view class="poi__fix" data-idx="{{index}}" bindtap="onReport">信息有误？反馈</view>
+    </view>
+  </view>
+
+  <view class="empty" wx:else>暂无符合条件的接种点</view>
 </view>

@@ -1,7 +1,59 @@
-/* pages/vaccine/index.wxss 接种（M0 骨架） */
-.placeholder {
-  margin-top: var(--gap-lg);
-  color: var(--ink3);
-  text-align: center;
-  padding: 40px 0;
+/* pages/vaccine/index.wxss 接种页（M4） */
+.vac-page { padding-bottom: 40px; }
+
+/* Hero */
+.hero { display: flex; align-items: center; gap: 12px; background: var(--green-l); border-color: transparent; }
+.hero__ic {
+  width: 48px; height: 48px; flex: 0 0 48px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--green-l2); border-radius: var(--r-sm);
 }
+.hero__title { font-size: var(--fs-xl); font-weight: 800; color: var(--ink); }
+.hero__sub { margin-top: 2px; font-size: var(--fs-sm); color: var(--ink2); }
+
+/* 提示条 */
+.tip {
+  display: flex; align-items: flex-start; gap: 6px;
+  margin: 12px 0 4px; padding: 10px 12px;
+  background: var(--blue-l); border-radius: var(--r-sm);
+}
+.tip__txt { flex: 1; font-size: var(--fs-sm); color: var(--ink2); line-height: 1.5; }
+
+/* 筛选 tabs */
+.tabs { white-space: nowrap; margin: 14px 0 10px; }
+.tab {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 14px; margin-right: 8px; box-sizing: border-box;
+  background: var(--green-l); color: var(--green-d);
+  border-radius: 999px; font-size: var(--fs-sm); font-weight: 600;
+}
+.tab.on { background: var(--green); color: #fff; }
+.tab__c {
+  font-size: var(--fs-xs); padding: 0 6px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45); color: inherit;
+}
+.tab.on .tab__c { background: rgba(255, 255, 255, 0.25); }
+
+/* 接种点卡片 */
+.poi-list { display: flex; flex-direction: column; gap: var(--gap-md); }
+.poi { padding: var(--pad-card); }
+.poi__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.poi__name { font-size: var(--fs-lg); font-weight: 700; color: var(--ink); flex: 1; }
+.poi__badges { display: flex; flex-wrap: wrap; gap: 6px; flex: 0 0 auto; }
+.poi__sub { margin-top: 4px; font-size: var(--fs-sm); color: var(--ink2); }
+.poi__row { display: flex; align-items: flex-start; gap: 6px; margin-top: 8px; font-size: var(--fs-sm); color: var(--ink2); line-height: 1.5; }
+.poi__row svg-icon { margin-top: 2px; flex: 0 0 auto; }
+.poi__row.verify.is-ok { color: var(--green-d); }
+.poi__row.verify.is-pending { color: var(--amber); }
+
+/* 操作区 */
+.poi__actions { display: flex; gap: 10px; margin-top: 14px; }
+.btn {
+  flex: 1; text-align: center; padding: 10px 0; box-sizing: border-box;
+  border-radius: var(--r-sm); font-size: var(--fs-md); font-weight: 600; line-height: 1.2;
+}
+.btn-primary { background: linear-gradient(135deg, var(--green), var(--green-d)); color: #fff; }
+.btn-ghost { background: #fff; border: 1px solid var(--green); color: var(--green-d); }
+.poi__fix { margin-top: 10px; text-align: right; font-size: var(--fs-xs); color: var(--ink3); }
+
+.empty { padding: 24px; text-align: center; color: var(--ink3); font-size: var(--fs-sm); }
