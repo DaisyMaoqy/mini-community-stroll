@@ -1,29 +1,106 @@
-<!--index.wxml-->
-<view class="container">
-  <view class="title">快速了解云开发</view>
-  <view class="top_tip">免鉴权接口调用 免部署后台 高并发</view>
-  <view class="power" wx:key="title" wx:for="{{powerList}}" wx:for-item="power">
-    <view class="power_info" data-index="{{index}}" data-type="{{ power.type }}" bindtap="onClickPowerInfo">
-      <view class="power_info_text">
-        <view class="power_info_text_title">
-          {{power.title}}
-          <view class="power_info_text_tag" wx:if="{{power.tag}}">{{power.tag}}</view>
-        </view>
-        <view class="power_info_text_tip">{{power.tip}}</view>
-      </view>
-      <image wx:if="{{!power.showItem && power.item.length}}" class="power_info_more" src="../../images/arrow.svg"></image>
-      <image wx:if="{{power.showItem && power.item.length}}" class="power_info_less" src="../../images/arrow.svg"></image>
-      <image wx:if="{{!power.item.length}}" class="power_item_icon" src="../../images/arrow.svg"></image>
+<!-- pages/index/index.wxml 首页（M2：接 local_spots 真实数据） -->
+<view class="container home">
+  <!-- 顶部问候 -->
+  <view class="home-hero">
+    <view class="home-hero__hi">{{greeting}}{{babyName ? '，' + babyName + '妈妈' : ''}}</view>
+    <view class="home-hero__sub muted">今天带娃去哪儿遛一遛？</view>
+  </view>
+
+  <!-- 遛娃指数环 -->
+  <view class="card index-card">
+    <view class="row between">
+      <view class="sec">今日遛娃指数</view>
+      <view class="muted">{{updatedAt}}</view>
     </view>
-    <view wx:if="{{power.showItem}}">
-      <view wx:key="title" wx:for="{{power.item}}">
-        <view class="line"></view>
-        <view class="power_item" bindtap="jumpPage" data-type="{{ item.type }}" data-page="{{item.page}}">
-          <view class="power_item_title">{{item.title}}</view>
-          <image class="power_item_icon" src="../../images/arrow.svg"></image>
+    <view class="index-main">
+      <view class="ring-wrap">
+        <canvas type="2d" id="indexRing" class="ring-canvas"></canvas>
+        <view class="ring-center">
+          <view class="ring-num">{{indexPercent}}%</view>
+          <view class="ring-cap muted">户外完成度</view>
         </view>
+      </view>
+      <view class="index-side">
+        <view class="index-metrics">
+          <view class="metric">
+            <text class="metric-num">{{outdoorText}}</text>
+            <text class="metric-cap muted">室外</text>
+          </view>
+          <view class="metric">
+            <text class="metric-num">{{indoorText}}</text>
+            <text class="metric-cap muted">室内</text>
+          </view>
+        </view>
+        <view class="muted index-note">目标每日户外 {{goalMin}} 分钟</view>
       </view>
     </view>
   </view>
-  <cloud-tip-modal showTipProps="{{showTip}}" title="{{title}}" content="{{content}}"></cloud-tip-modal>
+
+  <!-- 户外陪伴计时 -->
+  <view class="card outdoor">
+    <view class="sec">户外陪伴计时</view>
+    <view class="outdoor__row">
+      <view class="outdoor__cell {{timerMode === 'indoor' ? 'on' : ''}}">
+        <text class="outdoor__num">{{indoorText}}</text>
+        <text class="outdoor__lbl muted">室内</text>
+      </view>
+      <view class="outdoor__cell {{timerMode === 'outdoor' ? 'on' : ''}}">
+        <text class="outdoor__num">{{outdoorText}}</text>
+        <text class="outdoor__lbl muted">室外</text>
+      </view>
+    </view>
+    <view class="outdoor__actions">
+      <button class="btn-timer {{timerRunning ? 'running' : ''}}" bindtap="toggleTimer">{{timerRunning ? '停止计时' : '开始计时'}}</button>
+      <button class="btn-switch" bindtap="switchMode">切换为{{timerMode === 'outdoor' ? '室内' : '室外'}}</button>
+    </view>
+    <view class="muted">当前计时：{{timerMode === 'outdoor' ? '室外' : '室内'}}{{timerRunning ? ' · 计时中' : ''}}</view>
+  </view>
+
+  <!-- 推荐出门时段 -->
+  <view class="card slot">
+    <view class="sec">推荐出门时段</view>
+    <view class="win-list">
+      <view class="win-row" wx:for="{{slots}}" wx:key="t">
+        <text class="wt">{{item.t}}</text>
+        <text class="wv">{{item.v}}</text>
+        <text class="wn">{{item.n}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 4 宫格快捷入口 -->
+  <view class="grid">
+    <view class="grid__item card" bindtap="goVaccine">
+      <view class="grid__ic">
+        <svg-icon name="vaccine" size="26"></svg-icon>
+        <view wx:if="{{vacCount}}" class="badge">{{vacCount}}</view>
+      </view>
+      <text class="grid__label">接种提醒</text>
+    </view>
+    <view class="grid__item card" bindtap="goMap">
+      <view class="grid__ic">
+        <svg-icon name="map" size="26"></svg-icon>
+        <view wx:if="{{playCount}}" class="badge">{{playCount}}</view>
+      </view>
+      <text class="grid__label">遛娃地图</text>
+    </view>
+    <view class="grid__item card" bindtap="goMine">
+      <view class="grid__ic"><svg-icon name="user" size="26"></svg-icon></view>
+      <text class="grid__label">我的</text>
+    </view>
+    <view class="grid__item card" bindtap="goElder">
+      <view class="grid__ic"><svg-icon name="heart" size="26"></svg-icon></view>
+      <text class="grid__label">关怀版</text>
+    </view>
+  </view>
+
+  <!-- 关怀版横幅 -->
+  <view class="elder-banner card" bindtap="goElder">
+    <svg-icon name="heart" size="22"></svg-icon>
+    <view class="elder-banner__text">
+      <view class="sec">大字关怀版</view>
+      <view class="muted">更大字号 · 更少操作</view>
+    </view>
+    <svg-icon name="chev" size="18"></svg-icon>
+  </view>
 </view>

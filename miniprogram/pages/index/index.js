@@ -1,185 +1,150 @@
-// index.js
+// pages/index/index.js 首页（M2：接 local_spots 真实数据）
+const app = getApp();
+const { callCloud } = require('../../utils/cloud.js');
+
+function fmt(sec) {
+  sec = sec || 0;
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return ('0' + m).slice(-2) + ':' + ('0' + s).slice(-2);
+}
+
 Page({
   data: {
-    showTip: false,
-    powerList: [
-      {
-        title: "云托管",
-        tip: "不限语言的全托管容器服务",
-        showItem: false,
-        item: [
-          {
-            type: "cloudbaserun",
-            title: "云托管调用",
-          },
-        ],
-      },
-      {
-        title: "云函数",
-        tip: "安全、免鉴权运行业务代码",
-        showItem: false,
-        item: [
-          {
-            type: "getOpenId",
-            title: "获取OpenId",
-          },
-          {
-            type: "getMiniProgramCode",
-            title: "生成小程序码",
-          },
-        ],
-      },
-      {
-        title: "数据库",
-        tip: "安全稳定的文档型数据库",
-        showItem: false,
-        item: [
-          {
-            type: "createCollection",
-            title: "创建集合",
-          },
-          {
-            type: "selectRecord",
-            title: "增删改查记录",
-          },
-          // {
-          //   title: '聚合操作',
-          //   page: 'sumRecord',
-          // },
-        ],
-      },
-      {
-        title: "云存储",
-        tip: "自带CDN加速文件存储",
-        showItem: false,
-        item: [
-          {
-            type: "uploadFile",
-            title: "上传文件",
-          },
-        ],
-      },
-      {
-        title: "AI 接入能力",
-        tip: "云开发 AI 接入能力",
-        showItem: false,
-        item: [
-          {
-            type: "model-guide",
-            title: "大模型对话指引",
-          },
-        ],
-      },
-      {
-        title: "AI 智能开发小程序",
-        tip: "连接 AI 开发工具与 MCP 开发小程序",
-        type: "ai-assistant",
-        skipEnvCheck: true,
-        showItem: false,
-        item: [],
-      },
+    greeting: '你好',
+    babyName: '',
+    updatedAt: '',
+    indexPercent: 0,        // 户外完成度 0~100（环进度）
+    timerRunning: false,
+    timerMode: 'outdoor',   // 当前计时模式：outdoor / indoor
+    indoorText: '00:00',
+    outdoorText: '00:00',
+    goalMin: 60,
+    vacCount: 0,
+    playCount: 0,
+    slots: [
+      { t: '清晨', v: '07:00 – 08:30', n: '凉爽·人少' },
+      { t: '上午', v: '09:00 – 11:00', n: '日照充足' },
     ],
-    haveCreateCollection: false,
-    title: "",
-    content: "",
   },
-  onClickPowerInfo(e) {
-    const app = getApp();
-    const index = e.currentTarget.dataset.index;
-    const powerList = this.data.powerList;
-    const selectedItem = powerList[index];
-    
-    // 检查是否跳过环境配置检测
-    if (!selectedItem.skipEnvCheck && !app.globalData.env) {
-      wx.showModal({
-        title: "提示",
-        content: "请在 `miniprogram/app.js` 中正确配置 `env` 参数",
-      });
-      return;
-    }
-    if (selectedItem.link) {
-      wx.navigateTo({
-        url: `../web/index?url=${selectedItem.link}&title=${selectedItem.title}`,
-      });
-    } else if (selectedItem.type) {
-      wx.navigateTo({
-        url: `/pages/example/index?envId=${this.data.selectedEnv?.envId}&type=${selectedItem.type}`,
-      });
-    } else if (selectedItem.page) {
-      wx.navigateTo({
-        url: `/pages/${selectedItem.page}/index`,
-      });
-    } else if (
-      selectedItem.title === "数据库" &&
-      !this.data.haveCreateCollection
-    ) {
-      this.onClickDatabase(powerList, selectedItem);
-    } else {
-      selectedItem.showItem = !selectedItem.showItem;
-      this.setData({
-        powerList,
-      });
+
+  onLoad() {
+    this.refreshGreeting();
+    this.loadData();
+    this.syncOutdoor();
+  },
+
+  onReady() {
+    this.drawRing();
+  },
+
+  onShow() {
+    this.syncOutdoor();
+  },
+
+  onUnload() {
+    this.stopTimer();
+  },
+
+  refreshGreeting() {
+    const h = new Date().getHours();
+    const timeGreet = h < 11 ? '早上好' : h < 14 ? '中午好' : h < 18 ? '下午好' : '晚上好';
+    const bp = app.globalData.babyProfile;
+    const babyName = bp && bp.name ? bp.name : '';
+    const d = new Date();
+    const updatedAt = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ' 更新';
+    this.setData({ greeting: timeGreet, babyName, updatedAt });
+  },
+
+  // 拉取真实 POI，用于 4 宫格角标（接种/遛娃数量）
+  async loadData() {
+    try {
+      const res = await callCloud('spots', { action: 'list' });
+      const list = (res && res.list) || [];
+      const vacCount = list.filter(s => s.type === '接种').length;
+      const playCount = list.filter(s => s.type === '遛娃').length;
+      this.setData({ vacCount, playCount });
+    } catch (e) {
+      console.error('加载 POI 失败', e);
     }
   },
 
-  jumpPage(e) {
-    const { type, page } = e.currentTarget.dataset;
-    console.log("jump page", type, page);
-    if (type) {
-      wx.navigateTo({
-        url: `/pages/example/index?envId=${this.data.selectedEnv?.envId}&type=${type}`,
-      });
-    } else {
-      wx.navigateTo({
-        url: `/pages/${page}/index?envId=${this.data.selectedEnv?.envId}`,
-      });
-    }
-  },
-
-  onClickDatabase(powerList, selectedItem) {
-    wx.showLoading({
-      title: "",
+  // 同步全局户外计时 + 刷新环进度（indoor/outdoor 以秒计）
+  syncOutdoor() {
+    const o = app.globalData.outdoor || { indoor: 0, outdoor: 0, goal: 60 };
+    const goalSec = (o.goal || 60) * 60;
+    let pct = Math.round((o.outdoor / goalSec) * 100);
+    if (pct > 100) pct = 100;
+    this.setData({
+      indoorText: fmt(o.indoor),
+      outdoorText: fmt(o.outdoor),
+      indexPercent: pct,
+      goalMin: o.goal || 60,
     });
-    wx.cloud
-      .callFunction({
-        name: "quickstartFunctions",
-        data: {
-          type: "createCollection",
-        },
-      })
-      .then((resp) => {
-        if (resp.result.success) {
-          this.setData({
-            haveCreateCollection: true,
-          });
-        }
-        selectedItem.showItem = !selectedItem.showItem;
-        this.setData({
-          powerList,
-        });
-        wx.hideLoading();
-      })
-      .catch((e) => {
-        wx.hideLoading();
-        const { errCode, errMsg } = e;
-        if (errMsg.includes("Environment not found")) {
-          this.setData({
-            showTip: true,
-            title: "云开发环境未找到",
-            content:
-              "如果已经开通云开发，请检查环境ID与 `miniprogram/app.js` 中的 `env` 参数是否一致。",
-          });
-          return;
-        }
-        if (errMsg.includes("FunctionName parameter could not be found")) {
-          this.setData({
-            showTip: true,
-            title: "请上传云函数",
-            content:
-              "在'cloudfunctions/quickstartFunctions'目录右键，选择【上传并部署-云端安装依赖】，等待云函数上传完成后重试。",
-          });
-          return;
-        }
-      });
+    this.drawRing();
   },
+
+  // 户外计时
+  toggleTimer() {
+    if (this.data.timerRunning) this.stopTimer();
+    else this.startTimer();
+  },
+  startTimer() {
+    this.setData({ timerRunning: true });
+    if (this._timer) clearInterval(this._timer);
+    this._timer = setInterval(() => {
+      const o = app.globalData.outdoor;
+      if (this.data.timerMode === 'outdoor') o.outdoor += 1;
+      else o.indoor += 1;
+      this.syncOutdoor();
+    }, 1000);
+  },
+  stopTimer() {
+    this.setData({ timerRunning: false });
+    if (this._timer) {
+      clearInterval(this._timer);
+      this._timer = null;
+    }
+  },
+  switchMode() {
+    const mode = this.data.timerMode === 'outdoor' ? 'indoor' : 'outdoor';
+    this.setData({ timerMode: mode });
+  },
+
+  // canvas 环形进度（底环 + 进度环）
+  drawRing() {
+    const q = wx.createSelectorQuery();
+    q.select('#indexRing').fields({ node: true, size: true }).exec((res) => {
+      if (!res || !res[0] || !res[0].node) return;
+      const canvas = res[0].node;
+      const ctx = canvas.getContext('2d');
+      const w = res[0].width;
+      const h = res[0].height;
+      const dpr = ((wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).pixelRatio) || 2;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.scale(dpr, dpr);
+      const cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - 9;
+      ctx.clearRect(0, 0, w, h);
+      // 底环
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = '#F1F7F3'; // --green-l2
+      ctx.lineWidth = 9;
+      ctx.stroke();
+      // 进度环
+      const pct = this.data.indexPercent / 100;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pct);
+      ctx.strokeStyle = '#2C6848'; // --green-d
+      ctx.lineWidth = 9;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    });
+  },
+
+  goVaccine() { wx.switchTab({ url: '/pages/vaccine/index' }); },
+  goMap() { wx.switchTab({ url: '/pages/map/index' }); },
+  goMine() { wx.switchTab({ url: '/pages/mine/index' }); },
+  goElder() { wx.navigateTo({ url: '/pages/elder/index' }); },
 });

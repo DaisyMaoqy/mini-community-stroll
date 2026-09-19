@@ -1,14 +1,32 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/example/index"
+    "pages/vaccine/index",
+    "pages/map/index",
+    "pages/mine/index",
+    "pages/elder/index"
   ],
   "window": {
-    "backgroundColor": "#F6F6F6",
-    "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#F6F6F6",
-    "navigationBarTitleText": "云开发 QuickStart",
+    "backgroundColor": "#FAF8F5",
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#FAF8F5",
+    "navigationBarTitleText": "祈福遛一遛",
     "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "color": "#93A29A",
+    "selectedColor": "#5F7A66",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "首页", "iconPath": "assets/tabbar/home.png", "selectedIconPath": "assets/tabbar/home-on.png" },
+      { "pagePath": "pages/vaccine/index", "text": "接种", "iconPath": "assets/tabbar/vaccine.png", "selectedIconPath": "assets/tabbar/vaccine-on.png" },
+      { "pagePath": "pages/map/index", "text": "遛娃地图", "iconPath": "assets/tabbar/map.png", "selectedIconPath": "assets/tabbar/map-on.png" },
+      { "pagePath": "pages/mine/index", "text": "我的", "iconPath": "assets/tabbar/mine.png", "selectedIconPath": "assets/tabbar/mine-on.png" }
+    ]
+  },
+  "usingComponents": {
+    "svg-icon": "/components/svg-icon/svg-icon"
   },
   "sitemapLocation": "sitemap.json",
   "style": "v2",

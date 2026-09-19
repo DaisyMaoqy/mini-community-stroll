@@ -1,0 +1,7 @@
+/* pages/vaccine/index.wxss 接种（M0 骨架） */
+.placeholder {
+  margin-top: var(--gap-lg);
+  color: var(--ink3);
+  text-align: center;
+  padding: 40px 0;
+}

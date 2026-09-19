@@ -1,0 +1,98 @@
+<!-- pages/map/index.wxml 遛娃地图（M3：接真实 POI + 标记 + 详情） -->
+<view class="container map-page">
+  <view class="sec">遛娃地图</view>
+  <view class="muted">附近的接种点、公园、母婴室</view>
+
+  <!-- 地图 -->
+  <view class="card map-card">
+    <map
+      class="map"
+      longitude="{{center.lng}}"
+      latitude="{{center.lat}}"
+      scale="{{scale}}"
+      markers="{{markers}}"
+      show-location="{{true}}"
+      bindmarkertap="onMarkerTap"
+    ></map>
+  </view>
+
+  <!-- 分类筛选 -->
+  <scroll-view scroll-x class="tabs" enable-flex>
+    <view
+      wx:for="{{tabs}}"
+      wx:key="key"
+      class="tab {{activeTab === item.key ? 'on' : ''}}"
+      data-tab="{{item.key}}"
+      bindtap="onTab"
+    >{{item.label}}</view>
+  </scroll-view>
+
+  <!-- POI 列表 -->
+  <view class="poi-list">
+    <view
+      wx:for="{{filtered}}"
+      wx:key="_id"
+      class="card poi"
+      data-idx="{{index}}"
+      bindtap="onCardTap"
+    >
+      <view class="poi__top">
+        <text class="poi__name">{{item.name}}</text>
+        <text class="poi__type t-{{item.typeClass}}">{{item.type}}</text>
+      </view>
+      <view class="poi__addr muted">{{item.address}}</view>
+      <view class="poi__meta" wx:if="{{item._walkMin}}">
+        <svg-icon name="walk" size="14"></svg-icon>
+        <text class="muted">步行约 {{item._walkMin}} 分钟（{{item._dist}} 米）</text>
+      </view>
+      <view class="poi__tags">
+        <text wx:if="{{item.adultOnly}}" class="tag tag-red">仅成人</text>
+        <text wx:if="{{item.external}}" class="tag tag-amber">需换乘</text>
+        <text wx:if="{{item.verifyStatus === 'verified'}}" class="tag tag-green">已核实</text>
+      </view>
+    </view>
+    <view wx:if="{{!filtered.length}}" class="muted empty">该分类暂无数据</view>
+  </view>
+
+  <!-- POI 详情 sheet -->
+  <view wx:if="{{detail}}" class="sheet-mask" bindtap="closeDetail">
+    <view class="sheet" catchtap="noop">
+      <view class="sheet__hd">
+        <text class="sheet__title">{{detail.name}}</text>
+        <text class="poi__type t-{{detail.typeClass}}">{{detail.type}}</text>
+      </view>
+
+      <view class="sheet__row" wx:if="{{detail.subType}}"><text class="sheet__k muted">类型</text><text>{{detail.subType}}</text></view>
+      <view class="sheet__row"><text class="sheet__k muted">地址</text><text>{{detail.address}}</text></view>
+
+      <view class="sheet__row" wx:if="{{detail.vacName}}"><text class="sheet__k muted">接种</text><text>{{detail.vacName}}</text></view>
+      <view class="sheet__row" wx:if="{{detail.vacSub}}"><text class="sheet__k muted"></text><text class="muted">{{detail.vacSub}}</text></view>
+
+      <view class="sheet__row" wx:if="{{detail.bus}}">
+        <text class="sheet__k muted">邨巴</text>
+        <text>{{detail.bus.hub}}{{detail.bus.lines ? ' · ' + detail.bus.lines + ' 路' : ''}}{{detail.bus.walk ? ' · ' + detail.bus.walk : ''}}</text>
+      </view>
+
+      <view class="sheet__row" wx:if="{{detail._walkMin}}">
+        <text class="sheet__k muted">出行</text>
+        <text>步行约 {{detail._walkMin}} 分钟（{{detail._dist}} 米）</text>
+      </view>
+      <view class="sheet__row" wx:if="{{!detail._walkMin}}">
+        <text class="sheet__k muted">出行</text>
+        <text class="muted">授权定位后可显示步行距离</text>
+      </view>
+
+      <view class="sheet__tags">
+        <text wx:if="{{detail.adultOnly}}" class="tag tag-red">仅成人</text>
+        <text wx:if="{{detail.external}}" class="tag tag-amber">需换乘</text>
+        <text wx:if="{{detail.verifyStatus === 'verified'}}" class="tag tag-green">已核实</text>
+        <text wx:if="{{detail.coordEstimated}}" class="tag tag-gray">坐标为估算</text>
+      </view>
+
+      <view class="sheet__actions">
+        <button class="btn-fix" bindtap="reportFix">信息有误</button>
+        <button class="btn-close" bindtap="closeDetail">关闭</button>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,14 @@
+<!-- pages/elder/index.wxml 大字关怀版（M0 骨架，M6 充实） -->
+<view class="elder-page" data-theme="elder">
+  <view class="elder-hero">
+    <view class="elder-hero__hi">祈福遛一遛</view>
+    <view class="elder-hero__sub">更大字号 · 更少操作</view>
+  </view>
+
+  <view class="elder-nav">
+    <view class="elder-nav__btn btn-primary" bindtap="goMap">遛娃地图</view>
+    <view class="elder-nav__btn btn-primary" bindtap="goVaccine">接种提醒</view>
+    <view class="elder-nav__btn btn-primary" bindtap="goMine">我的</view>
+    <view class="elder-nav__btn elder-nav__btn--back" bindtap="goBack">返回标准版</view>
+  </view>
+</view>

@@ -1,27 +1,39 @@
 /**app.wxss**/
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-sizing: border-box;
-} 
-
-button {
-  background: initial;
-}
-
-button:focus{
-  outline: 0;
-}
-
-button::after{
-  border: none;
-}
-
+@import "styles/tokens.wxss";
+@import "styles/theme.wxss";
 
 page {
-  background: #f6f6f6;
+  background: var(--page);
+  color: var(--ink);
+  font-size: var(--fs-body);
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  box-sizing: border-box;
 }
+
+/* 通用类（对齐 v15 设计 Token） */
+.container { padding: var(--gap-lg); box-sizing: border-box; }
+.card {
+  background: var(--card);
+  border-radius: var(--r);
+  padding: var(--pad-card);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line);
+  box-sizing: border-box;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--green), var(--green-d));
+  color: #fff;
+  border-radius: var(--r);
+  font-weight: 600;
+  font-size: var(--fs-md);
+  padding: 12px 18px;
+  line-height: 1.2;
+  box-sizing: border-box;
+}
+.chip { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; font-size: var(--fs-xs); background: var(--green-l); color: var(--green-d); }
+.chip.green { background: var(--green-l); color: var(--green-d); }
+.chip.peach { background: var(--peach-l); color: var(--peach-d); }
+.muted { color: var(--ink3); font-size: var(--fs-xs); }
+.sec { font-size: var(--fs-lg); font-weight: 700; color: var(--ink); }
+.toggle { display: inline-flex; }

@@ -1,0 +1,44 @@
+/* 关怀大字模式（elder / 大字版）
+   用法：在页面根节点加 data-theme="elder" 即可放大全局字号与间距，并切换到高对比墨绿。
+   例：<view class="elder-page" data-theme="elder"> ... </view>
+   配色对齐设计稿「关怀版首页」：按钮/进度 #2C7C50、标题 #14502C。 */
+[data-theme="elder"] {
+  /* 高对比墨绿 */
+  --green: #2C7C50;
+  --green-d: #14502C;
+  --green-m: #488C64;
+  --green-l: #E6F2EA;
+  --green-l2: #EFF7F1;
+  --ink: #14301F;
+  --ink2: #3F5A4B;
+
+  /* 字号放大 */
+  --fs-display: 30px;
+  --fs-xl: 25px;
+  --fs-lg: 21px;
+  --fs-md: 18px;
+  --fs-body: 16.5px;
+  --fs-sm: 15.5px;
+  --fs-xs: 14px;
+  --fs-meta: 13px;
+
+  /* 间距放大 */
+  --gap-xs: 8px;
+  --gap-sm: 13px;
+  --gap-md: 16px;
+  --gap-lg: 20px;
+
+  --pad-card: 20px;
+  --r: 24px;
+  --r-lg: 30px;
+  --r-sm: 16px;
+}
+
+/* 关怀版根容器：继承放大后的字号与背景 */
+.elder-page {
+  min-height: 100vh;
+  background: var(--page);
+  font-size: var(--fs-body);
+  color: var(--ink);
+  box-sizing: border-box;
+}

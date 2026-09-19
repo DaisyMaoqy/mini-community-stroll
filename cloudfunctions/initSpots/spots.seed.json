@@ -1,0 +1,549 @@
+{
+  "collection": "local_spots",
+  "schemaRef": "local_spots.schema.md",
+  "note": "coord 已回填 gcj02 真实坐标（#17，2026-09-14）：接种点 4 个为腾讯地图精确 POI；遛娃 6 个为腾讯地图精确 POI，3 个无独立 POI 的（祈福湖/鳄鱼湖公园/郊野公园）用社区参照估算并标 coordEstimated=true（待 #6 腾讯位置服务 key 就位后 geocoding 复核）。coordMock 保留为原型米制占位，dev 无 key 时用。coordSource/coordEstimated 为坐标溯源与待复核标记。",
+  "count": 13,
+  "spots": [
+    {
+      "_id": "spot_vac_yankang",
+      "name": "延康祈福社区卫生服务站",
+      "type": "接种",
+      "subType": "预防接种",
+      "adultOnly": false,
+      "ageRange": "全年龄（儿童一类/二类苗 + 成人）",
+      "address": "祈福新邨千福街2号101（倚湖湾1栋旁）",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.334991,
+          22.95529
+        ]
+      },
+      "coordMock": {
+        "x": -600,
+        "y": -260
+      },
+      "bus": {
+        "hub": "倚湖湾总站",
+        "lines": [
+          "2"
+        ],
+        "walk": "终点站即达，倚湖湾1栋旁",
+        "busText": "2 号线「倚湖湾总站」· 终点站即达（06:00–23:45）"
+      },
+      "external": false,
+      "vacName": "延康祈福社区卫生服务站",
+      "vacSub": "千福街2号101 · 倚湖湾旁 · 覆盖祈福新邨+缤纷汇",
+      "desc": "覆盖祈福新邨居委+缤纷汇居委，集全科/预防接种/儿童保健等于一体；接种时间以粤苗公示为准。",
+      "verifyStatus": "verified",
+      "verifySource": "延康祈福社区官方公众号",
+      "verifyUrl": "https://mp.weixin.qq.com/s/-vf6huxnYET4RxVS_Js23A",
+      "verifyDueAt": "2026-12-13",
+      "source": "官方公众号核实（2026-09-14）",
+      "createdAt": "2026-09-14",
+      "updatedAt": "2026-09-14",
+      "coordSource": "腾讯地图·祈福倚湖湾POI",
+      "coordEstimated": false
+    },
+    {
+      "_id": "spot_vac_qifu_child",
+      "name": "祈福社区卫生服务中心（儿童接种）",
+      "type": "接种",
+      "subType": "预防接种（儿童）",
+      "adultOnly": false,
+      "ageRange": "儿童/未成年人（一类苗 + 儿童流感等）",
+      "address": "广东祈福医院 3 号楼 1 层（祈福社区卫生服务站）",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.325295,
+          22.969107
+        ]
+      },
+      "coordMock": {
+        "x": -120,
+        "y": 120
+      },
+      "bus": {
+        "hub": "祈福医院站",
+        "lines": [
+          "5"
+        ],
+        "walk": "下车步行约 2 分钟到 3 号楼",
+        "busText": "5 号线「祈福医院」站 · 约 10 分钟一班（06:00–23:45）"
+      },
+      "external": false,
+      "vacName": "祈福社区卫生服务中心（儿童接种）",
+      "vacSub": "祈福医院 3 号楼 1 层 · 与成人门诊（2号楼）同院区分科",
+      "desc": "同院区祈福医院成人接种门诊（2号楼）只服务成年人；儿童/未成年人疫苗（含一类免疫规划苗、儿童流感）在 3 号楼 1 层祈福社区卫生服务中心。按年龄分流，避免家长走错楼。",
+      "verifyStatus": "verified",
+      "verifySource": "广东祈福医院官网（成人接种门诊发文，明确儿童疫苗在3号楼）",
+      "verifyUrl": "https://clifford-hospital.org/service/healthnews_9110.html",
+      "verifyDueAt": "2026-12-13",
+      "source": "官方核实（2026-09-14）",
+      "createdAt": "2026-09-14",
+      "updatedAt": "2026-09-14",
+      "coordSource": "腾讯地图·祈福医院POI",
+      "coordEstimated": false
+    },
+    {
+      "_id": "spot_vac_zhongcun",
+      "name": "番禺区钟村街社区卫生服务中心",
+      "type": "接种",
+      "subType": "预防接种",
+      "adultOnly": false,
+      "ageRange": "全年龄（社区外备选）",
+      "address": "钟村街商贸城盛兴街21号·谢村牌坊对面",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.31507,
+          22.982522
+        ]
+      },
+      "coordMock": {
+        "x": 2500,
+        "y": 2500
+      },
+      "bus": {
+        "hub": "谢村站",
+        "lines": [],
+        "walk": "交通中心换乘对外公交/地铁至谢村站约 15 分钟",
+        "busText": "邨巴至「祈福交通中心」· 换乘对外公交(288/301/309/番100/番109/番13)至谢村站"
+      },
+      "external": true,
+      "vacName": "番禺区钟村街社区卫生服务中心（社区外）",
+      "vacSub": "钟村商贸城盛兴街21号 · 谢村牌坊对面 · 社区外",
+      "desc": "广东省 4A 级接种门诊。社区外，需邨巴至交通中心换乘对外公交/地铁前往，以粤苗公示为准。",
+      "verifyStatus": "verified",
+      "verifySource": "钟村街社区卫生服务中心官方公众号",
+      "verifyUrl": "https://mp.weixin.qq.com/s/SK6ufU4zEh1XzdBf2k34Jw",
+      "verifyDueAt": "2026-12-13",
+      "source": "官方公众号核实（2026-09-14）",
+      "createdAt": "2026-09-14",
+      "updatedAt": "2026-09-14",
+      "coordSource": "腾讯地图·钟村街社区卫生服务中心POI",
+      "coordEstimated": false
+    },
+    {
+      "_id": "spot_vac_qifu_adult",
+      "name": "祈福医院成人接种门诊",
+      "type": "接种",
+      "subType": "成人接种门诊",
+      "adultOnly": true,
+      "ageRange": "仅 18 岁以上成年人（家长自用）",
+      "address": "广东祈福医院 2 号楼（成人门诊）",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.325295,
+          22.969107
+        ]
+      },
+      "coordMock": {
+        "x": -120,
+        "y": 80
+      },
+      "bus": {
+        "hub": "祈福医院站",
+        "lines": [
+          "5"
+        ],
+        "walk": "下车步行约 2 分钟到成人接种门诊",
+        "busText": "5 号线「祈福医院」站 · 约 10 分钟一班（06:00–23:45）"
+      },
+      "external": false,
+      "vacName": "祈福医院成人接种门诊（家长自用）",
+      "vacSub": "青怡居旁 · 广州三甲祈福医院 · 仅 18 岁以上 · 5号线祈福医院站",
+      "desc": "广东祈福医院成人接种门诊（2号楼），仅 18 岁以上成年人可打 HPV / 流感 / 肺炎 / 带状疱疹 / 乙肝等非免疫规划疫苗 + 新冠。孩子的疫苗请到「祈福社区卫生服务中心（3号楼）」或「延康祈福社区卫生服务站」。",
+      "verifyStatus": "verified",
+      "verifySource": "广东祈福医院官网（成人接种门诊发文）",
+      "verifyUrl": "https://clifford-hospital.org/service/healthnews_9110.html",
+      "verifyDueAt": "2026-12-13",
+      "source": "官方核实（2026-09-14）",
+      "createdAt": "2026-09-14",
+      "updatedAt": "2026-09-14",
+      "coordSource": "腾讯地图·祈福医院POI",
+      "coordEstimated": false
+    },
+    {
+      "_id": "spot_play_mingdu",
+      "name": "祈福名都",
+      "type": "遛娃",
+      "subType": "室外",
+      "adultOnly": false,
+      "ageRange": "亲子（户外/室内）",
+      "address": "名都站旁 · 中心区",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.322463,
+          22.964765
+        ]
+      },
+      "coordMock": {
+        "x": -150,
+        "y": 350
+      },
+      "bus": {
+        "hub": "名都站",
+        "lines": [
+          "1",
+          "3",
+          "5",
+          "6",
+          "8"
+        ],
+        "walk": "下车步行约 3 分钟到名都广场",
+        "walkNote": null,
+        "busText": "1、3、5、6、8 号线 · 约 10–20 分钟一班（06:00–23:45）"
+      },
+      "external": false,
+      "desc": "中心区开放空间，名都站旁，日常遛娃/放风好去处，计入护眼时长。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "腾讯地图POI坐标回填（2026-09-14）；位置待官方核验",
+      "createdAt": "2026-09-14",
+      "updatedAt": "2026-09-14",
+      "coordSource": "腾讯地图·祈福名都POI",
+      "coordEstimated": false
+    },
+    {
+      "_id": "spot_play_qianseyuan",
+      "name": "千色园",
+      "type": "遛娃",
+      "subType": "室外",
+      "adultOnly": false,
+      "ageRange": "亲子（户外/室内）",
+      "address": "中区绿化花园",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.329543,
+          22.964885
+        ]
+      },
+      "coordMock": {
+        "x": -300,
+        "y": 200
+      },
+      "bus": {
+        "hub": "鸿福路站",
+        "lines": [
+          "3",
+          "5",
+          "6"
+        ],
+        "walk": "下车步行约 5 分钟到千色园广场",
+        "walkNote": null,
+        "busText": "3、5、6 号线 · 约 10–20 分钟一班（06:00–23:45）"
+      },
+      "external": false,
+      "desc": "中区绿化花园（千色园广场/水晶宫乐园/童梦乐园等），服务绿怡居/翠怡居/青怡居等中区组团，计入护眼时长。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "腾讯地图POI坐标回填（2026-09-14）；位置待官方核验",
+      "createdAt": "2026-09-14",
+      "updatedAt": "2026-09-14",
+      "coordSource": "腾讯地图·祈福千色园POI",
+      "coordEstimated": false
+    },
+    {
+      "_id": "spot_play_huanle",
+      "name": "欢乐广场",
+      "type": "遛娃",
+      "subType": "室外",
+      "adultOnly": false,
+      "ageRange": "亲子（户外/室内）",
+      "address": "缤纷汇二期地面广场",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.332539,
+          22.969254
+        ]
+      },
+      "coordMock": {
+        "x": -800,
+        "y": -100
+      },
+      "bus": {
+        "hub": "缤纷汇站",
+        "lines": [
+          "1",
+          "2",
+          "3",
+          "5",
+          "6",
+          "A"
+        ],
+        "walk": "下车步行约 6 分钟到广场",
+        "walkNote": "若您住 A/B/C 区：出 2 号门过马路即达，无需坐车",
+        "busText": "1、2、3、5、6、A 号线 · 约 10–20 分钟一班（06:00–23:45）"
+      },
+      "external": false,
+      "desc": "缤纷汇二期地面广场（含镂空俯瞰口可看负一层），攀岩/滑梯/小动物雕像，计入护眼时长。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "腾讯地图POI坐标回填（2026-09-14）；位置待官方核验",
+      "createdAt": "2026-09-14",
+      "updatedAt": "2026-09-14",
+      "coordSource": "腾讯地图·祈福缤纷世界POI",
+      "coordEstimated": false
+    },
+    {
+      "_id": "spot_play_starriver",
+      "name": "星空运河",
+      "type": "遛娃",
+      "subType": "室内",
+      "adultOnly": false,
+      "ageRange": "亲子（户外/室内）",
+      "address": "缤纷世界二期负一层",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.332539,
+          22.969254
+        ]
+      },
+      "coordMock": {
+        "x": -800,
+        "y": -120
+      },
+      "bus": {
+        "hub": "缤纷汇站",
+        "lines": [
+          "1",
+          "2",
+          "3",
+          "5",
+          "6",
+          "A"
+        ],
+        "walk": "下车步行约 6 分钟到名望天下入口",
+        "walkNote": "若您住 A/B/C 区：出 2 号门过马路即达，无需坐车",
+        "busText": "1、2、3、5、6、A 号线 · 约 10–20 分钟一班（06:00–23:45）"
+      },
+      "external": false,
+      "desc": "缤纷世界二期负一层（上盖名望天下）城市森林运河、灯光秀，室内免费，不计入护眼时长。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "腾讯地图POI坐标回填（2026-09-14）；位置待官方核验",
+      "createdAt": "2026-09-14",
+      "updatedAt": "2026-09-14",
+      "coordSource": "腾讯地图·祈福缤纷世界POI",
+      "coordEstimated": false
+    },
+    {
+      "_id": "spot_play_zonglu",
+      "name": "棕榈园",
+      "type": "遛娃",
+      "subType": "室外",
+      "adultOnly": false,
+      "ageRange": "亲子（户外/室内）",
+      "address": "中区长者康养",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.335645,
+          22.961945
+        ]
+      },
+      "coordMock": {
+        "x": -320,
+        "y": 160
+      },
+      "bus": {
+        "hub": "棕榈园站",
+        "lines": [
+          "8"
+        ],
+        "walk": "下车步行约 4 分钟（中区密道）",
+        "walkNote": null,
+        "busText": "8 号线 · 约 10–20 分钟一班（06:00–23:45）"
+      },
+      "external": false,
+      "desc": "中区长者康养/树下休憩，小区里\"处处是公园\"代表点，计入护眼时长。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "腾讯地图POI坐标回填（2026-09-14）；位置待官方核验",
+      "createdAt": "2026-09-14",
+      "updatedAt": "2026-09-14",
+      "coordSource": "腾讯地图·祈福新邨棕榈园POI",
+      "coordEstimated": false
+    },
+    {
+      "_id": "spot_play_qifuhu",
+      "name": "祈福湖",
+      "type": "遛娃",
+      "subType": "室外",
+      "adultOnly": false,
+      "ageRange": "亲子（户外/室内）",
+      "address": "邨中心湖畔",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3302,
+          22.9605
+        ]
+      },
+      "coordMock": {
+        "x": 0,
+        "y": 0
+      },
+      "bus": {
+        "hub": "祈福湖站",
+        "lines": [
+          "2"
+        ],
+        "walk": "下车步行约 3 分钟到环湖步道",
+        "walkNote": null,
+        "busText": "2 号线 · 约 10–20 分钟一班（06:00–23:45）"
+      },
+      "external": false,
+      "desc": "邨中心湖畔，看天鹅/绿植迷宫/环湖步道/日落机位，计入护眼时长。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "原型 v12 POIS（坐标estimate·湖畔豪庭东门+邨中心湖估算，待 #17 geocoding + 官方核验）",
+      "createdAt": "2026-09-14",
+      "updatedAt": "2026-09-14",
+      "coordSource": "estimate·湖畔豪庭东门+邨中心湖估算",
+      "coordEstimated": true
+    },
+    {
+      "_id": "spot_play_eyu",
+      "name": "鳄鱼湖公园",
+      "type": "遛娃",
+      "subType": "室外",
+      "adultOnly": false,
+      "ageRange": "亲子（户外/室内）",
+      "address": "半山楼下天然遛娃点",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3348,
+          22.966
+        ]
+      },
+      "coordMock": {
+        "x": -650,
+        "y": 850
+      },
+      "bus": {
+        "hub": "月明轩站",
+        "lines": [
+          "1",
+          "8"
+        ],
+        "walk": "下车站走\"桃花源秘境\"密道约 8 分钟",
+        "walkNote": null,
+        "busText": "1、8 号线 · 约 10–20 分钟一班（06:00–23:45）"
+      },
+      "external": false,
+      "desc": "半山楼下天然遛娃点（雅园\"桃花源秘境\"密道尽头），计入护眼时长。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "原型 v12 POIS（坐标estimate·半山(北2/北4门)参照估算，待 #17 geocoding + 官方核验）",
+      "createdAt": "2026-09-14",
+      "updatedAt": "2026-09-14",
+      "coordSource": "estimate·半山(北2/北4门)参照估算",
+      "coordEstimated": true
+    },
+    {
+      "_id": "spot_play_jiaoye",
+      "name": "郊野公园",
+      "type": "遛娃",
+      "subType": "室外",
+      "adultOnly": false,
+      "ageRange": "亲子（户外/室内）",
+      "address": "A区秘密山顶公园",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3205,
+          22.9535
+        ]
+      },
+      "coordMock": {
+        "x": -1000,
+        "y": 600
+      },
+      "bus": {
+        "hub": "佛子岭站",
+        "lines": [
+          "A",
+          "8"
+        ],
+        "walk": "A区佛子岭福祥路，下车站步行约 10 分钟",
+        "walkNote": null,
+        "busText": "A、8 号线 · 约 10–20 分钟一班（06:00–23:45）"
+      },
+      "external": false,
+      "desc": "A区佛子岭福祥路\"秘密山顶公园\"，小区内小森林、可爬山徒步，计入护眼时长。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "原型 v12 POIS（坐标estimate·A区佛子岭(晓峰园西)参照估算，待 #17 geocoding + 官方核验）",
+      "createdAt": "2026-09-14",
+      "updatedAt": "2026-09-14",
+      "coordSource": "estimate·A区佛子岭(晓峰园西)参照估算",
+      "coordEstimated": true
+    },
+    {
+      "_id": "spot_play_tianhu",
+      "name": "天湖居",
+      "type": "遛娃",
+      "subType": "室外",
+      "adultOnly": false,
+      "ageRange": "亲子（户外/室内）",
+      "address": "西部天湖居湖心乐园",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.341642,
+          22.959574
+        ]
+      },
+      "coordMock": {
+        "x": -700,
+        "y": -300
+      },
+      "bus": {
+        "hub": "天湖居总站",
+        "lines": [
+          "A",
+          "8"
+        ],
+        "walk": "终点站即达湖心乐园",
+        "walkNote": null,
+        "busText": "A、8 号线 · 约 10–20 分钟一班（06:00–23:45）"
+      },
+      "external": false,
+      "desc": "西部天湖居湖心乐园与庭院绿化，近郊野公园，计入护眼时长。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "腾讯地图POI坐标回填（2026-09-14）；位置待官方核验",
+      "createdAt": "2026-09-14",
+      "updatedAt": "2026-09-14",
+      "coordSource": "腾讯地图·祈福新邨天湖居POI",
+      "coordEstimated": false
+    }
+  ]
+}

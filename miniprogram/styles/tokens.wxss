@@ -1,0 +1,64 @@
+/* 设计 Token —— 全局变量（对齐 Pixso 设计稿 2026-09-18 取样）
+   通过 app.wxss 的 @import 引入，定义到 page 选择器上，全局页面可用 var(--xxx) 引用。
+   取样来源：设计稿 5 页 PNG 像素聚类 + 关键点采样（主绿实测 #5F7A66）。 */
+page {
+  /* 品牌绿 —— 设计稿为墨绿灰系（非亮翠绿） */
+  --green: #5F7A66;      /* 主色：按钮 / 选中 / 强调（实测） */
+  --green-d: #2C6848;    /* 强调深绿：数据环 / 大数字 */
+  --green-m: #7C9080;    /* 次绿：图标 / 次要元素 */
+  --green-l: #EBF3ED;    /* 浅绿卡片底 */
+  --green-l2: #F1F7F3;   /* 更浅绿 */
+  --peach: #FF9E6D;
+  --peach-d: #F2824E;
+  --peach-l: #FFF0E7;
+
+  /* 文字墨色 */
+  --ink: #23332B;
+  --ink2: #5E6F66;
+  --ink3: #93A29A;
+
+  /* 背景 / 卡片 / 分隔 */
+  --page: #FAF8F5;       /* 页面底色：暖白（实测，替代原米黄 #EDEBE3） */
+  --phone: #FFFFFF;
+  --card: #FFFFFF;
+  --sand: #F4F4F0;
+  --line: #ECEFEA;
+
+  /* 图标 / 灰图标 */
+  --icon: #5F7A66;
+  --icon-gray: #ADADAD;
+
+  /* 辅助色 */
+  --blue: #4A8FD0;
+  --blue-l: #E7EFF4;     /* 信息条浅蓝（实测） */
+  --amber: #F0A93B;
+  --amber-l: #FDF4E3;
+  --red: #E26D5C;
+  --red-l: #FBEDEA;
+
+  /* 间距 */
+  --pad-card: 16px;
+  --gap-xs: 6px;
+  --gap-sm: 10px;
+  --gap-md: 12px;
+  --gap-lg: 16px;
+
+  /* 字号 */
+  --fs-display: 23px;
+  --fs-xl: 19px;
+  --fs-lg: 16px;
+  --fs-md: 14px;
+  --fs-body: 13.5px;
+  --fs-sm: 12.5px;
+  --fs-xs: 11px;
+  --fs-meta: 10.5px;
+
+  /* 圆角（对齐设计稿：卡片约 18px、大卡 24px、胶囊 12px） */
+  --r: 18px;
+  --r-lg: 24px;
+  --r-sm: 12px;
+
+  /* 阴影 */
+  --shadow: 0 12px 30px rgba(38, 53, 46, 0.10);
+  --shadow-sm: 0 4px 12px rgba(38, 53, 46, 0.06);
+}

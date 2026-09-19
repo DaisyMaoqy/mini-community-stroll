@@ -1,6 +1,4 @@
 {
-  "navigationBarTitleText": "基础能力",
-  "usingComponents": {
-    "cloud-tip-modal": "/components/cloudTipModal/index"
-  }
+  "navigationBarTitleText": "祈福遛一遛",
+  "usingComponents": {}
 }

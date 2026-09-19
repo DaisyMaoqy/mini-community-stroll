@@ -1,142 +1,75 @@
-/**index.wxss**/
+/* pages/index/index.wxss 首页（M2：接真实数据） */
+.home { padding-bottom: 40px; }
+.home-hero { padding: 8px 4px 4px; }
+.home-hero__hi { font-size: var(--fs-xl); font-weight: 700; color: var(--ink); }
+.home-hero__sub { margin-top: 4px; }
 
-page {
-  padding-top: 54rpx;
-  background-color: #f6f6f6;
-  padding-bottom: 60rpx;
-}
+.row { display: flex; align-items: center; }
+.between { justify-content: space-between; }
 
-.container {
-  font-family: PingFang SC;
+/* 遛娃指数环 */
+.index-main { display: flex; align-items: center; gap: 16px; margin-top: 10px; }
+.ring-wrap { position: relative; width: 120px; height: 120px; flex: 0 0 120px; }
+.ring-canvas { width: 120px; height: 120px; display: block; }
+.ring-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
+.ring-num { font-size: 28px; font-weight: 800; color: var(--green-d); line-height: 1; }
+.ring-cap { font-size: var(--fs-meta); margin-top: 2px; }
+.index-side { flex: 1; min-width: 0; }
+.index-metrics { display: flex; gap: 10px; }
+.metric { flex: 1; background: var(--green-l); border-radius: var(--r-sm); padding: 10px; text-align: center; }
+.metric-num { display: block; font-size: 18px; font-weight: 700; color: var(--green-d); font-variant-numeric: tabular-nums; }
+.metric-cap { font-size: var(--fs-meta); }
+.index-note { margin-top: 10px; }
 
-.title {
-  font-family: PingFang SC;
-  font-weight: 500;
-  color: #000000;
-  font-size: 44rpx;
-  margin-bottom: 40rpx;
+/* 户外双计时 */
+.outdoor__row { display: flex; gap: var(--gap-md); margin: 10px 0; }
+.outdoor__cell {
+  flex: 1; background: var(--sand); border-radius: var(--r-sm);
+  padding: 12px; text-align: center; box-sizing: border-box; border: 1px solid transparent;
 }
-.function_title {
-  font-family: PingFang SC;
-  font-weight: 500;
-  color: #000000;
-  font-size: 36rpx;
-  text-align: left;
-  width: 93%;
-  margin-top: 50rpx;
+.outdoor__cell.on { background: var(--green-l); border-color: var(--green-m); }
+.outdoor__num { display: block; font-size: 24px; font-weight: 700; color: var(--green-d); margin-bottom: 2px; font-variant-numeric: tabular-nums; }
+.outdoor__lbl { font-size: var(--fs-sm); }
+.outdoor__actions { display: flex; gap: 10px; margin: 6px 0; }
+.btn-timer {
+  flex: 1; background: linear-gradient(135deg, var(--green), var(--green-d)); color: #fff;
+  border-radius: var(--r-sm); font-size: var(--fs-md); font-weight: 600; padding: 10px 0; line-height: 1.2;
 }
+.btn-timer::after { border: none; }
+.btn-timer.running { background: linear-gradient(135deg, var(--red), #c9533f); }
+.btn-switch {
+  flex: 1; background: var(--green-l); color: var(--green-d);
+  border-radius: var(--r-sm); font-size: var(--fs-md); padding: 10px 0; line-height: 1.2;
+}
+.btn-switch::after { border: none; }
 
-.top_tip {
-  font-size: 28rpx;
-  font-family: PingFang SC;
-  font-weight: 400;
-  color: #888888;
-  margin-bottom: 28rpx;
-}
+/* 推荐出门时段 */
+.win-list { margin-top: 8px; }
+.win-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.win-row:last-child { border-bottom: none; }
+.wt { width: 44px; font-weight: 700; color: var(--ink); flex: 0 0 44px; }
+.wv { flex: 1; color: var(--ink2); font-size: var(--fs-sm); }
+.wn { font-size: var(--fs-xs); color: var(--green-d); background: var(--green-l); padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
 
-.examples_container {
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-  width: 100%;
-  align-items: center;
+/* 4 宫格 */
+.grid { display: flex; flex-wrap: wrap; gap: var(--gap-md); margin-top: var(--gap-lg); }
+.grid__item {
+  width: calc(50% - var(--gap-md) / 2); box-sizing: border-box;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 0; position: relative;
 }
-
-.example_item {
-  border: 3rpx solid #e5e5e5;
-  border-radius: 10rpx;
-  padding: 24rpx;
-  width: 90%;
-  background-color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.power {
-  margin-top: 30rpx;
-  border-radius: 5px;
-  background-color: white;
-  width: 93%;
-  padding-bottom: 1rpx;
-}
-
-.power_info {
-  display: flex;
-  padding: 30rpx 25rpx;
-  align-items: center;
-  justify-content: space-between;
+.grid__ic { position: relative; }
+.grid__label { font-size: var(--fs-sm); color: var(--ink2); }
+.badge {
+  position: absolute; top: -6px; right: -12px; min-width: 18px; height: 18px; padding: 0 4px;
+  border-radius: 999px; background: var(--peach-d); color: #fff; font-size: 11px; line-height: 18px; text-align: center;
 }
 
-.power_info_more {
-  width: 30rpx;
-  height: 30rpx;
-  transform: rotate(90deg);
+/* 关怀版横幅 */
+.elder-banner {
+  display: flex; align-items: center; gap: 12px; margin-top: var(--gap-lg);
+  background: linear-gradient(135deg, var(--peach-l), #fff);
 }
-
-.power_info_less {
-  width: 30rpx;
-  height: 30rpx;
-  transform: rotate(270deg);
-}
-
-.power_info_text {
-  display: flex;
-  flex-direction: column;
-}
-
-.power_info_text_title {
-  margin-bottom: 10rpx;
-  font-weight: 400;
-  font-size: 32rpx;
-  display: flex;
-  align-items: center;
-  font-family: 'PingFang SC';
-  color: #000;
-}
-
-.power_info_text_tag {
-  margin-left: 20rpx;
-  background-color: #fbe0e0;
-  color: #e54545;
-  padding: 0 7px;
-  font-size: 14px;
-  vertical-align: middle;
-  border-radius: 3px;
-}
-
-.power_info_text_tip {
-  color: rgba(0, 0, 0, 0.6);
-  font-size: 28rpx;
-  padding-right: 30rpx;
-}
-
-.power_item {
-  padding: 30rpx 25rpx;
-  display: flex;
-  justify-content: space-between;
-}
-
-.power_item_title {
-  font-size: 28rpx;
-  color: rgba(0, 0, 0, 0.9);
-}
-
-.power_item_icon {
-  width: 30rpx;
-  height: 30rpx;
-}
-
-.line {
-  width: 95%;
-  margin: 0 auto;
-  height: 2rpx;
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-.environment {
-  color: rgba(0, 0, 0, 0.4);
-  font-size: 24rpx;
-  margin-top: 25%;
-}
+.elder-banner__text { flex: 1; }

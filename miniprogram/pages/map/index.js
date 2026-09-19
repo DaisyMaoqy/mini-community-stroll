@@ -1,0 +1,142 @@
+// pages/map/index.js 遛娃地图（M3：接 local_spots 真实 POI + 标记 + 详情）
+const app = getApp();
+const { callCloud } = require('../../utils/cloud.js');
+
+const CAT = {
+  '接种': { pin: 'vac', color: '#F0A93B', label: '接种' },
+  '遛娃': { pin: 'play', color: '#5F7A66', label: '遛娃' },
+  '便民': { pin: 'civic', color: '#4A8FD0', label: '便民' },
+  '邨巴': { pin: 'bus', color: '#FF9E6D', label: '邨巴' },
+};
+const CAT_ORDER = ['接种', '遛娃', '便民', '邨巴'];
+
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = (x) => (x * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+Page({
+  data: {
+    center: { lat: 22.963, lng: 113.33 },
+    scale: 15,
+    tabs: [{ key: 'all', label: '全部' }],
+    activeTab: 'all',
+    filtered: [],
+    markers: [],
+    detail: null,
+    userLoc: null,
+  },
+
+  onLoad() {
+    this.loadSpots();
+    this.getLocation();
+  },
+
+  async loadSpots() {
+    try {
+      const res = await callCloud('spots', { action: 'list' });
+      const list = (res && res.list) || [];
+      // 类别 tabs（仅显示真实存在的类别）
+      const present = CAT_ORDER.filter((t) => list.some((s) => s.type === t));
+      const tabs = [{ key: 'all', label: '全部' }].concat(
+        present.map((t) => ({ key: t, label: CAT[t].label }))
+      );
+      // 中心点 = POI 坐标均值
+      const coords = list
+        .filter((s) => s.coord && s.coord.coordinates)
+        .map((s) => s.coord.coordinates);
+      let clat = 22.963, clng = 113.33;
+      if (coords.length) {
+        clng = coords.reduce((a, c) => a + c[0], 0) / coords.length;
+        clat = coords.reduce((a, c) => a + c[1], 0) / coords.length;
+      }
+      // 给每个 POI 加一个 CSS 安全的类型类名（WXSS 不允许中文选择器）
+      const TYPE_CLASS = { '接种': 't-vac', '遛娃': 't-play', '便民': 't-civic', '邨巴': 't-bus' };
+      this.allSpots = list.map((s) => Object.assign({}, s, { typeClass: TYPE_CLASS[s.type] || 't-civic' }));
+      this.setData({ tabs, activeTab: 'all', center: { lat: clat, lng: clng } });
+      this.applyFilter('all');
+    } catch (e) {
+      console.error('加载 POI 失败', e);
+    }
+  },
+
+  getLocation() {
+    const self = this;
+    wx.getLocation({
+      type: 'gcj02',
+      success(res) {
+        self.setData({ userLoc: { lat: res.latitude, lng: res.longitude } });
+        self.computeDistances();
+      },
+      fail() {
+        // 用户拒绝授权：不显示距离即可
+      },
+    });
+  },
+
+  computeDistances() {
+    const u = this.data.userLoc;
+    if (!u) return;
+    const list = (this.allSpots || []).map((s) => {
+      const ns = Object.assign({}, s);
+      if (s.coord && s.coord.coordinates) {
+        const d = haversine(u.lat, u.lng, s.coord.coordinates[1], s.coord.coordinates[0]);
+        ns._dist = d;
+        ns._walkMin = Math.max(1, Math.round(d / 70)); // 约 70m/min
+      }
+      return ns;
+    });
+    this.allSpots = list;
+    this.applyFilter(this.data.activeTab);
+  },
+
+  applyFilter(tab) {
+    const list = (this.allSpots || []).filter((s) => tab === 'all' || s.type === tab);
+    const markers = list.map((s, i) => {
+      const cat = CAT[s.type] || { pin: 'civic' };
+      return {
+        id: i,
+        latitude: s.coord.coordinates[1],
+        longitude: s.coord.coordinates[0],
+        iconPath: '/assets/pins/pin-' + cat.pin + '.png',
+        width: 30,
+        height: 38,
+        anchor: { x: 0.5, y: 1 },
+      };
+    });
+    this._idx = list; // marker.id 与 list 下标对应
+    this.setData({ filtered: list, markers, activeTab: tab });
+  },
+
+  onTab(e) {
+    this.applyFilter(e.currentTarget.dataset.tab);
+  },
+
+  onMarkerTap(e) {
+    const s = (this._idx || [])[e.detail.markerId];
+    if (s) this.openDetail(s);
+  },
+
+  onCardTap(e) {
+    const s = (this.data.filtered || [])[e.currentTarget.dataset.idx];
+    if (s) this.openDetail(s);
+  },
+
+  openDetail(s) {
+    this.setData({ detail: s });
+  },
+  closeDetail() {
+    this.setData({ detail: null });
+  },
+  noop() {},
+  reportFix() {
+    wx.showToast({ title: '已提交纠错，感谢反馈', icon: 'none' });
+    this.closeDetail();
+  },
+});

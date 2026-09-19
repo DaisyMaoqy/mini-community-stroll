@@ -1,0 +1,23 @@
+<!-- pages/mine/index.wxml 我的（M0 骨架，M5 填充） -->
+<view class="container">
+  <view class="mine-head card">
+    <view class="mine-head__avatar"><svg-icon name="user" size="32"></svg-icon></view>
+    <view>
+      <view class="sec">{{babyName}}</view>
+      <view class="muted">宝宝档案 · 设置提醒</view>
+    </view>
+  </view>
+
+  <view class="list">
+    <view class="list__item card" bindtap="goElder">
+      <svg-icon name="heart" size="20"></svg-icon>
+      <text class="list__label">关怀大字版</text>
+      <svg-icon name="chev" size="16"></svg-icon>
+    </view>
+    <view class="list__item card" bindtap="goSetting">
+      <svg-icon name="gear" size="20"></svg-icon>
+      <text class="list__label">设置</text>
+      <svg-icon name="chev" size="16"></svg-icon>
+    </view>
+  </view>
+</view>

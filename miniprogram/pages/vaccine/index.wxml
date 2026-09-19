@@ -1,0 +1,6 @@
+<!-- pages/vaccine/index.wxml 接种提醒（M0 骨架，M4 填充） -->
+<view class="container">
+  <view class="sec">接种提醒</view>
+  <view class="muted">宝宝疫苗日程与到期提醒</view>
+  <view class="card placeholder">接种记录占位（M4 接入 spots / 数据库）</view>
+</view>

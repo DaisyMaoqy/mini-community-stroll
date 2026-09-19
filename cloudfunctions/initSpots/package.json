@@ -1,0 +1,10 @@
+{
+  "name": "initSpots",
+  "version": "1.0.0",
+  "description": "从 seed 初始化 local_spots 集合（幂等 upsert，13 POI）",
+  "main": "index.js",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.4.0"
+  }
+}

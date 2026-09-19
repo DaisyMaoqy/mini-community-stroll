@@ -1,0 +1,19 @@
+/* pages/elder/index.wxss 大字关怀版（M0 骨架） */
+.elder-hero { padding: 20px 16px 8px; }
+.elder-hero__hi { font-size: var(--fs-xl); font-weight: 700; color: var(--ink); }
+.elder-hero__sub { margin-top: 6px; color: var(--ink2); }
+
+.elder-nav { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.elder-nav__btn {
+  padding: 18px;
+  text-align: center;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: #fff;
+  border-radius: 16px;
+}
+.elder-nav__btn--back {
+  background: var(--card);
+  color: var(--ink2);
+  border: 1px solid var(--line);
+}
