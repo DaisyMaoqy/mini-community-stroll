@@ -64,7 +64,6 @@
     </view>
   </view>
 
-  <!-- 加载失败：明确错误态 + 重试（区别于空数据） -->
   <view class="poi-list" wx:elif="{{loadError}}">
     <view class="card map-error">
       <view class="map-error__ic"><svg-icon name="warn" size="26"></svg-icon></view>

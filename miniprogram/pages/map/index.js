@@ -21,6 +21,24 @@ function haversine(lat1, lng1, lat2, lng2) {
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
+// 调试用加载模拟（仅开发版/体验版生效，正式版恒返回 0，不影响线上）。
+// 微信开发者工具的网络面板只会节流 WebView 请求，不会节流 wx.cloud.callFunction（走云 SDK 独立通道），
+// 所以「Slow 3G」看不到骨架屏。要查看骨架/失败态，请在调试器 Console 执行：
+//   wx.setStorageSync('__debugMapLoad', 1)   // 1=模拟慢网（延迟 3s 再返回）
+//   wx.setStorageSync('__debugMapLoad', 2)   // 2=模拟断网（强制失败，显示失败卡）
+//   wx.removeStorageSync('__debugMapLoad')   // 恢复正常
+// 然后切走再切回地图页（或点刷新）即可看到对应状态。
+function debugLoadMode() {
+  try {
+    const info = wx.getAccountInfoSync ? wx.getAccountInfoSync() : null;
+    const env = (info && info.miniProgram && info.miniProgram.envVersion) || 'develop';
+    if (env === 'release') return 0;
+    return Number(wx.getStorageSync('__debugMapLoad')) || 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
 Page({
   data: {
     center: { lat: 22.963, lng: 113.33 },
@@ -47,7 +65,10 @@ Page({
   },
 
   async loadSpots() {
+    const dbg = debugLoadMode();
     try {
+      if (dbg === 1) await new Promise((r) => setTimeout(r, 3000));
+      if (dbg === 2) throw new Error('debug: 模拟断网');
       const res = await callCloud('spots', { action: 'list' });
       const list = (res && res.list) || [];
       // 类别 tabs（仅显示真实存在的类别）
