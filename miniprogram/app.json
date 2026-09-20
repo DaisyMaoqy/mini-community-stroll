@@ -7,15 +7,15 @@
     "pages/elder/index"
   ],
   "window": {
-    "backgroundColor": "#FAF8F5",
+    "backgroundColor": "#EDEBE3",
     "backgroundTextStyle": "dark",
-    "navigationBarBackgroundColor": "#FAF8F5",
+    "navigationBarBackgroundColor": "#EDEBE3",
     "navigationBarTitleText": "祈福遛一遛",
     "navigationBarTextStyle": "black"
   },
   "tabBar": {
     "color": "#93A29A",
-    "selectedColor": "#5F7A66",
+    "selectedColor": "#2FB67C",
     "backgroundColor": "#FFFFFF",
     "borderStyle": "black",
     "list": [

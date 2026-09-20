@@ -1,10 +1,40 @@
-<!-- pages/mine/index.wxml 我的（M0 骨架，M5 填充） -->
-<view class="container">
+<!-- pages/mine/index.wxml 我的（M5-lite：宝宝资料 + 成长主题） -->
+<view class="container mine-page" data-theme="{{theme}}">
   <view class="mine-head card">
     <view class="mine-head__avatar"><svg-icon name="user" size="32"></svg-icon></view>
     <view>
       <view class="sec">{{babyName}}</view>
-      <view class="muted">宝宝档案 · 设置提醒</view>
+      <view class="muted">{{monthAgeText}}</view>
+    </view>
+  </view>
+
+  <!-- 宝宝资料 -->
+  <view class="card profile-card">
+    <view class="sec">宝宝资料</view>
+    <view class="field">
+      <text class="field__label">昵称</text>
+      <input class="field__input" placeholder="如：豆豆" value="{{profileName}}" bindinput="onNameInput" />
+    </view>
+    <view class="field">
+      <text class="field__label">出生日期</text>
+      <picker mode="date" value="{{birth}}" end="{{today}}" bindchange="onBirthChange">
+        <view class="field__picker">{{birth || '请选择出生日期'}}</view>
+      </picker>
+    </view>
+    <view class="field field--row">
+      <text class="field__hint muted">当前月龄：{{monthAge == null ? '未设置' : monthAge + ' 月龄'}} · 主题随月龄自动切换</text>
+    </view>
+    <button class="btn-primary profile-save" bindtap="saveProfile">保存资料</button>
+  </view>
+
+  <!-- 成长主题 -->
+  <view class="card theme-card">
+    <view class="sec">成长主题</view>
+    <view class="muted theme-tip">随宝宝月龄自动切换：≥18 月龄活力户外（墨绿），&lt;18 月龄低刺激休养（柔和）。</view>
+    <view class="seg">
+      <view class="seg__item {{themeMode === 'auto' ? 'on' : ''}}" data-mode="auto" bindtap="onThemeTap">自动</view>
+      <view class="seg__item {{themeMode === 'infant' ? 'on' : ''}}" data-mode="infant" bindtap="onThemeTap">婴儿期</view>
+      <view class="seg__item {{themeMode === 'toddler' ? 'on' : ''}}" data-mode="toddler" bindtap="onThemeTap">幼儿期</view>
     </view>
   </view>
 

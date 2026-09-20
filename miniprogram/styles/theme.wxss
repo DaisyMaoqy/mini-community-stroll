@@ -9,6 +9,7 @@
   --green-m: #488C64;
   --green-l: #E6F2EA;
   --green-l2: #EFF7F1;
+  --green-line: #CDE7D8; /* 浅绿描边（关怀版） */
   --ink: #14301F;
   --ink2: #3F5A4B;
 
@@ -41,4 +42,18 @@
   font-size: var(--fs-body);
   color: var(--ink);
   box-sizing: border-box;
+}
+
+/* 月龄主题 —— 婴儿期（<18 月龄·低刺激休养），配色对齐 v15 婴儿期覆盖（#7FB39E 雾绿 + #E0A98C 暖杏）
+   幼儿期（≥18 月龄·活力户外）即 tokens.wxss 默认亮绿，无需覆盖。
+   主页面根节点加 data-theme="infant" | "toddler" 即可切换（见 app.js resolveTheme）。
+   注：canvas 无法读 CSS 变量，其配色镜像在 utils/theme.js，改动时两处同步。 */
+[data-theme="infant"] {
+  --green: #7FB39E;   /* 主色：雾感鼠尾草绿（低刺激） */
+  --green-d: #567F6B; /* 深绿：数据环 / 大数字 */
+  --green-m: #9CC7B4;
+  --green-l: #E8F1EC;
+  --green-l2: #F2F8F5;
+  --green-line: #D7E8DE; /* 浅绿描边 */
+  --peach: #E0A98C;   /* 暖杏（v15 婴儿期） */
 }

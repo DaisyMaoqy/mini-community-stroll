@@ -1,5 +1,5 @@
 <!-- pages/vaccine/index.wxml 接种页（M4：接种类 POI 卡片 + 预约/导航入口） -->
-<view class="container vac-page">
+<view class="container vac-page" data-theme="{{theme}}">
 
   <!-- Hero -->
   <view class="hero card">
@@ -27,8 +27,28 @@
     >{{item.label}}<text class="tab__c">{{item.count}}</text></view>
   </view>
 
-  <!-- 接种点列表 -->
-  <view class="poi-list" wx:if="{{list.length}}">
+  <!-- 接种点列表：加载中骨架 / 有数据 / 空 -->
+  <view class="poi-list" wx:if="{{loading}}">
+    <view class="card sk-poi" wx:for="{{[0,1,2]}}" wx:key="*this">
+      <view class="sk-poi__head">
+        <view class="sk sk-circle sk-poi__avatar"></view>
+        <view class="sk-poi__title">
+          <view class="sk sk-line w-60" style="height:16px"></view>
+          <view class="sk sk-line w-40"></view>
+        </view>
+      </view>
+      <view class="sk sk-line w-100"></view>
+      <view class="sk-poi__tags">
+        <view class="sk sk-tag"></view>
+        <view class="sk sk-tag"></view>
+      </view>
+      <view class="sk-actions">
+        <view class="sk sk-btn"></view>
+        <view class="sk sk-btn"></view>
+      </view>
+    </view>
+  </view>
+  <view class="poi-list" wx:elif="{{list.length}}">
     <view class="card poi" wx:for="{{list}}" wx:key="id">
       <view class="poi__top">
         <view class="poi__name">{{item.name}}</view>

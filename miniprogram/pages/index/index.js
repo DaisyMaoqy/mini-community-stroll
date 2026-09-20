@@ -1,6 +1,6 @@
 // pages/index/index.js 首页（M2：接 local_spots 真实数据）
 const app = getApp();
-const { callCloud } = require('../../utils/cloud.js');
+const { palette } = require('../../utils/theme.js');
 
 function fmt(sec) {
   sec = sec || 0;
@@ -21,26 +21,27 @@ Page({
     indoorText: '00:00',
     outdoorText: '00:00',
     goalMin: 60,
-    vacCount: 0,
-    playCount: 0,
     slots: [
       { t: '清晨', v: '07:00 – 08:30', n: '凉爽·人少' },
       { t: '上午', v: '09:00 – 11:00', n: '最佳·自然光足', best: true },
       { t: '傍晚', v: '17:00 – 18:30', n: '避高温·落日' },
     ],
+    ready: false, // 首屏骨架屏开关：onReady 后置 true，仅首次绘制显示骨架
   },
 
   onLoad() {
     this.refreshGreeting();
-    this.loadData();
     this.syncOutdoor();
   },
 
   onReady() {
     this.drawRing();
+    // 首屏布局/Canvas 就位后再切真实内容，首帧显示骨架而非空白
+    this.setData({ ready: true });
   },
 
   onShow() {
+    this.setData({ theme: app.resolveTheme() });
     this.syncOutdoor();
   },
 
@@ -56,19 +57,6 @@ Page({
     const d = new Date();
     const updatedAt = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ' 更新';
     this.setData({ greeting: timeGreet, babyName, updatedAt });
-  },
-
-  // 拉取真实 POI，用于 4 宫格角标（接种/遛娃数量）
-  async loadData() {
-    try {
-      const res = await callCloud('spots', { action: 'list' });
-      const list = (res && res.list) || [];
-      const vacCount = list.filter(s => s.type === '接种').length;
-      const playCount = list.filter(s => s.type === '遛娃').length;
-      this.setData({ vacCount, playCount });
-    } catch (e) {
-      console.error('加载 POI 失败', e);
-    }
   },
 
   // 同步全局户外计时 + 刷新环进度（indoor/outdoor 以秒计）
@@ -131,27 +119,25 @@ Page({
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       ctx.scale(dpr, dpr);
+      const pal = palette(this.data.theme);
       const cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - 7;
       ctx.clearRect(0, 0, w, h);
       // 底环
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.strokeStyle = '#F1F7F3'; // --green-l2
+      ctx.strokeStyle = pal.greenL2; // --green-l2（随主题）
       ctx.lineWidth = 7;
       ctx.stroke();
       // 进度环
       const pct = this.data.indexPercent / 100;
       ctx.beginPath();
       ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pct);
-      ctx.strokeStyle = '#2C6848'; // --green-d
+      ctx.strokeStyle = pal.greenD; // --green-d（随主题）
       ctx.lineWidth = 7;
       ctx.lineCap = 'round';
       ctx.stroke();
     });
   },
 
-  goVaccine() { wx.switchTab({ url: '/pages/vaccine/index' }); },
-  goMap() { wx.switchTab({ url: '/pages/map/index' }); },
-  goMine() { wx.switchTab({ url: '/pages/mine/index' }); },
   goElder() { wx.navigateTo({ url: '/pages/elder/index' }); },
 });

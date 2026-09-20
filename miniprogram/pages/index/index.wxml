@@ -1,108 +1,135 @@
 <!-- pages/index/index.wxml 首页（M2：接 local_spots 真实数据） -->
-<view class="container home">
-  <!-- 顶部问候 -->
-  <view class="home-hero">
-    <view class="home-hero__hi">{{greeting}}{{babyName ? '，' + babyName + '妈妈' : ''}}</view>
-    <view class="home-hero__sub muted">今天带娃去哪儿遛一遛？</view>
-  </view>
-
-  <!-- 遛娃指数环 -->
-  <view class="card index-card">
-    <view class="row between">
-      <view class="sec">今日遛娃指数</view>
-      <view class="muted">{{updatedAt}}</view>
+<view class="container home" data-theme="{{theme}}">
+  <block wx:if="{{ready}}">
+    <!-- 顶部问候 -->
+    <view class="home-hero">
+      <view class="home-hero__hi">{{greeting}}{{babyName ? '，' + babyName + '妈妈' : ''}}</view>
+      <view class="home-hero__sub muted">今天带娃去哪儿遛一遛？</view>
     </view>
-    <view class="index-main">
-      <view class="ring-wrap">
-        <canvas type="2d" id="indexRing" class="ring-canvas"></canvas>
-        <view class="ring-center">
-          <view class="ring-num">{{indexPercent}}%</view>
-          <view class="ring-cap muted">户外完成度</view>
-        </view>
+
+    <!-- 遛娃指数环 -->
+    <view class="card index-card">
+      <view class="row between">
+        <view class="sec">今日遛娃指数</view>
+        <view class="muted">{{updatedAt}}</view>
       </view>
-      <view class="index-side">
-        <view class="index-tip">{{indexTip}}</view>
-        <view class="index-metrics">
-          <view class="metric">
-            <text class="metric-num">{{outdoorText}}</text>
-            <text class="metric-cap muted">室外</text>
-          </view>
-          <view class="metric">
-            <text class="metric-num">{{indoorText}}</text>
-            <text class="metric-cap muted">室内</text>
+      <view class="index-main">
+        <view class="ring-wrap">
+          <canvas type="2d" id="indexRing" class="ring-canvas"></canvas>
+          <view class="ring-center">
+            <view class="ring-num">{{indexPercent}}%</view>
+            <view class="ring-cap muted">户外完成度</view>
           </view>
         </view>
-        <view class="muted index-note">目标每日户外 {{goalMin}} 分钟</view>
+        <view class="index-side">
+          <view class="index-tip">{{indexTip}}</view>
+          <view class="index-metrics">
+            <view class="metric">
+              <text class="metric-num">{{outdoorText}}</text>
+              <text class="metric-cap muted">室外</text>
+            </view>
+            <view class="metric">
+              <text class="metric-num">{{indoorText}}</text>
+              <text class="metric-cap muted">室内</text>
+            </view>
+          </view>
+          <view class="muted index-note">目标每日户外 {{goalMin}} 分钟</view>
+        </view>
       </view>
     </view>
-  </view>
 
-  <!-- 户外陪伴计时 -->
-  <view class="card outdoor">
-    <view class="sec">户外陪伴计时</view>
-    <view class="outdoor__row">
-      <view class="outdoor__cell {{timerMode === 'indoor' ? 'on' : ''}}">
-        <text class="outdoor__num">{{indoorText}}</text>
-        <text class="outdoor__lbl muted">室内</text>
+    <!-- 户外陪伴计时 -->
+    <view class="card outdoor">
+      <view class="sec">户外陪伴计时</view>
+      <view class="outdoor__row">
+        <view class="outdoor__cell {{timerMode === 'indoor' ? 'on' : ''}}">
+          <text class="outdoor__num">{{indoorText}}</text>
+          <text class="outdoor__lbl muted">室内</text>
+        </view>
+        <view class="outdoor__cell {{timerMode === 'outdoor' ? 'on' : ''}}">
+          <text class="outdoor__num">{{outdoorText}}</text>
+          <text class="outdoor__lbl muted">室外</text>
+        </view>
       </view>
-      <view class="outdoor__cell {{timerMode === 'outdoor' ? 'on' : ''}}">
-        <text class="outdoor__num">{{outdoorText}}</text>
-        <text class="outdoor__lbl muted">室外</text>
+      <view class="outdoor__actions">
+        <button class="btn-timer {{timerRunning ? 'running' : ''}}" bindtap="toggleTimer">{{timerRunning ? '停止计时' : '开始计时'}}</button>
+        <button class="btn-switch" bindtap="switchMode">切换为{{timerMode === 'outdoor' ? '室内' : '室外'}}</button>
       </view>
+      <view class="muted">当前计时：{{timerMode === 'outdoor' ? '室外' : '室内'}}{{timerRunning ? ' · 计时中' : ''}}</view>
     </view>
-    <view class="outdoor__actions">
-      <button class="btn-timer {{timerRunning ? 'running' : ''}}" bindtap="toggleTimer">{{timerRunning ? '停止计时' : '开始计时'}}</button>
-      <button class="btn-switch" bindtap="switchMode">切换为{{timerMode === 'outdoor' ? '室内' : '室外'}}</button>
-    </view>
-    <view class="muted">当前计时：{{timerMode === 'outdoor' ? '室外' : '室内'}}{{timerRunning ? ' · 计时中' : ''}}</view>
-  </view>
 
-  <!-- 推荐出门时段 -->
-  <view class="card slot">
-    <view class="sec">推荐出门时段</view>
-    <view class="win-list">
-      <view class="win-row {{item.best ? 'best' : ''}}" wx:for="{{slots}}" wx:key="t">
-        <text class="wt">{{item.t}}</text>
-        <text class="wv">{{item.v}}</text>
-        <text class="wn">{{item.n}}</text>
+    <!-- 推荐出门时段 -->
+    <view class="card slot">
+      <view class="sec">推荐出门时段</view>
+      <view class="win-list">
+        <view class="win-row {{item.best ? 'best' : ''}}" wx:for="{{slots}}" wx:key="t">
+          <text class="wt">{{item.t}}</text>
+          <text class="wv">{{item.v}}</text>
+          <text class="wn">{{item.n}}</text>
+        </view>
       </view>
+      <view class="slot__sub muted">按 UV / 高温 / 雨情推算全天窗口 · 上午晒足自然光最护远视储备</view>
     </view>
-    <view class="slot__sub muted">按 UV / 高温 / 雨情推算全天窗口 · 上午晒足自然光最护远视储备</view>
-  </view>
 
-  <!-- 4 宫格快捷入口 -->
-  <view class="grid">
-    <view class="grid__item card" bindtap="goVaccine">
-      <view class="grid__ic">
-        <svg-icon name="vaccine" size="26"></svg-icon>
-        <view wx:if="{{vacCount}}" class="badge">{{vacCount}}</view>
+    <!-- 关怀版横幅 -->
+    <view class="elder-banner card" bindtap="goElder">
+      <svg-icon name="heart" size="22"></svg-icon>
+      <view class="elder-banner__text">
+        <view class="sec">大字关怀版</view>
+        <view class="muted">更大字号 · 更少操作</view>
       </view>
-      <text class="grid__label">接种提醒</text>
+      <svg-icon name="chev" size="18"></svg-icon>
     </view>
-    <view class="grid__item card" bindtap="goMap">
-      <view class="grid__ic">
-        <svg-icon name="map" size="26"></svg-icon>
-        <view wx:if="{{playCount}}" class="badge">{{playCount}}</view>
-      </view>
-      <text class="grid__label">遛娃地图</text>
-    </view>
-    <view class="grid__item card" bindtap="goMine">
-      <view class="grid__ic"><svg-icon name="user" size="26"></svg-icon></view>
-      <text class="grid__label">我的</text>
-    </view>
-    <view class="grid__item card" bindtap="goElder">
-      <view class="grid__ic"><svg-icon name="heart" size="26"></svg-icon></view>
-      <text class="grid__label">关怀版</text>
-    </view>
-  </view>
+  </block>
 
-  <!-- 关怀版横幅 -->
-  <view class="elder-banner card" bindtap="goElder">
-    <svg-icon name="heart" size="22"></svg-icon>
-    <view class="elder-banner__text">
-      <view class="sec">大字关怀版</view>
-      <view class="muted">更大字号 · 更少操作</view>
-    </view>
-    <svg-icon name="chev" size="18"></svg-icon>
-  </view>
+  <!-- 首屏骨架：仅 onReady 前（首次绘制）显示，盖住 Canvas/组件就位前的空白帧 -->
+  <block wx:else>
+    <template is="homeSkeleton" />
+  </block>
 </view>
+
+<!-- 首页首屏骨架模板（复用全局 .sk 流光类，形状对齐真实五大模块） -->
+<template name="homeSkeleton">
+  <view class="home-hero">
+    <view class="sk sk-line w-50" style="height:22px"></view>
+    <view class="sk sk-line w-80" style="margin-top:10px"></view>
+  </view>
+
+  <view class="card index-card">
+    <view class="sk sk-line w-40" style="height:16px"></view>
+    <view style="display:flex;align-items:center;margin-top:16px">
+      <view class="sk sk-circle" style="width:84px;height:84px;flex:none"></view>
+      <view style="flex:1;display:flex;flex-direction:column;gap:10px;padding-left:16px">
+        <view class="sk sk-line w-90"></view>
+        <view class="sk sk-line w-70"></view>
+        <view class="sk sk-line w-50"></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card outdoor">
+    <view class="sk sk-line w-40" style="height:16px"></view>
+    <view style="display:flex;gap:10px;margin-top:16px">
+      <view class="sk sk-block" style="flex:1;height:64px"></view>
+      <view class="sk sk-block" style="flex:1;height:64px"></view>
+    </view>
+  </view>
+
+  <view class="card slot">
+    <view class="sk sk-line w-40" style="height:16px"></view>
+    <view style="display:flex;flex-direction:column;gap:14px;margin-top:16px">
+      <view class="sk sk-line w-100"></view>
+      <view class="sk sk-line w-100"></view>
+      <view class="sk sk-line w-100"></view>
+    </view>
+  </view>
+
+  <view class="card" style="display:flex;align-items:center;gap:12px">
+    <view class="sk sk-circle" style="width:22px;height:22px;flex:none"></view>
+    <view style="flex:1;display:flex;flex-direction:column;gap:8px">
+      <view class="sk sk-line w-40" style="height:14px"></view>
+      <view class="sk sk-line w-60"></view>
+    </view>
+    <view class="sk sk-circle" style="width:18px;height:18px;flex:none"></view>
+  </view>
+</template>

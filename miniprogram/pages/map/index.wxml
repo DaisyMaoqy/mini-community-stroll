@@ -1,11 +1,19 @@
 <!-- pages/map/index.wxml 遛娃地图（M3：接真实 POI + 标记 + 详情） -->
-<view class="container map-page">
-  <view class="sec">遛娃地图</view>
-  <view class="muted">附近的接种点、公园、母婴室</view>
+<view class="container map-page" data-theme="{{theme}}">
+  <view class="map-head">
+    <view>
+      <view class="sec">遛娃地图</view>
+      <view class="muted">附近的接种点、公园、母婴室<text wx:if="{{locating}}" class="loc-chip">· 定位中…</text></view>
+    </view>
+    <view class="map-refresh {{loading ? 'is-loading' : ''}}" bindtap="reload" hover-class="map-refresh--hover">
+      <svg-icon name="refresh" size="18"></svg-icon>
+    </view>
+  </view>
 
   <!-- 地图 -->
   <view class="card map-card">
     <map
+      wx:if="{{!loading}}"
       class="map"
       longitude="{{center.lng}}"
       latitude="{{center.lat}}"
@@ -13,11 +21,18 @@
       markers="{{markers}}"
       show-location="{{true}}"
       bindmarkertap="onMarkerTap"
+      bindupdated="onMapUpdated"
     ></map>
+    <view wx:else class="sk sk-map"></view>
+  </view>
+  <!-- 地图瓦片加载提示（原生 map 之上无法叠层，置于卡片下方） -->
+  <view class="map-loading" wx:if="{{!loading && !mapReady}}">
+    <view class="spinner"></view>
+    <text class="muted">地图加载中…</text>
   </view>
 
   <!-- 分类筛选 -->
-  <scroll-view scroll-x class="tabs" enable-flex>
+  <scroll-view wx:if="{{!loading}}" scroll-x class="tabs" enable-flex>
     <view
       wx:for="{{tabs}}"
       wx:key="key"
@@ -27,8 +42,39 @@
     >{{item.label}}</view>
   </scroll-view>
 
-  <!-- POI 列表 -->
-  <view class="poi-list">
+  <!-- POI 列表：加载中骨架 / 加载失败重试 / 有数据 / 空 -->
+  <view class="poi-list" wx:if="{{loading}}">
+    <view class="card sk-poi" wx:for="{{[0,1,2,3]}}" wx:key="*this">
+      <view class="sk-poi__head">
+        <view class="sk sk-circle sk-poi__avatar"></view>
+        <view class="sk-poi__title">
+          <view class="sk sk-line w-60" style="height:16px"></view>
+          <view class="sk sk-line w-40"></view>
+        </view>
+      </view>
+      <view class="sk sk-line w-100"></view>
+      <view class="sk-poi__tags">
+        <view class="sk sk-tag"></view>
+        <view class="sk sk-tag"></view>
+      </view>
+      <view class="sk-actions">
+        <view class="sk sk-btn"></view>
+        <view class="sk sk-btn"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载失败：明确错误态 + 重试（区别于空数据） -->
+  <view class="poi-list" wx:elif="{{loadError}}">
+    <view class="card map-error">
+      <view class="map-error__ic"><svg-icon name="warn" size="26"></svg-icon></view>
+      <view class="sec">地图信息加载失败</view>
+      <view class="muted">网络开小差了，请稍后重试</view>
+      <view class="btn-primary map-error__btn" bindtap="reload">重新加载</view>
+    </view>
+  </view>
+
+  <view class="poi-list" wx:elif="{{filtered.length}}">
     <view
       wx:for="{{filtered}}"
       wx:key="_id"
@@ -51,8 +97,9 @@
         <text wx:if="{{item.verifyStatus === 'verified'}}" class="tag tag-green">已核实</text>
       </view>
     </view>
-    <view wx:if="{{!filtered.length}}" class="muted empty">该分类暂无数据</view>
   </view>
+
+  <view class="empty" wx:else>该分类暂无数据</view>
 
   <!-- POI 详情 sheet -->
   <view wx:if="{{detail}}" class="sheet-mask" bindtap="closeDetail">

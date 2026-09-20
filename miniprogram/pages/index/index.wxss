@@ -1,5 +1,6 @@
 /* pages/index/index.wxss 首页（M2：接真实数据） */
-.home { padding-bottom: 40px; }
+/* 模块纵向间距对齐 v15 原型 .view{gap:12px}：各卡片统一 12px，原来三张主卡贴在一起(0)、关怀横幅前又突兀 20px */
+.home { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
 .home-hero { padding: 8px 4px 4px; }
 .home-hero__hi { font-size: var(--fs-xl); font-weight: 700; color: var(--ink); }
 .home-hero__sub { margin-top: 4px; }
@@ -13,7 +14,7 @@
 .ring-canvas { width: 84px; height: 84px; display: block; }
 .index-card {
   background: linear-gradient(160deg, var(--green-l), var(--green-l2));
-  border: 1px solid #dcebe2;
+  border: 1px solid var(--green-line);
 }
 .ring-center {
   position: absolute; inset: 0;
@@ -32,7 +33,7 @@
 /* 户外双计时 —— 浅绿渐变卡片 */
 .outdoor {
   background: linear-gradient(135deg, var(--card), var(--green-l2));
-  border: 1px solid #e6efe9;
+  border: 1px solid var(--green-line);
 }
 .outdoor__row { display: flex; gap: var(--gap-md); margin: 10px 0; }
 .outdoor__cell {
@@ -67,27 +68,10 @@
 .win-row.best .wn { background: var(--green); color: #fff; }
 .slot__sub { margin-top: 10px; line-height: 1.5; }
 
-/* 4 宫格 */
-.grid { display: flex; flex-wrap: wrap; gap: var(--gap-md); margin-top: var(--gap-lg); }
-.grid__item {
-  width: calc(50% - var(--gap-md) / 2); box-sizing: border-box;
-  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 0; position: relative;
-}
-.grid__ic {
-  width: 48px; height: 48px; border-radius: 16px;
-  background: var(--green-l); display: flex; align-items: center; justify-content: center;
-  position: relative;
-}
-.grid__label { font-size: var(--fs-sm); color: var(--ink2); }
-.badge {
-  position: absolute; top: -6px; right: -12px; min-width: 18px; height: 18px; padding: 0 4px;
-  border-radius: 999px; background: var(--peach-d); color: #fff; font-size: 11px; line-height: 18px; text-align: center;
-}
-
-/* 关怀版横幅 —— 浅绿 slim pill */
+/* 关怀版横幅 —— 浅绿 slim pill（与上方卡片的间距由 .home 的 gap:12px 统一控制） */
 .elder-banner {
-  display: flex; align-items: center; gap: 12px; margin-top: var(--gap-lg);
-  background: var(--green-l); border: 1px solid #dcebe2;
+  display: flex; align-items: center; gap: 12px;
+  background: var(--green-l); border: 1px solid var(--green-line);
   padding: 12px 16px;
 }
 .elder-banner__text { flex: 1; }

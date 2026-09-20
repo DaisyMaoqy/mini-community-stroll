@@ -1,9 +1,11 @@
 /* pages/elder/index.wxss 大字关怀版（M0 骨架） */
-.elder-hero { padding: 20px 16px 8px; }
+/* 模块纵向间距对齐 v15 .view{gap:12px}：根容器 flex 列 + 统一 12px，原 hero/nav 的纵向 padding 改由 gap 控制 */
+.elder-page { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
+.elder-hero { padding: 20px 16px 0; }
 .elder-hero__hi { font-size: var(--fs-xl); font-weight: 700; color: var(--ink); }
 .elder-hero__sub { margin-top: 6px; color: var(--ink2); }
 
-.elder-nav { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.elder-nav { padding: 0 16px; display: flex; flex-direction: column; gap: 14px; }
 .elder-nav__btn {
   padding: 18px;
   text-align: center;

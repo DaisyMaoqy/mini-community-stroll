@@ -1,3 +1,8 @@
+/* 图标遮罩层：形状来自 mask，颜色由 background-color 决定，随主题 var(--green) 变化。
+   .is-ready 在 mask 计算完成后才上色，避免首帧出现整块绿色。 */
 .svg-icon {
   display: block;
+}
+.svg-icon.is-ready {
+  background-color: var(--green);
 }

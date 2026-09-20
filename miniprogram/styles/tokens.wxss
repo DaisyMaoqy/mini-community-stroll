@@ -1,36 +1,37 @@
-/* 设计 Token —— 全局变量（对齐 Pixso 设计稿 2026-09-18 取样）
+/* 设计 Token —— 全局变量（对齐 UI原型_v15 亮绿视觉体系 2026-09-18）
    通过 app.wxss 的 @import 引入，定义到 page 选择器上，全局页面可用 var(--xxx) 引用。
-   取样来源：设计稿 5 页 PNG 像素聚类 + 关键点采样（主绿实测 #5F7A66）。 */
+   取样来源：v15 原型 --green:#2FB67C 亮绿 + 暖砂底 #EDEBE3 + 22px 圆角 + 柔和投影。 */
 page {
-  /* 品牌绿 —— 设计稿为墨绿灰系（非亮翠绿） */
-  --green: #5F7A66;      /* 主色：按钮 / 选中 / 强调（实测） */
-  --green-d: #2C6848;    /* 强调深绿：数据环 / 大数字 */
-  --green-m: #7C9080;    /* 次绿：图标 / 次要元素 */
-  --green-l: #EBF3ED;    /* 浅绿卡片底 */
-  --green-l2: #F1F7F3;   /* 更浅绿 */
+  /* 品牌绿 —— v15 亮绿系 */
+  --green: #2FB67C;      /* 主色：按钮 / 选中 / 强调 */
+  --green-d: #1F8F60;    /* 强调深绿：数据环 / 大数字 */
+  --green-m: #5CC79A;    /* 次绿：图标 / 次要元素 */
+  --green-l: #E7F6EF;    /* 浅绿卡片底 */
+  --green-l2: #F1FAF5;   /* 更浅绿 */
+  --green-line: #D3EFE1; /* 浅绿描边：绿色卡片 1px 边框（随主题） */
   --peach: #FF9E6D;
   --peach-d: #F2824E;
   --peach-l: #FFF0E7;
 
   /* 文字墨色 */
-  --ink: #23332B;
+  --ink: #26352E;
   --ink2: #5E6F66;
-  --ink3: #93A29A;
+  --ink3: #9AA89F;
 
   /* 背景 / 卡片 / 分隔 */
-  --page: #FAF8F5;       /* 页面底色：暖白（实测，替代原米黄 #EDEBE3） */
-  --phone: #FFFFFF;
+  --page: #EDEBE3;       /* 页面底色：暖砂（v15） */
+  --phone: #FAFAF7;
   --card: #FFFFFF;
-  --sand: #F4F4F0;
-  --line: #ECEFEA;
+  --sand: #F4F2EC;
+  --line: #ECEAE2;
 
-  /* 图标 / 灰图标 */
-  --icon: #5F7A66;
+  /* 图标 / 灰图标（图标实际由 svg-icon 组件取 var(--green)，此处仅备用） */
+  --icon: #2FB67C;
   --icon-gray: #ADADAD;
 
   /* 辅助色 */
   --blue: #4A8FD0;
-  --blue-l: #E7EFF4;     /* 信息条浅蓝（实测） */
+  --blue-l: #E7EFF4;     /* 信息条浅蓝 */
   --amber: #F0A93B;
   --amber-l: #FDF4E3;
   --red: #E26D5C;
@@ -53,12 +54,12 @@ page {
   --fs-xs: 11px;
   --fs-meta: 10.5px;
 
-  /* 圆角（对齐设计稿：卡片约 18px、大卡 24px、胶囊 12px） */
-  --r: 18px;
-  --r-lg: 24px;
-  --r-sm: 12px;
+  /* 圆角（v15：卡片 22px、大卡 28px、胶囊 14px） */
+  --r: 22px;
+  --r-lg: 28px;
+  --r-sm: 14px;
 
-  /* 阴影 */
+  /* 阴影（v15 柔和投影） */
   --shadow: 0 12px 30px rgba(38, 53, 46, 0.10);
   --shadow-sm: 0 4px 12px rgba(38, 53, 46, 0.06);
 }

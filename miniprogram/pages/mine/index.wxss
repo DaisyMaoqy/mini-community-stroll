@@ -1,5 +1,7 @@
-/* pages/mine/index.wxss 我的（M0 骨架） */
-.mine-head { display: flex; align-items: center; gap: 12px; margin-bottom: var(--gap-lg); }
+/* pages/mine/index.wxss 我的（M5-lite） */
+/* 模块纵向间距对齐 v15 .view{gap:12px}：根容器 flex 列 + 统一 12px，原各卡片 margin-bottom 改由 gap 控制 */
+.mine-page { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
+.mine-head { display: flex; align-items: center; gap: 12px; }
 .mine-head__avatar {
   width: 48px;
   height: 48px;
@@ -12,3 +14,27 @@
 .list { display: flex; flex-direction: column; gap: var(--gap-md); }
 .list__item { display: flex; align-items: center; gap: 10px; }
 .list__label { flex: 1; font-size: var(--fs-md); color: var(--ink); }
+
+/* 资料卡 */
+.field { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.field--row { border-bottom: none; padding-bottom: 0; }
+.field__label { width: 72px; font-size: var(--fs-md); color: var(--ink2); flex: none; }
+.field__input { flex: 1; font-size: var(--fs-md); color: var(--ink); }
+.field__picker { flex: 1; font-size: var(--fs-md); color: var(--ink); }
+.field__hint { font-size: var(--fs-sm); line-height: 1.5; }
+.profile-save { margin-top: 14px; width: 100%; }
+
+/* 成长主题分段 */
+.theme-tip { font-size: var(--fs-sm); color: var(--ink2); line-height: 1.5; margin-bottom: 12px; }
+.seg { display: flex; gap: 8px; }
+.seg__item {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-md);
+  color: var(--ink2);
+  background: var(--green-l2);
+  border: 1px solid transparent;
+}
+.seg__item.on { background: var(--green); color: #fff; }

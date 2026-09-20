@@ -47,6 +47,11 @@ Page({
     this.load();
   },
 
+  onShow() {
+    const bp = app.globalData && app.globalData.babyProfile;
+    this.setData({ babyName: (bp && bp.name) || '', theme: app.resolveTheme() });
+  },
+
   async load() {
     try {
       const res = await callCloud('spots', { action: 'list' });

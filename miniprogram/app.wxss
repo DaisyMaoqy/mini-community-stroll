@@ -1,6 +1,7 @@
 /**app.wxss**/
 @import "styles/tokens.wxss";
 @import "styles/theme.wxss";
+@import "styles/skeleton.wxss";
 
 page {
   background: var(--page);
@@ -12,7 +13,7 @@ page {
 }
 
 /* 通用类（对齐 v15 设计 Token） */
-.container { padding: var(--gap-lg); box-sizing: border-box; }
+.container { padding: var(--gap-lg); box-sizing: border-box; background: var(--page); min-height: 100vh; }
 .card {
   background: var(--card);
   border-radius: var(--r);

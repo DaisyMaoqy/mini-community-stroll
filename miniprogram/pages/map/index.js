@@ -4,7 +4,7 @@ const { callCloud } = require('../../utils/cloud.js');
 
 const CAT = {
   '接种': { pin: 'vac', color: '#F0A93B', label: '接种' },
-  '遛娃': { pin: 'play', color: '#5F7A66', label: '遛娃' },
+  '遛娃': { pin: 'play', color: '#2FB67C', label: '遛娃' },
   '便民': { pin: 'civic', color: '#4A8FD0', label: '便民' },
   '邨巴': { pin: 'bus', color: '#FF9E6D', label: '邨巴' },
 };
@@ -31,11 +31,19 @@ Page({
     markers: [],
     detail: null,
     userLoc: null,
+    loading: true,
+    mapReady: false,   // 地图瓦片渲染就绪（bindupdated 置 true，含兜底超时）
+    loadError: false,  // 云函数加载失败标记（区别于空数据）
+    locating: false,   // 定位进行中
   },
 
   onLoad() {
     this.loadSpots();
     this.getLocation();
+  },
+
+  onShow() {
+    this.setData({ theme: app.resolveTheme() });
   },
 
   async loadSpots() {
@@ -59,23 +67,28 @@ Page({
       // 给每个 POI 加一个 CSS 安全的类型类名（WXSS 不允许中文选择器）
       const TYPE_CLASS = { '接种': 't-vac', '遛娃': 't-play', '便民': 't-civic', '邨巴': 't-bus' };
       this.allSpots = list.map((s) => Object.assign({}, s, { typeClass: TYPE_CLASS[s.type] || 't-civic' }));
-      this.setData({ tabs, activeTab: 'all', center: { lat: clat, lng: clng } });
+      this.setData({ tabs, activeTab: 'all', center: { lat: clat, lng: clng }, loading: false, loadError: false, mapReady: false });
       this.applyFilter('all');
+      // 地图瓦片加载兜底：bindupdated 未触发时 1.5s 后结束"地图加载中"
+      setTimeout(() => { if (!this.data.mapReady) this.setData({ mapReady: true }); }, 1500);
     } catch (e) {
       console.error('加载 POI 失败', e);
+      this.setData({ loading: false, loadError: true });
     }
   },
 
   getLocation() {
     const self = this;
+    this.setData({ locating: true });
     wx.getLocation({
       type: 'gcj02',
       success(res) {
-        self.setData({ userLoc: { lat: res.latitude, lng: res.longitude } });
+        self.setData({ userLoc: { lat: res.latitude, lng: res.longitude }, locating: false });
         self.computeDistances();
       },
       fail() {
         // 用户拒绝授权：不显示距离即可
+        self.setData({ locating: false });
       },
     });
   },
@@ -138,5 +151,17 @@ Page({
   reportFix() {
     wx.showToast({ title: '已提交纠错，感谢反馈', icon: 'none' });
     this.closeDetail();
+  },
+
+  // 地图渲染完成（瓦片就位）后关闭"地图加载中"提示
+  onMapUpdated() {
+    if (!this.data.mapReady) this.setData({ mapReady: true });
+  },
+
+  // 手动重新加载（刷新按钮 / 加载失败重试）
+  reload() {
+    this.setData({ loadError: false, loading: true, locating: true, mapReady: false });
+    this.loadSpots();
+    this.getLocation();
   },
 });

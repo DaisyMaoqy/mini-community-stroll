@@ -1,0 +1,44 @@
+/* styles/skeleton.wxss —— 动态骨架屏（加载中占位 + shimmer 动画）
+   全局可用：页面根 view 内用 wx:if="{{loading}}" 切换真实内容 / 骨架。
+   骨架用中性灰，任意 data-theme（toddler/infant/elder）下都协调；动画纯 CSS，无额外 JS。 */
+.sk {
+  position: relative;
+  overflow: hidden;
+  background: #e6e8ea;
+  border-radius: var(--r-sm);
+}
+.sk::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.7) 50%, rgba(255,255,255,0) 100%);
+  animation: sk-shimmer 1.25s ease-in-out infinite;
+}
+@keyframes sk-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* 形状 */
+.sk-line   { height: 12px; border-radius: 6px; }
+.sk-block  { border-radius: var(--r); }
+.sk-circle { border-radius: 50%; }
+
+/* 宽度工具 */
+.w-30 { width: 30%; } .w-40 { width: 40%; } .w-50 { width: 50%; }
+.w-60 { width: 60%; } .w-70 { width: 70%; } .w-80 { width: 80%; }
+.w-90 { width: 90%; } .w-100 { width: 100%; }
+
+/* 地图区域骨架（替代 <map> 占位） */
+.sk-map { width: 100%; height: 300px; border-radius: var(--r); }
+
+/* POI 骨架卡（地图页 / 接种页复用，外层包 .card 即获卡片样式） */
+.sk-poi { display: flex; flex-direction: column; gap: 12px; }
+.sk-poi__head { display: flex; align-items: center; gap: 10px; }
+.sk-poi__avatar { width: 40px; height: 40px; flex: none; }
+.sk-poi__title { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.sk-poi__tags { display: flex; gap: 8px; }
+.sk-tag { width: 54px; height: 20px; border-radius: 999px; }
+.sk-actions { display: flex; gap: 10px; margin-top: 2px; }
+.sk-btn { flex: 1; height: 38px; border-radius: var(--r-sm); }

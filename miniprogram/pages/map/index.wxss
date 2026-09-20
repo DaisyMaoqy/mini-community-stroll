@@ -1,10 +1,11 @@
 /* pages/map/index.wxss 遛娃地图（M3） */
-.map-page { padding-bottom: 40px; }
+/* 模块纵向间距对齐 v15 .view{gap:12px}：根容器 flex 列 + 统一 12px，原 .tabs 的 20/10px 外边距改由 gap 控制 */
+.map-page { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
 .map-card { padding: 0; overflow: hidden; }
 .map { width: 100%; height: 300px; display: block; }
 
 /* 分类筛选 */
-.tabs { white-space: nowrap; margin: var(--gap-lg) 0 10px; }
+.tabs { white-space: nowrap; margin: 0; }
 .tab {
   display: inline-block; padding: 6px 16px; margin-right: 8px;
   background: var(--green-l); color: var(--green-d);
@@ -70,3 +71,31 @@
   border-radius: var(--r-sm); font-size: var(--fs-md); padding: 10px 0; line-height: 1.2;
 }
 .btn-close::after { border: none; }
+
+/* 头部：标题 + 刷新按钮（加载时旋转） */
+.map-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.map-refresh {
+  flex: 0 0 auto; width: 36px; height: 36px; margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: var(--green-l); color: var(--green-d);
+}
+.map-refresh--hover { opacity: .7; }
+.map-refresh.is-loading { animation: spin 1s linear infinite; }
+
+/* 地图瓦片加载提示（位于地图卡片下方，原生 map 无法叠层） */
+.map-loading { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 0; }
+.spinner {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--green-l); border-top-color: var(--green);
+  box-sizing: border-box; animation: spin .8s linear infinite;
+}
+
+/* 定位中 chip */
+.loc-chip { color: var(--green-d); margin-left: 4px; }
+
+/* 加载失败重试卡 */
+.map-error { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 28px 18px; }
+.map-error__ic { color: var(--amber); }
+.map-error__btn { margin-top: 8px; width: 60%; }
+
+@keyframes spin { to { transform: rotate(360deg); } }

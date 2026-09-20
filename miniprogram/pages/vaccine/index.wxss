@@ -1,5 +1,6 @@
 /* pages/vaccine/index.wxss 接种页（M4） */
-.vac-page { padding-bottom: 40px; }
+/* 模块纵向间距对齐 v15 .view{gap:12px}：根容器 flex 列 + 统一 12px，原 .tip/.tabs 的外边距改由 gap 控制 */
+.vac-page { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
 
 /* Hero */
 .hero { display: flex; align-items: center; gap: 12px; background: var(--green-l); border-color: transparent; }
@@ -14,13 +15,13 @@
 /* 提示条 */
 .tip {
   display: flex; align-items: flex-start; gap: 6px;
-  margin: 12px 0 4px; padding: 10px 12px;
+  margin: 0; padding: 10px 12px;
   background: var(--blue-l); border-radius: var(--r-sm);
 }
 .tip__txt { flex: 1; font-size: var(--fs-sm); color: var(--ink2); line-height: 1.5; }
 
 /* 筛选 tabs */
-.tabs { white-space: nowrap; margin: 14px 0 10px; }
+.tabs { white-space: nowrap; margin: 0; }
 .tab {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 6px 14px; margin-right: 8px; box-sizing: border-box;

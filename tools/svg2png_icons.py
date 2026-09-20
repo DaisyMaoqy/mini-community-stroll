@@ -5,9 +5,17 @@ faithfully reproducing stroke geometry. Uses only PIL (no SVG rasterizer).
 Fixes the previous tokenizer bug: a '-'/'+' starts a NEW number only when it
 begins a number (buffer empty) or follows an exponent 'e'/'E'; when preceded
 by a digit it ends the current number (e.g. "6-2" -> 6, -2 ; "v-5" -> v, -5).
+
+Sizing fix (2026-09-20): instead of parking the artwork in a small centered
+"drawable" region (which left ~35% transparent padding and made the tab icon
+look tiny once WeChat scales the whole 81px canvas into its fixed box), we now
+measure each icon's true ink bounding box and fit it to FILL (0.84) of the
+canvas. This makes the visible icon ~40% larger and matches the v15 prototype's
+"icon fills its box" ratio, while preserving the original stroke:artwork
+proportion (1.83 / 24).
 """
 import re
-import sys
+import os
 import math
 from PIL import Image, ImageDraw
 
@@ -18,19 +26,15 @@ OUT_DIR = "/tmp/tabgen"
 FINAL = 81
 SS = 5                      # supersample factor for anti-aliasing
 BIG = FINAL * SS            # 405
-MARGIN = 14 * SS            # keep strokes off the edge
-DRAWABLE = BIG - 2 * MARGIN
-S = DRAWABLE / 24.0         # svg 0..24 -> px
-OFF = MARGIN
+FILL = 0.84                 # artwork (incl. stroke) fills this fraction of canvas
 
-GRAY = (147, 162, 154, 255)   # #93A29A
-GREEN = (95, 122, 102, 255)   # #5F7A66
+GRAY = (147, 162, 154, 255)   # #93A29A  (tabBar unselected, matches app.json color)
+GREEN = (47, 182, 124, 255)   # #2FB67C  (tabBar selected, matches app.json selectedColor)
 STROKE_SVG = 1.83
-W = STROKE_SVG * S            # stroke width in big px
 
 
 def T(p):
-    return (p[0] * S + OFF, p[1] * S + OFF)
+    return (p[0], p[1])
 
 
 def parse_path(d):
@@ -187,62 +191,113 @@ def cubic(p0, c1, c2, p1, N=28):
 
 
 def draw_round_line(draw, p0, p1, w, color):
-    draw.line([p0, p1], fill=color, width=int(w))
+    draw.line([p0, p1], fill=color, width=int(round(w)))
     r = w / 2
     for p in (p0, p1):
         draw.ellipse([p[0] - r, p[1] - r, p[0] + r, p[1] + r], fill=color)
 
 
 def draw_round_poly(draw, pts, w, color):
-    draw.line(pts, fill=color, width=int(w), joint='curve')
+    draw.line(pts, fill=color, width=int(round(w)), joint='curve')
     r = w / 2
     for p in pts:
         draw.ellipse([p[0] - r, p[1] - r, p[0] + r, p[1] + r], fill=color)
 
 
+def compute_bbox(subpaths, circles):
+    minx = miny = 1e9
+    maxx = maxy = -1e9
+
+    def inc(x, y):
+        nonlocal minx, miny, maxx, maxy
+        if x < minx: minx = x
+        if x > maxx: maxx = x
+        if y < miny: miny = y
+        if y > maxy: maxy = y
+
+    for sub in subpaths:
+        for prim in sub:
+            for k in range(1, len(prim) - 1, 2):
+                inc(prim[k], prim[k + 1])
+    for (cx, cy, r) in circles:
+        inc(cx - r, cy - r)
+        inc(cx + r, cy + r)
+    return minx, miny, maxx, maxy
+
+
 def draw_svg(svg_text, color):
-    img = Image.new("RGBA", (BIG, BIG), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
     # circles
+    circles = []
     for m in re.finditer(r'<circle\b[^>]*>', svg_text):
         tag = m.group(0)
         cx = float(re.search(r'cx="([^"]+)"', tag).group(1))
         cy = float(re.search(r'cy="([^"]+)"', tag).group(1))
         r = float(re.search(r'r="([^"]+)"', tag).group(1))
-        x0, y0 = T((cx - r, cy - r))
-        x1, y1 = T((cx + r, cy + r))
-        # closed shape -> no round caps; just a stroked ring
-        d.ellipse([x0, y0, x1, y1], outline=color, width=int(W))
+        circles.append((cx, cy, r))
     # paths
+    subpaths = []
     for m in re.finditer(r'<path\b[^>]*\bd="([^"]+)"', svg_text):
-        d_attr = m.group(1)
-        for sub in to_segments(parse_path(d_attr)):
-            cur = None
-            start = None
-            for prim in sub:
-                if prim[0] == 'M':
-                    cur = (prim[1], prim[2])
-                    if start is None:
-                        start = cur
-                elif prim[0] == 'L':
-                    tgt = (prim[1], prim[2])
-                    draw_round_line(d, T(cur), T(tgt), W, color)
-                    cur = tgt
-                elif prim[0] == 'C':
-                    c1 = (prim[1], prim[2]); c2 = (prim[3], prim[4]); tgt = (prim[5], prim[6])
-                    pts = cubic(cur, c1, c2, tgt)
-                    draw_round_poly(d, [T(p) for p in pts], W, color)
-                    cur = tgt
-                elif prim[0] == 'Z':
-                    if start is not None:
-                        draw_round_line(d, T(cur), T(start), W, color)
-                        cur = start
+        subpaths.extend(to_segments(parse_path(m.group(1))))
+
+    if not subpaths and not circles:
+        return Image.new("RGBA", (FINAL, FINAL), (0, 0, 0, 0))
+
+    # true ink bounding box, expanded by half the stroke so the stroke's outer
+    # edge (not just the centerline) is what we fit to FILL.
+    minx, miny, maxx, maxy = compute_bbox(subpaths, circles)
+    pad = STROKE_SVG / 2.0
+    minx -= pad; miny -= pad; maxx += pad; maxy += pad
+    cw = maxx - minx
+    ch = maxy - miny
+
+    target_big = FINAL * FILL * SS
+    scale_big = target_big / max(cw, ch)
+    ccx = (minx + maxx) / 2.0
+    ccy = (miny + maxy) / 2.0
+    ox = BIG / 2.0 - ccx * scale_big
+    oy = BIG / 2.0 - ccy * scale_big
+
+    def T2(p):
+        return (p[0] * scale_big + ox, p[1] * scale_big + oy)
+
+    W_big = STROKE_SVG * scale_big
+    w = int(round(W_big))
+
+    img = Image.new("RGBA", (BIG, BIG), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+
+    for (cx, cy, r) in circles:
+        x0, y0 = T2((cx - r, cy - r))
+        x1, y1 = T2((cx + r, cy + r))
+        d.ellipse([x0, y0, x1, y1], outline=color, width=w)
+
+    for sub in subpaths:
+        cur = None
+        start = None
+        for prim in sub:
+            if prim[0] == 'M':
+                cur = (prim[1], prim[2])
+                if start is None:
+                    start = cur
+            elif prim[0] == 'L':
+                tgt = (prim[1], prim[2])
+                draw_round_line(d, T2(cur), T2(tgt), W_big, color)
+                cur = tgt
+            elif prim[0] == 'C':
+                c1 = (prim[1], prim[2]); c2 = (prim[3], prim[4]); tgt = (prim[5], prim[6])
+                pts = cubic(cur, c1, c2, tgt)
+                draw_round_poly(d, [T2(p) for p in pts], W_big, color)
+                cur = tgt
+            elif prim[0] == 'Z':
+                if start is not None:
+                    draw_round_line(d, T2(cur), T2(start), W_big, color)
+                    cur = start
+
     final = img.resize((FINAL, FINAL), Image.LANCZOS)
     return final
 
 
 def main():
-    import os
     os.makedirs(OUT_DIR, exist_ok=True)
     icons = {
         "home": "i-home-icon.svg",
