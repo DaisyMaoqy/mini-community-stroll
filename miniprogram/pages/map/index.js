@@ -61,12 +61,13 @@ Page({
   },
 
   onLoad() {
-    this.loadSpots();
     this.getLocation();
   },
 
   onShow() {
     this.setData({ theme: app.resolveTheme() });
+    // 切回地图（tab 切换 / 从详情返回）时重新拉取 POI，保证数据最新
+    this.loadSpots();
   },
 
   async loadSpots() {
