@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate circular-badge map pins (2x: 60x76) for the 4 spot categories.
+"""Generate circular-badge map pins (4x: 120x152) for the 4 spot categories.
 
 Each pin = white outline ring + colored disc + category icon + pointer tail
 whose tip sits at the bottom-center (matches <map> marker anchor x:0.5,y:1).
@@ -11,6 +11,14 @@ CAT palette in pages/map/index.js so the pins stay consistent with the legend.
 The 邨巴 (bus) icon is detailed (body + windows + wheels); at ~14px display it
 collapses into a blob as a hairline outline, so it is rendered as a SOLID white
 silhouette (filled body + wheels) with thin window lines cut in the badge color.
+
+Resolution & anti-aliasing (2026-09-22 fix for the "mosaic"/aliased edges):
+- The <map> marker renders at width:30 height:38 (pages/map/index.js). To stay
+  crisp on 2x/3x/4x screens we emit the PNG at SS=4 -> 120x152.
+- The badge ring/disc/pointer used to be drawn directly with PIL
+  ImageDraw.ellipse/polygon at 60x76 (these are NOT anti-aliased) -> jagged,
+  blocky edges. Now we draw on an AASx supersampled canvas (240x304) and
+  downscale with LANCZOS, so the edges are smooth at any device pixel ratio.
 """
 import os
 import re
@@ -32,20 +40,37 @@ CATS = {
     "bus":   ("i-bus-icon.svg",     (255, 158, 109, 255)),  # #FF9E6D 邨巴
 }
 
-W, H = 60, 76          # 2x of the 30x38 display size
-CX, CY = 30, 25        # disc center
+# 显示尺寸（与 <map> marker width/height 对齐）
+DISPLAY_W, DISPLAY_H = 30, 38
+SS = 4                                  # 最终像素 = 显示 ×4 = 120×152
+AAS = 2                                 # 额外超采样（绘制画布倍数）
+SRC_W, SRC_H = DISPLAY_W * SS * AAS, DISPLAY_H * SS * AAS   # 240 × 304
+OUT_W, OUT_H = DISPLAY_W * SS, DISPLAY_H * SS               # 120 × 152
+
+# 旧逻辑坐标（基于 60×76 尺度）映射到超采样绘制画布的缩放系数
+KX = SRC_W / 60.0
+KY = SRC_H / 76.0
 WHITE = (255, 255, 255, 255)
 
 
+def _pt(ox, oy):
+    return (ox * KX, oy * KY)
+
+
 def make_pin(color):
-    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    img = Image.new("RGBA", (SRC_W, SRC_H), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    # white outline silhouette (circle + pointer); tip reaches y=75
-    d.ellipse([CX - 25, CY - 25, CX + 25, CY + 25], fill=WHITE)
-    d.polygon([(CX - 9, 38), (CX + 9, 38), (CX, 75)], fill=WHITE)
-    # colored fill, inset ~2px so the white shows as a uniform ring
-    d.ellipse([CX - 23, CY - 23, CX + 23, CY + 23], fill=color)
-    d.polygon([(CX - 7, 40), (CX + 7, 40), (CX, 73)], fill=color)
+    cx, cy = _pt(30, 25)
+    # 白色外圈（圆环）+ 彩色内填充（圆盘），按旧坐标等比重映射
+    Rwhite = 25 * KX
+    Rcolor = 23 * KX
+    d.ellipse([cx - Rwhite, cy - Rwhite, cx + Rwhite, cy + Rwhite], fill=WHITE)
+    # 指针尾巴三角（白）
+    d.polygon([_pt(21, 38), _pt(39, 38), _pt(30, 75)], fill=WHITE)
+    # 彩色圆盘（内缩约 2px@旧尺度，留出白环）
+    d.ellipse([cx - Rcolor, cy - Rcolor, cx + Rcolor, cy + Rcolor], fill=color)
+    # 彩色指针（内缩）
+    d.polygon([_pt(23, 40), _pt(37, 40), _pt(30, 73)], fill=color)
     return img
 
 
@@ -146,8 +171,10 @@ def build_icon(svg_name, color):
 
 def paste_icon(pin, svg_name, color):
     icon = build_icon(svg_name, color)
-    icon = icon.resize((32, 32), Image.LANCZOS)
-    tl = (CX - 16, CY - 16)
+    # 旧：icon 缩到 32×32、贴到 (14,9)；按超采样系数等比放大到绘制尺度
+    iw = int(round(32 * KX)); ih = int(round(32 * KY))
+    icon = icon.resize((iw, ih), Image.LANCZOS)
+    tl = (int(round(14 * KX)), int(round(9 * KY)))
     pin.paste(icon, tl, icon)
     return pin
 
@@ -155,12 +182,13 @@ def paste_icon(pin, svg_name, color):
 def main():
     os.makedirs(OUT, exist_ok=True)
     for name, (svg, color) in CATS.items():
-        pin = make_pin(color)
+        pin = make_pin(color)                       # 240×304 超采样画布
         pin = paste_icon(pin, svg, color)
+        pin = pin.resize((OUT_W, OUT_H), Image.LANCZOS)  # 平滑缩到 120×152
         path = os.path.join(OUT, f"pin-{name}.png")
         pin.save(path, "PNG")
-        c = pin.getpixel((CX, CY))
-        print(f"wrote {path}  center={c}")
+        c = pin.getpixel((OUT_W // 2, int(OUT_H * (25.0 / 76.0))))
+        print(f"wrote {path}  size={pin.size}  center={c}")
 
 
 if __name__ == "__main__":

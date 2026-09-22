@@ -1,104 +1,110 @@
 <!-- pages/map/index.wxml 遛娃地图（M3：接真实 POI + 标记 + 详情） -->
 <view class="container map-page" data-theme="{{theme}}">
-  <view class="map-head">
-    <view>
-      <view class="sec">遛娃地图</view>
-      <view class="muted">附近的接种点、公园、母婴室<text wx:if="{{locating}}" class="loc-chip">· 定位中…</text></view>
+  <!-- 固定区：标题 / 地图 / 分类筛选（不随下方列表滚动） -->
+  <view class="map-fixed">
+    <view class="map-head">
+      <view>
+        <view class="sec">遛娃地图</view>
+        <view class="muted">附近的接种点、公园、母婴室<text wx:if="{{locating}}" class="loc-chip">· 定位中…</text></view>
+      </view>
+      <view class="map-refresh {{loading ? 'is-loading' : ''}}" bindtap="reload" hover-class="map-refresh--hover">
+        <svg-icon name="refresh" size="18"></svg-icon>
+      </view>
     </view>
-    <view class="map-refresh {{loading ? 'is-loading' : ''}}" bindtap="reload" hover-class="map-refresh--hover">
-      <svg-icon name="refresh" size="18"></svg-icon>
+
+    <!-- 地图 -->
+    <view class="card map-card">
+      <map
+        wx:if="{{!loading}}"
+        class="map"
+        longitude="{{center.lng}}"
+        latitude="{{center.lat}}"
+        scale="{{scale}}"
+        markers="{{markers}}"
+        show-location="{{true}}"
+        bindmarkertap="onMarkerTap"
+        bindupdated="onMapUpdated"
+      ></map>
+      <view wx:else class="sk sk-map"></view>
     </view>
+    <!-- 地图瓦片加载提示（原生 map 之上无法叠层，置于卡片下方） -->
+    <view class="map-loading" wx:if="{{!loading && !mapReady}}">
+      <view class="spinner"></view>
+      <text class="muted">地图加载中…</text>
+    </view>
+
+    <!-- 分类筛选 -->
+    <scroll-view wx:if="{{!loading}}" scroll-x class="tabs" enable-flex>
+      <view
+        wx:for="{{tabs}}"
+        wx:key="key"
+        class="tab {{activeTab === item.key ? 'on' : ''}}"
+        data-tab="{{item.key}}"
+        bindtap="onTab"
+      >{{item.label}}</view>
+    </scroll-view>
   </view>
 
-  <!-- 地图 -->
-  <view class="card map-card">
-    <map
-      wx:if="{{!loading}}"
-      class="map"
-      longitude="{{center.lng}}"
-      latitude="{{center.lat}}"
-      scale="{{scale}}"
-      markers="{{markers}}"
-      show-location="{{true}}"
-      bindmarkertap="onMarkerTap"
-      bindupdated="onMapUpdated"
-    ></map>
-    <view wx:else class="sk sk-map"></view>
-  </view>
-  <!-- 地图瓦片加载提示（原生 map 之上无法叠层，置于卡片下方） -->
-  <view class="map-loading" wx:if="{{!loading && !mapReady}}">
-    <view class="spinner"></view>
-    <text class="muted">地图加载中…</text>
-  </view>
-
-  <!-- 分类筛选 -->
-  <scroll-view wx:if="{{!loading}}" scroll-x class="tabs" enable-flex>
-    <view
-      wx:for="{{tabs}}"
-      wx:key="key"
-      class="tab {{activeTab === item.key ? 'on' : ''}}"
-      data-tab="{{item.key}}"
-      bindtap="onTab"
-    >{{item.label}}</view>
-  </scroll-view>
-
-  <!-- POI 列表：加载中骨架 / 加载失败重试 / 有数据 / 空 -->
-  <view class="poi-list" wx:if="{{loading}}">
-    <view class="card sk-poi" wx:for="{{[0,1,2,3]}}" wx:key="*this">
-      <view class="sk-poi__head">
-        <view class="sk sk-circle sk-poi__avatar"></view>
-        <view class="sk-poi__title">
-          <view class="sk sk-line w-60" style="height:16px"></view>
-          <view class="sk sk-line w-40"></view>
+  <!-- 滚动区：仅 POI 列表滚动 -->
+  <scroll-view class="map-scroll" scroll-y>
+    <!-- POI 列表：加载中骨架 / 加载失败重试 / 有数据 / 空 -->
+    <view class="poi-list" wx:if="{{loading}}">
+      <view class="card sk-poi" wx:for="{{[0,1,2,3]}}" wx:key="*this">
+        <view class="sk-poi__head">
+          <view class="sk sk-circle sk-poi__avatar"></view>
+          <view class="sk-poi__title">
+            <view class="sk sk-line w-60" style="height:16px"></view>
+            <view class="sk sk-line w-40"></view>
+          </view>
+        </view>
+        <view class="sk sk-line w-100"></view>
+        <view class="sk-poi__tags">
+          <view class="sk sk-tag"></view>
+          <view class="sk sk-tag"></view>
+        </view>
+        <view class="sk-actions">
+          <view class="sk sk-btn"></view>
+          <view class="sk sk-btn"></view>
         </view>
       </view>
-      <view class="sk sk-line w-100"></view>
-      <view class="sk-poi__tags">
-        <view class="sk sk-tag"></view>
-        <view class="sk sk-tag"></view>
-      </view>
-      <view class="sk-actions">
-        <view class="sk sk-btn"></view>
-        <view class="sk sk-btn"></view>
+    </view>
+
+    <view class="poi-list" wx:elif="{{loadError}}">
+      <view class="card map-error">
+        <view class="map-error__ic"><svg-icon name="warn" size="26"></svg-icon></view>
+        <view class="sec">地图信息加载失败</view>
+        <view class="muted">网络开小差了，请稍后重试</view>
+        <view class="btn-primary map-error__btn" bindtap="reload">重新加载</view>
       </view>
     </view>
-  </view>
 
-  <view class="poi-list" wx:elif="{{loadError}}">
-    <view class="card map-error">
-      <view class="map-error__ic"><svg-icon name="warn" size="26"></svg-icon></view>
-      <view class="sec">地图信息加载失败</view>
-      <view class="muted">网络开小差了，请稍后重试</view>
-      <view class="btn-primary map-error__btn" bindtap="reload">重新加载</view>
-    </view>
-  </view>
-
-  <view class="poi-list" wx:elif="{{filtered.length}}">
-    <view
-      wx:for="{{filtered}}"
-      wx:key="_id"
-      class="card poi"
-      data-idx="{{index}}"
-      bindtap="onCardTap"
-    >
-      <view class="poi__top">
-        <text class="poi__name">{{item.name}}</text>
-        <text class="poi__type t-{{item.typeClass}}">{{item.type}}</text>
-      </view>
-      <view class="poi__addr muted">{{item.address}}</view>
-      <view class="poi__meta" wx:if="{{item._walkMin}}">
-        <svg-icon name="walk" size="14"></svg-icon>
-        <text class="muted">步行约 {{item._walkMin}} 分钟（{{item._dist}} 米）</text>
-      </view>
-      <view class="poi__tags">
-        <text wx:if="{{item.adultOnly}}" class="tag tag-red">仅成人</text>
-        <text wx:if="{{item.external}}" class="tag tag-amber">需换乘</text>
-        <text wx:if="{{item.verifyStatus === 'verified'}}" class="tag tag-green">已核实</text>
+    <view class="poi-list" wx:elif="{{filtered.length}}">
+      <view
+        wx:for="{{filtered}}"
+        wx:key="_id"
+        class="card poi"
+        data-idx="{{index}}"
+        bindtap="onCardTap"
+      >
+        <view class="poi__top">
+          <text class="poi__name">{{item.name}}</text>
+          <text class="poi__type t-{{item.typeClass}}">{{item.type}}</text>
+        </view>
+        <view class="poi__addr muted">{{item.address}}</view>
+        <view class="poi__meta" wx:if="{{item._walkMin}}">
+          <svg-icon name="walk" size="14"></svg-icon>
+          <text class="muted">步行约 {{item._walkMin}} 分钟（{{item._dist}} 米）</text>
+        </view>
+        <view class="poi__tags">
+          <text wx:if="{{item.adultOnly}}" class="tag tag-red">仅成人</text>
+          <text wx:if="{{item.external}}" class="tag tag-amber">需换乘</text>
+          <text wx:if="{{item.verifyStatus === 'verified'}}" class="tag tag-green">已核实</text>
+        </view>
       </view>
     </view>
-  </view>
 
-  <view class="empty" wx:else>该分类暂无数据</view>
+    <view class="empty" wx:else>该分类暂无数据</view>
+  </scroll-view>
 
   <!-- POI 详情 sheet -->
   <view wx:if="{{detail}}" class="sheet-mask" bindtap="closeDetail">

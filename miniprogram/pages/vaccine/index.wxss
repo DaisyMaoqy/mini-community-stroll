@@ -1,16 +1,39 @@
 /* pages/vaccine/index.wxss 接种页（M4） */
 /* 模块纵向间距对齐 v15 .view{gap:12px}：根容器 flex 列 + 统一 12px，原 .tip/.tabs 的外边距改由 gap 控制 */
-.vac-page { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
+.vac-page { display: flex; flex-direction: column; gap: 12px; padding-bottom: 76px; }
 
-/* Hero */
-.hero { display: flex; align-items: center; gap: 12px; background: var(--green-l); border-color: transparent; }
-.hero__ic {
-  width: 48px; height: 48px; flex: 0 0 48px;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--green-l2); border-radius: var(--r-sm);
+/* 底部统一入口：前往粤苗（单入口，避免每卡重复）
+   高度固定 + 按钮用 line-height 居中：跨机型高度一致。
+   注意：接种是 tabBar 页，底部安全区已由原生 tabBar 承担，此处**不能**再用
+   env(safe-area-inset-bottom)（iOS 返回 ~34px、Android 返回 0，会导致条高不一）。 */
+.yue-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  height: 60px; box-sizing: border-box;
+  display: flex; align-items: center;
+  padding: 0 16px;
+  background: rgba(250, 250, 247, 0.96);
+  border-top: 1px solid var(--line);
 }
-.hero__title { font-size: var(--fs-xl); font-weight: 800; color: var(--ink); }
-.hero__sub { margin-top: 2px; font-size: var(--fs-sm); color: var(--ink2); }
+/* 固定按钮高度 + 行高居中，避免不同系统字体度量造成高度差
+   （提高优先级，压过文件后半段同优先级的 .btn，防止其 padding/line-height 覆盖） */
+.yue-bar .yue-bar__btn { width: 100%; height: 40px; line-height: 40px; padding: 0; }
+
+/* Hero（头部样式对齐首页 .home-hero：纯文本头部，无卡片底色/图标，与 home-hero 同字号同间距） */
+.hero { padding: 8px 4px 4px; }
+.hero__title { font-size: var(--fs-xl); font-weight: 700; color: var(--ink); }
+.hero__sub { margin-top: 4px; }
+
+/* 天气 + 外出建议条 */
+.wx {
+  display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px;
+  background: var(--green-l2); border: 1px solid var(--green-line); border-radius: var(--r-sm);
+}
+.wx__txt { flex: 1; font-size: var(--fs-sm); color: var(--ink2); line-height: 1.5; }
+
+/* 列表头：附近接种点 · N 处 */
+.list-head { display: flex; align-items: baseline; justify-content: space-between; padding: 0 4px; }
+.list-head__t { font-size: var(--fs-lg); font-weight: 700; color: var(--ink); }
+.list-head__n { font-size: var(--fs-xs); }
 
 /* 提示条 */
 .tip {
@@ -42,6 +65,10 @@
 .poi__name { font-size: var(--fs-lg); font-weight: 700; color: var(--ink); flex: 1; }
 .poi__badges { display: flex; flex-wrap: wrap; gap: 6px; flex: 0 0 auto; }
 .poi__sub { margin-top: 4px; font-size: var(--fs-sm); color: var(--ink2); }
+/* 成人点红色提醒行（PRD #28 adultOnly 分流：明确仅18岁以上 + 指引儿童疫苗点） */
+.poi__warn { margin-top: 8px; padding: 8px 10px; background: var(--red-l); color: var(--red); border-radius: var(--r-sm); font-size: var(--fs-xs); line-height: 1.5; }
+/* 每卡天气相关出行提示（纯文本，图标由顶部天气条承载） */
+.poi__wx { margin-top: 8px; font-size: var(--fs-xs); color: var(--ink3); line-height: 1.5; }
 .poi__row { display: flex; align-items: flex-start; gap: 6px; margin-top: 8px; font-size: var(--fs-sm); color: var(--ink2); line-height: 1.5; }
 .poi__row svg-icon { margin-top: 2px; flex: 0 0 auto; }
 .poi__row.verify { transition: opacity .12s; }

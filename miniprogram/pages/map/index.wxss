@@ -1,6 +1,17 @@
 /* pages/map/index.wxss 遛娃地图（M3） */
-/* 模块纵向间距对齐 v15 .view{gap:12px}：根容器 flex 列 + 统一 12px，原 .tabs 的 20/10px 外边距改由 gap 控制 */
-.map-page { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
+/* 布局：固定区（标题/地图/筛选）常驻 + 仅 POI 列表滚动（2026-09-22 固定地图与 tab 过滤） */
+page { height: 100%; overflow: hidden; }
+
+.map-page {
+  height: 100%; min-height: 0;      /* 覆盖 .container 的 min-height:100vh，避免撑出视口 */
+  display: flex; flex-direction: column; gap: 12px;
+  overflow: hidden; padding-bottom: 0;
+}
+/* 固定区：标题 / 地图 / 分类筛选，不随列表滚动 */
+.map-fixed { flex: 0 0 auto; display: flex; flex-direction: column; gap: 12px; }
+/* 滚动区：占满剩余高度，仅此区域滚动 */
+.map-scroll { flex: 1 1 auto; min-height: 0; }
+
 .map-card { padding: 0; overflow: hidden; }
 .map { width: 100%; height: 300px; display: block; }
 
@@ -14,7 +25,7 @@
 .tab.on { background: var(--green); color: #fff; }
 
 /* POI 列表 */
-.poi-list { display: flex; flex-direction: column; gap: var(--gap-md); }
+.poi-list { display: flex; flex-direction: column; gap: var(--gap-md); padding-bottom: 12px; }
 .poi { display: block; }
 .poi__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .poi__name { font-size: var(--fs-lg); font-weight: 700; color: var(--ink); }
@@ -52,7 +63,7 @@
 .sheet {
   width: 100%; box-sizing: border-box;
   background: #fff; border-radius: var(--r-lg) var(--r-lg) 0 0;
-  padding: 20px 18px calc(20px + env(safe-area-inset-bottom)); animation: slideUp .2s ease;
+  padding: 20px 18px 20px; animation: slideUp .2s ease;
 }
 @keyframes slideUp { from { transform: translateY(20px); opacity: .6; } to { transform: translateY(0); opacity: 1; } }
 .sheet__hd { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
