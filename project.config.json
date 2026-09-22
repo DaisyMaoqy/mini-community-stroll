@@ -68,7 +68,12 @@
   "compileType": "miniprogram",
   "srcMiniprogramRoot": "miniprogram/",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      { "type": "folder", "value": "assets/icons" },
+      { "type": "file", "value": "envList.js" },
+      { "type": "file", "value": ".DS_Store" },
+      { "type": "file", "value": "Thumbs.db" }
+    ],
     "include": []
   },
   "editorSetting": {

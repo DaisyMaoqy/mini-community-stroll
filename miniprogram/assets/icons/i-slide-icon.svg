@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#5F7A66" stroke-width="1.83" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 梯子左侧两柱 + 横档 -->
+  <path d="M7 7 V19"/>
+  <path d="M9.5 7 V19"/>
+  <path d="M7 10.5 H9.5"/>
+  <path d="M7 14 H9.5"/>
+  <!-- 顶部平台 -->
+  <path d="M7 7 H12"/>
+  <!-- 滑梯滑道（斜向）+ 底部小翘起 -->
+  <path d="M12 7 L19 16 q1 2 -2 2"/>
+</svg>

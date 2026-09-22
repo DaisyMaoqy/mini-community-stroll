@@ -21,18 +21,23 @@ function haversine(lat1, lng1, lat2, lng2) {
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
-// 调试用加载模拟（仅开发版/体验版生效，正式版恒返回 0，不影响线上）。
+// 调试用加载模拟（仅「开发者工具模拟器」内生效；真机 / 真机调试恒返回 0，走真实网络）。
 // 微信开发者工具的网络面板只会节流 WebView 请求，不会节流 wx.cloud.callFunction（走云 SDK 独立通道），
-// 所以「Slow 3G」看不到骨架屏。要查看骨架/失败态，请在调试器 Console 执行：
+// 所以「Slow 3G」看不到骨架屏。要在模拟器里查看骨架/失败态，请在调试器 Console 执行：
 //   wx.setStorageSync('__debugMapLoad', 1)   // 1=模拟慢网（延迟 3s 再返回）
 //   wx.setStorageSync('__debugMapLoad', 2)   // 2=模拟断网（强制失败，显示失败卡）
 //   wx.removeStorageSync('__debugMapLoad')   // 恢复正常
 // 然后切走再切回地图页（或点刷新）即可看到对应状态。
+// 真机测试请用真实网络条件：开飞行模式=断网、弱信号=弱网，云调用会真实失败/变慢，无需此钩子。
+// 把模拟限定在模拟器内，可避免真机调试时模拟抛错干扰开发者工具导致闪退。
 function debugLoadMode() {
   try {
     const info = wx.getAccountInfoSync ? wx.getAccountInfoSync() : null;
     const env = (info && info.miniProgram && info.miniProgram.envVersion) || 'develop';
     if (env === 'release') return 0;
+    // 仅开发者工具模拟器（platform==='devtools'）启用模拟；真机 / 真机调试走真实网络
+    const sys = (wx.getSystemInfoSync ? wx.getSystemInfoSync() : {}) || {};
+    if (sys.platform !== 'devtools') return 0;
     return Number(wx.getStorageSync('__debugMapLoad')) || 0;
   } catch (e) {
     return 0;
@@ -93,7 +98,10 @@ Page({
       // 地图瓦片加载兜底：bindupdated 未触发时 1.5s 后结束"地图加载中"
       setTimeout(() => { if (!this.data.mapReady) this.setData({ mapReady: true }); }, 1500);
     } catch (e) {
-      console.error('加载 POI 失败', e);
+      // 调试模拟的断网（message 以 'debug:' 开头）不刷 console.error，
+      // 避免真机调试桥转发日志时拖累开发者工具导致闪退；真实错误照常记录。
+      const isDebugSim = e && typeof e.message === 'string' && e.message.indexOf('debug:') === 0;
+      if (!isDebugSim) console.error('加载 POI 失败', e);
       this.setData({ loading: false, loadError: true });
     }
   },

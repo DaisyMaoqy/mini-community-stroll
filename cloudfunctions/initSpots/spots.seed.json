@@ -2,7 +2,7 @@
   "collection": "local_spots",
   "schemaRef": "local_spots.schema.md",
   "note": "coord 已回填 gcj02 真实坐标（#17，2026-09-14）：接种点 4 个为腾讯地图精确 POI；遛娃 6 个为腾讯地图精确 POI，3 个无独立 POI 的（祈福湖/鳄鱼湖公园/郊野公园）用社区参照估算并标 coordEstimated=true（待 #6 腾讯位置服务 key 就位后 geocoding 复核）。coordMock 保留为原型米制占位，dev 无 key 时用。coordSource/coordEstimated 为坐标溯源与待复核标记。",
-  "count": 13,
+  "count": 12,
   "spots": [
     {
       "_id": "spot_vac_yankang",
@@ -43,47 +43,6 @@
       "createdAt": "2026-09-14",
       "updatedAt": "2026-09-14",
       "coordSource": "腾讯地图·祈福倚湖湾POI",
-      "coordEstimated": false
-    },
-    {
-      "_id": "spot_vac_qifu_child",
-      "name": "祈福社区卫生服务中心（儿童接种）",
-      "type": "接种",
-      "subType": "预防接种（儿童）",
-      "adultOnly": false,
-      "ageRange": "儿童/未成年人（一类苗 + 儿童流感等）",
-      "address": "广东祈福医院 3 号楼 1 层（祈福社区卫生服务站）",
-      "coord": {
-        "type": "Point",
-        "coordinates": [
-          113.325295,
-          22.969107
-        ]
-      },
-      "coordMock": {
-        "x": -120,
-        "y": 120
-      },
-      "bus": {
-        "hub": "祈福医院站",
-        "lines": [
-          "5"
-        ],
-        "walk": "下车步行约 2 分钟到 3 号楼",
-        "busText": "5 号线「祈福医院」站 · 约 10 分钟一班（06:00–23:45）"
-      },
-      "external": false,
-      "vacName": "祈福社区卫生服务中心（儿童接种）",
-      "vacSub": "祈福医院 3 号楼 1 层 · 与成人门诊（2号楼）同院区分科",
-      "desc": "同院区祈福医院成人接种门诊（2号楼）只服务成年人；儿童/未成年人疫苗（含一类免疫规划苗、儿童流感）在 3 号楼 1 层祈福社区卫生服务中心。按年龄分流，避免家长走错楼。",
-      "verifyStatus": "verified",
-      "verifySource": "广东祈福医院官网（成人接种门诊发文，明确儿童疫苗在3号楼）",
-      "verifyUrl": "https://clifford-hospital.org/service/healthnews_9110.html",
-      "verifyDueAt": "2026-12-13",
-      "source": "官方核实（2026-09-14）",
-      "createdAt": "2026-09-14",
-      "updatedAt": "2026-09-14",
-      "coordSource": "腾讯地图·祈福医院POI",
       "coordEstimated": false
     },
     {
@@ -155,7 +114,7 @@
       "external": false,
       "vacName": "祈福医院成人接种门诊（家长自用）",
       "vacSub": "青怡居旁 · 广州三甲祈福医院 · 仅 18 岁以上 · 5号线祈福医院站",
-      "desc": "广东祈福医院成人接种门诊（2号楼），仅 18 岁以上成年人可打 HPV / 流感 / 肺炎 / 带状疱疹 / 乙肝等非免疫规划疫苗 + 新冠。孩子的疫苗请到「祈福社区卫生服务中心（3号楼）」或「延康祈福社区卫生服务站」。",
+      "desc": "广东祈福医院成人接种门诊（2号楼），仅 18 岁以上成年人可打 HPV / 流感 / 肺炎 / 带状疱疹 / 乙肝等非免疫规划疫苗 + 新冠。儿童/未成年人疫苗请到「延康祈福社区卫生服务站」（千福街2号101，倚湖湾旁）。",
       "verifyStatus": "verified",
       "verifySource": "广东祈福医院官网（成人接种门诊发文）",
       "verifyUrl": "https://clifford-hospital.org/service/healthnews_9110.html",
