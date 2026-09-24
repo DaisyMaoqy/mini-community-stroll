@@ -1,6 +1,7 @@
-<!-- pages/map/index.wxml 遛娃地图（M3：接真实 POI + 标记 + 详情） -->
+<!-- pages/map/index.wxml 遛娃地图（M3：接真实 POI + 标记 + 详情）
+     M4：邨巴 tab 改为「地铁式线路示意图」（WXML+WXSS 绘制，不使用 SVG/真实地图打点） -->
 <view class="container map-page" data-theme="{{theme}}">
-  <!-- 固定区：标题 / 地图 / 分类筛选（不随下方列表滚动） -->
+  <!-- 固定区：标题 / 地图或线网示意图 / 分类筛选（不随下方列表滚动） -->
   <view class="map-fixed">
     <view class="map-head">
       <view>
@@ -12,26 +13,72 @@
       </view>
     </view>
 
-    <!-- 地图 -->
-    <view class="card map-card">
-      <map
-        wx:if="{{!loading}}"
-        class="map"
-        longitude="{{center.lng}}"
-        latitude="{{center.lat}}"
-        scale="{{scale}}"
-        markers="{{markers}}"
-        show-location="{{true}}"
-        bindmarkertap="onMarkerTap"
-        bindupdated="onMapUpdated"
-      ></map>
-      <view wx:else class="sk sk-map"></view>
-    </view>
-    <!-- 地图瓦片加载提示（原生 map 之上无法叠层，置于卡片下方） -->
-    <view class="map-loading" wx:if="{{!loading && !mapReady}}">
-      <view class="spinner"></view>
-      <text class="muted">地图加载中…</text>
-    </view>
+    <!-- 邨巴 tab：线网总览示意图（地铁图式，8 线自枢纽发散） -->
+    <block wx:if="{{activeTab === '邨巴'}}">
+      <view class="card metro-card">
+        <view class="metro-hd">
+          <text class="metro-hd__t">祈福邨巴线网</text>
+          <text class="muted">像看地铁图一样看邨巴路线</text>
+        </view>
+        <view class="metro">
+          <!-- 左：扇形发散示意 -->
+          <view class="metro__fan">
+            <view
+              wx:for="{{overviewLines}}"
+              wx:key="id"
+              class="fan-line"
+              style="transform:rotate({{item.angle}}deg);opacity:{{activeRoute === 'all' || item.active ? 1 : 0.2}}"
+            >
+              <view class="fan-line__bar" style="background:{{item.color}}"></view>
+              <view
+                class="fan-line__end"
+                style="transform:rotate({{item.counterAngle}}deg);border-color:{{item.color}};background:{{item.active ? item.color : '#FFFFFF'}};color:{{item.active ? '#FFFFFF' : item.color}}"
+              >{{item.id}}</view>
+            </view>
+            <view class="metro__hub" style="background:{{hubColor}}"></view>
+            <text class="metro__hub-t">{{hubName}}</text>
+          </view>
+          <!-- 右：图例（可点选线路） -->
+          <view class="metro__legend">
+            <view
+              wx:for="{{overviewLines}}"
+              wx:key="id"
+              class="lg {{item.active ? 'on' : ''}}"
+              data-route="{{item.id}}"
+              bindtap="onLineTap"
+              hover-class="lg--hover"
+            >
+              <text class="lg__badge" style="background:{{item.color}}">{{item.id}}</text>
+              <text class="lg__t">往 {{item.to}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 其他 tab：真实地图 -->
+    <block wx:else>
+      <view class="card map-card">
+        <map
+          wx:if="{{!loading}}"
+          id="map"
+          class="map"
+          longitude="{{center.lng}}"
+          latitude="{{center.lat}}"
+          scale="{{scale}}"
+          markers="{{markers}}"
+          show-location="{{true}}"
+          bindmarkertap="onMarkerTap"
+          bindupdated="onMapUpdated"
+        ></map>
+        <view wx:else class="sk sk-map"></view>
+      </view>
+      <!-- 地图瓦片加载提示（原生 map 之上无法叠层，置于卡片下方） -->
+      <view class="map-loading" wx:if="{{!loading && !mapReady}}">
+        <view class="spinner"></view>
+        <text class="muted">地图加载中…</text>
+      </view>
+    </block>
 
     <!-- 分类筛选 -->
     <scroll-view wx:if="{{!loading}}" scroll-x class="tabs" enable-flex>
@@ -41,69 +88,183 @@
         class="tab {{activeTab === item.key ? 'on' : ''}}"
         data-tab="{{item.key}}"
         bindtap="onTab"
-      >{{item.label}}</view>
+        >{{item.label}}</view>
     </scroll-view>
+    <!-- 邨巴线路切换：仅在邨巴 tab 展示，点 chip 切换线路并高亮示意图 -->
+    <view class="route-chips" wx:if="{{activeTab === '邨巴'}}">
+      <text class="route-chips__t">线路</text>
+      <text
+        wx:for="{{routeChips}}"
+        wx:key="r"
+        wx:for-item="c"
+        class="route-chip {{activeRoute === c.r ? 'on' : ''}}"
+        style="color:{{activeRoute === c.r ? '#fff' : c.c}};border-color:{{c.c}};background:{{activeRoute === c.r ? c.c : 'transparent'}}"
+        data-route="{{c.r}}"
+        bindtap="onRouteTap"
+      >{{c.label}}</text>
+    </view>
   </view>
 
-  <!-- 滚动区：仅 POI 列表滚动 -->
+  <!-- 滚动区：仅下方内容滚动 -->
   <scroll-view class="map-scroll" scroll-y>
-    <!-- POI 列表：加载中骨架 / 加载失败重试 / 有数据 / 空 -->
-    <view class="poi-list" wx:if="{{loading}}">
-      <view class="card sk-poi" wx:for="{{[0,1,2,3]}}" wx:key="*this">
-        <view class="sk-poi__head">
-          <view class="sk sk-circle sk-poi__avatar"></view>
-          <view class="sk-poi__title">
-            <view class="sk sk-line w-60" style="height:16px"></view>
-            <view class="sk sk-line w-40"></view>
+    <!-- ============ 邨巴：地铁式线路示意图 ============ -->
+    <block wx:if="{{activeTab === '邨巴'}}">
+      <!-- 总览态：全部线路 -->
+      <view class="bus-list" wx:if="{{activeRoute === 'all'}}">
+        <view class="bus-tip muted">8 条线路均从「{{hubName}}」发车（8 号线往返天湖居与半山）。点击线路查看逐站顺序与方向。</view>
+        <view
+          wx:for="{{lineCards}}"
+          wx:key="id"
+          class="card bus-lc"
+          data-route="{{item.id}}"
+          bindtap="onLineTap"
+          hover-class="bus-lc--hover"
+        >
+          <view class="bus-lc__badge" style="background:{{item.color}}">{{item.id}}</view>
+          <view class="bus-lc__m">
+            <view class="bus-lc__name">{{item.name}}</view>
+            <view class="bus-lc__ends">{{item.from}} → {{item.to}}</view>
+            <view class="muted bus-lc__via">途经：{{item.via}}</view>
+          </view>
+          <view class="bus-lc__r"><svg-icon name="chev" size="16"></svg-icon></view>
+        </view>
+      </view>
+
+      <!-- 单线路态：方向切换 + 竖向站点链 + 时刻表 -->
+      <view class="bus-detail" wx:else>
+        <view class="card bus-hd" wx:if="{{activeLine}}">
+          <view class="bus-hd__top">
+            <text class="bus-hd__badge" style="background:{{activeLine.color}}">{{activeLine.id}}</text>
+            <text class="bus-hd__name">{{activeLine.name}}</text>
+            <text class="bus-hd__back" data-route="all" bindtap="onLineTap">全部线路</text>
+          </view>
+          <view class="muted bus-hd__via">途经：{{activeLine.via}}</view>
+          <view class="bus-hd__meta" wx:if="{{timetable && timetable.range}}">
+            <svg-icon name="clock" size="13"></svg-icon>
+            <text class="muted">{{timetable.range}} · {{timetable.intervals}}</text>
           </view>
         </view>
-        <view class="sk sk-line w-100"></view>
-        <view class="sk-poi__tags">
-          <view class="sk sk-tag"></view>
-          <view class="sk sk-tag"></view>
+
+        <view class="bus-dir" wx:if="{{activeLine}}">
+          <view
+            class="bus-dir__b {{busDir === 'in' ? 'on' : ''}}"
+            style="{{busDir === 'in' ? 'background:' + activeLine.color + ';border-color:' + activeLine.color + ';color:#FFFFFF' : ''}}"
+            data-dir="in"
+            bindtap="onDirTap"
+          >{{activeLine.inLabel}}</view>
+          <view
+            class="bus-dir__b {{busDir === 'out' ? 'on' : ''}}"
+            style="{{busDir === 'out' ? 'background:' + activeLine.color + ';border-color:' + activeLine.color + ';color:#FFFFFF' : ''}}"
+            data-dir="out"
+            bindtap="onDirTap"
+          >{{activeLine.outLabel}}</view>
+          <text class="muted bus-dir__n">共 {{chainCount}} 站</text>
         </view>
-        <view class="sk-actions">
-          <view class="sk sk-btn"></view>
-          <view class="sk sk-btn"></view>
+
+        <view class="card bus-chain">
+          <view class="chain">
+            <view wx:for="{{chain}}" wx:key="idx" class="stn">
+              <!-- 站点之间的连接线（末站不画），与站点圆点同色 -->
+              <view wx:if="{{index < chainCount - 1}}" class="stn__link" style="background:{{activeLine.color}}"></view>
+              <view
+                class="stn__dot {{item.isHub ? 'is-hub' : ''}} {{item.isTerminal ? 'is-term' : ''}}"
+                style="border-color:{{item.dotBorder}};background:{{item.dotBg}}"
+              ></view>
+              <view class="stn__main">
+                <view class="stn__row">
+                  <text class="stn__i">{{item.idx}}</text>
+                  <text class="stn__name {{item.isTerminal ? 'is-term' : ''}}">{{item.name}}</text>
+                  <text wx:if="{{item.isHub}}" class="stn__tag is-hub" style="color:{{hubColor}}">枢纽</text>
+                  <text wx:elif="{{item.isTerminal}}" class="stn__tag">总站</text>
+                </view>
+                <view class="stn__road" wx:if="{{item.road}}" style="color:{{activeLine.color}};border-color:{{activeLine.color}}">{{item.road}}</view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view class="card bus-tt" wx:if="{{timetable && timetable.sections.length}}">
+          <view class="bus-tt__hd" bindtap="toggleTimetable">
+            <svg-icon name="clock" size="15"></svg-icon>
+            <text class="bus-tt__t">运行时刻表</text>
+            <text class="muted bus-tt__sw">{{ttOpen ? '收起' : '展开'}}</text>
+          </view>
+          <block wx:if="{{ttOpen}}">
+            <view wx:for="{{timetable.sections}}" wx:key="title" wx:for-item="sec" class="tt-sec">
+              <view class="tt-sec__t">{{sec.title}}</view>
+              <view wx:for="{{sec.rows}}" wx:key="from" wx:for-item="r" class="tt-row">
+                <text class="tt-row__r">{{r.from}} – {{r.to}}</text>
+                <text class="muted">{{r.every}} 分钟一班</text>
+              </view>
+            </view>
+            <view wx:for="{{timetable.notes}}" wx:key="*this" wx:for-item="nt" class="tt-note">{{nt}}</view>
+          </block>
+        </view>
+
+        <view class="bus-src muted">数据来源：祈福新闻中心《最新、最全祈福邨巴路线图》</view>
+      </view>
+    </block>
+
+    <!-- ============ 其他分类：POI 列表 ============ -->
+    <block wx:else>
+      <!-- POI 列表：加载中骨架 / 加载失败重试 / 有数据 / 空 -->
+      <view class="poi-list" wx:if="{{loading}}">
+        <view class="card sk-poi" wx:for="{{[0,1,2,3]}}" wx:key="*this">
+          <view class="sk-poi__head">
+            <view class="sk sk-circle sk-poi__avatar"></view>
+            <view class="sk-poi__title">
+              <view class="sk sk-line w-60" style="height:16px"></view>
+              <view class="sk sk-line w-40"></view>
+            </view>
+          </view>
+          <view class="sk sk-line w-100"></view>
+          <view class="sk-poi__tags">
+            <view class="sk sk-tag"></view>
+            <view class="sk sk-tag"></view>
+          </view>
+          <view class="sk-actions">
+            <view class="sk sk-btn"></view>
+            <view class="sk sk-btn"></view>
+          </view>
         </view>
       </view>
-    </view>
 
-    <view class="poi-list" wx:elif="{{loadError}}">
-      <view class="card map-error">
-        <view class="map-error__ic"><svg-icon name="warn" size="26"></svg-icon></view>
-        <view class="sec">地图信息加载失败</view>
-        <view class="muted">网络开小差了，请稍后重试</view>
-        <view class="btn-primary map-error__btn" bindtap="reload">重新加载</view>
-      </view>
-    </view>
-
-    <view class="poi-list" wx:elif="{{filtered.length}}">
-      <view
-        wx:for="{{filtered}}"
-        wx:key="_id"
-        class="card poi"
-        data-idx="{{index}}"
-        bindtap="onCardTap"
-      >
-        <view class="poi__top">
-          <text class="poi__name">{{item.name}}</text>
-          <text class="poi__type t-{{item.typeClass}}">{{item.type}}</text>
-        </view>
-        <view class="poi__addr muted">{{item.address}}</view>
-        <view class="poi__meta" wx:if="{{item._walkMin}}">
-          <svg-icon name="walk" size="14"></svg-icon>
-          <text class="muted">步行约 {{item._walkMin}} 分钟（{{item._dist}} 米）</text>
-        </view>
-        <view class="poi__tags">
-          <text wx:if="{{item.adultOnly}}" class="tag tag-red">仅成人</text>
-          <text wx:if="{{item.external}}" class="tag tag-amber">需换乘</text>
-          <text wx:if="{{item.verifyStatus === 'verified'}}" class="tag tag-green">已核实</text>
+      <view class="poi-list" wx:elif="{{loadError}}">
+        <view class="card map-error">
+          <view class="map-error__ic"><svg-icon name="warn" size="26"></svg-icon></view>
+          <view class="sec">地图信息加载失败</view>
+          <view class="muted">网络开小差了，请稍后重试</view>
+          <view class="btn-primary map-error__btn" bindtap="reload">重新加载</view>
         </view>
       </view>
-    </view>
 
-    <view class="empty" wx:else>该分类暂无数据</view>
+      <view class="poi-list" wx:elif="{{filtered.length}}">
+        <view
+          wx:for="{{filtered}}"
+          wx:key="_id"
+          class="card poi"
+          data-idx="{{index}}"
+          bindtap="onCardTap"
+        >
+          <view class="poi__top">
+            <text class="poi__name">{{item.name}}</text>
+            <text class="poi__type t-{{item.typeClass}}">{{item.type}}</text>
+          </view>
+          <view class="poi__addr muted">{{item.address}}</view>
+          <view class="poi__meta" wx:if="{{item._walkMin}}">
+            <svg-icon name="walk" size="14"></svg-icon>
+            <text class="muted">步行约 {{item._walkMin}} 分钟（{{item._dist}} 米）</text>
+          </view>
+          <view class="poi__tags">
+            <text wx:if="{{item.adultOnly}}" class="tag tag-red">仅成人</text>
+            <text wx:if="{{item.external}}" class="tag tag-amber">需换乘</text>
+            <text wx:if="{{item.verifyStatus === 'verified'}}" class="tag tag-green">已核实</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="empty" wx:else>该分类暂无数据</view>
+    </block>
   </scroll-view>
 
   <!-- POI 详情 sheet -->
@@ -122,7 +283,7 @@
 
       <view class="sheet__row" wx:if="{{detail.bus}}">
         <text class="sheet__k muted">邨巴</text>
-        <text>{{detail.bus.hub}}{{detail.bus.lines ? ' · ' + detail.bus.lines + ' 路' : ''}}{{detail.bus.walk ? ' · ' + detail.bus.walk : ''}}</text>
+        <text style="color:{{detail.busColor}};font-weight:600">{{detail.bus.hub}}{{detail.bus.lines ? ' · ' + detail.bus.lines + ' 路' : ''}}{{detail.bus.walk ? ' · ' + detail.bus.walk : ''}}</text>
       </view>
 
       <view class="sheet__row" wx:if="{{detail._walkMin}}">

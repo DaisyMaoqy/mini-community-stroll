@@ -28,6 +28,12 @@
   "usingComponents": {
     "svg-icon": "/components/svg-icon/svg-icon"
   },
+  "requiredPrivateInfos": ["getLocation"],
+  "permission": {
+    "scope.userLocation": {
+      "desc": "你的位置信息将用于小程序地图版块的效果展示" 
+    }
+  },
   "sitemapLocation": "sitemap.json",
   "style": "v2",
   "lazyCodeLoading": "requiredComponents"

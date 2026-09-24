@@ -40,6 +40,21 @@ CATS = {
     "bus":   ("i-bus-icon.svg",     (255, 158, 109, 255)),  # #FF9E6D 邨巴
 }
 
+# 8 条邨巴线路配色（地铁图式、彼此区分度高），用于生成各色线路 pin。
+# make_pin 用该色画圆盘/指针；paste_icon 把 bus 图标以白车身 + 该色车窗镂空贴入，
+# 因此每条线路 = 路线色圆盘 + 白车身 + 路线色车窗，辨识度足够。
+BUS_ROUTES = {
+    "1": (231, 76, 60, 255),    # 红
+    "2": (230, 126, 34, 255),   # 橙
+    "3": (39, 174, 96, 255),    # 绿
+    "5": (41, 128, 185, 255),   # 蓝
+    "6": (142, 68, 173, 255),   # 紫
+    "8": (232, 67, 147, 255),   # 粉
+    "A": (22, 160, 133, 255),   # 青
+    "C": (211, 84, 0, 255),     # 深橙褐
+}
+BUS_HUB_COLOR = (90, 103, 115, 255)  # 枢纽：深石板灰
+
 # 显示尺寸（与 <map> marker width/height 对齐）
 DISPLAY_W, DISPLAY_H = 30, 38
 SS = 4                                  # 最终像素 = 显示 ×4 = 120×152
@@ -189,6 +204,25 @@ def main():
         pin.save(path, "PNG")
         c = pin.getpixel((OUT_W // 2, int(OUT_H * (25.0 / 76.0))))
         print(f"wrote {path}  size={pin.size}  center={c}")
+
+    # 8 条邨巴线路 pin（每条线路一个颜色）+ 1 个枢纽 pin。
+    # 追加生成，不改动上方 CATS 四个基础 pin 的逻辑。
+    for r, col in BUS_ROUTES.items():
+        pin = make_pin(col)
+        pin = paste_icon(pin, "i-bus-icon.svg", col)
+        pin = pin.resize((OUT_W, OUT_H), Image.LANCZOS)
+        path = os.path.join(OUT, f"pin-bus-{r}.png")
+        pin.save(path, "PNG")
+        c = pin.getpixel((OUT_W // 2, int(OUT_H * (25.0 / 76.0))))
+        print(f"wrote {path}  size={pin.size}  center={c}")
+    # 枢纽 pin
+    pin = make_pin(BUS_HUB_COLOR)
+    pin = paste_icon(pin, "i-bus-icon.svg", BUS_HUB_COLOR)
+    pin = pin.resize((OUT_W, OUT_H), Image.LANCZOS)
+    path = os.path.join(OUT, f"pin-bus-hub.png")
+    pin.save(path, "PNG")
+    c = pin.getpixel((OUT_W // 2, int(OUT_H * (25.0 / 76.0))))
+    print(f"wrote {path}  size={pin.size}  center={c}")
 
 
 if __name__ == "__main__":

@@ -15,7 +15,26 @@ const seed = require("./spots.seed.json");
 
 const COLLECTION = "local_spots";
 
+// 并发池：以固定并发度跑任务，避免 N 次串行 await 撑爆云函数超时（默认 3s）
+async function runPool(items, limit, worker) {
+  const size = Math.max(1, Math.min(limit, items.length));
+  let cursor = 0;
+  const runners = [];
+  for (let k = 0; k < size; k++) {
+    runners.push(
+      (async () => {
+        while (cursor < items.length) {
+          const idx = cursor++;
+          await worker(items[idx], idx);
+        }
+      })()
+    );
+  }
+  await Promise.all(runners);
+}
+
 exports.main = async () => {
+  const t0 = Date.now();
   const spots = (seed && seed.spots) || [];
   const seedIds = new Set(spots.map((s) => s._id).filter(Boolean));
   let done = 0;
@@ -32,12 +51,12 @@ exports.main = async () => {
   }
 
   // 1) upsert 种子（doc.set：已存在覆盖，不存在创建，幂等）
-  for (const s of spots) {
+  await runPool(spots, 20, async (s) => {
     const id = s._id;
     if (!id) {
       failed++;
       errors.push("skip: missing _id");
-      continue;
+      return;
     }
     const data = Object.assign({}, s);
     delete data._id;
@@ -48,7 +67,7 @@ exports.main = async () => {
       failed++;
       errors.push(id + ": " + (e && (e.errMsg || e.message) ? (e.errMsg || e.message) : e));
     }
-  }
+  });
 
   // 2) prune：删除不在种子里的历史记录（分页扫描，防 100 条上限）
   try {
@@ -68,16 +87,15 @@ exports.main = async () => {
       if (rows.length < PAGE) break;
       page++;
     }
-    for (const id of existing) {
-      if (!seedIds.has(id)) {
-        try {
-          await db.collection(COLLECTION).doc(id).remove();
-          pruned++;
-        } catch (e) {
-          errors.push("prune " + id + ": " + (e && (e.errMsg || e.message) ? (e.errMsg || e.message) : e));
-        }
+    const toRemove = existing.filter((id) => !seedIds.has(id));
+    await runPool(toRemove, 20, async (id) => {
+      try {
+        await db.collection(COLLECTION).doc(id).remove();
+        pruned++;
+      } catch (e) {
+        errors.push("prune " + id + ": " + (e && (e.errMsg || e.message) ? (e.errMsg || e.message) : e));
       }
-    }
+    });
   } catch (e) {
     errors.push("prune-scan: " + (e && (e.errMsg || e.message) ? (e.errMsg || e.message) : e));
   }
@@ -89,5 +107,6 @@ exports.main = async () => {
     pruned,
     failed,
     errors,
+    elapsedMs: Date.now() - t0,
   };
 };

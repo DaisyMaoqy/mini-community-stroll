@@ -50,15 +50,28 @@ exports.main = async (event) => {
 
   switch (action) {
     case "list": {
+      // 构造单一条件对象（链式 where 语义不明确，改用单个 cond 一次匹配）
+      const cond = {};
+      if (event.type) cond.type = event.type;
+      if (event.adultOnly !== undefined) cond.adultOnly = !!event.adultOnly;
+      if (event.verifyStatus) cond.verifyStatus = event.verifyStatus;
       let q = coll;
-      if (event.type) q = q.where({ type: event.type });
-      if (event.adultOnly !== undefined)
-        q = q.where({ adultOnly: !!event.adultOnly });
-      if (event.verifyStatus) q = q.where({ verifyStatus: event.verifyStatus });
-      const limit = event.limit && event.limit <= 100 ? event.limit : 100;
+      if (Object.keys(cond).length) q = q.where(cond);
+      // 服务端分页，翻完所有匹配文档（种子 12 条 + 余量，上限 100/页）
+      const PAGE = 100;
+      const all = [];
+      let page = 0;
       try {
-        const res = await q.limit(limit).get();
-        return { success: true, list: res.data, total: res.data.length };
+        while (true) {
+          if (page > 100) break; // 安全上限，防止意外死循环
+          const res = await q.skip(page * PAGE).limit(PAGE).get();
+          all.push(...res.data);
+          if (res.data.length < PAGE) break;
+          page++;
+        }
+        // 若调用方传了正数值 limit，则作为上限截断（0/undefined 表示不限）
+        if (event.limit && all.length > event.limit) all.length = event.limit;
+        return { success: true, list: all, total: all.length };
       } catch (e) {
         const msg = (e && (e.errMsg || e.message)) || String(e);
         // 集合尚未初始化（-502005 collection not exists）时返回空列表，

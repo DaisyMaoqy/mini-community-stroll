@@ -1,0 +1,3574 @@
+{
+  "spots": [
+    {
+      "_id": "spot_bus_yiyunju",
+      "name": "倚云居",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "倚云居(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33466,
+          22.9648
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "倚云居",
+        "lines": "1/8",
+        "walk": "可换乘 1/8 路",
+        "busText": "1/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "倚云居,途经 1/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_banshanhuisuo",
+      "name": "半山会所",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "半山会所(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.334975,
+          22.964217
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "半山会所",
+        "lines": "1/8",
+        "walk": "可换乘 1/8 路",
+        "busText": "1/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "半山会所,途经 1/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_banshanhuisuoduimian",
+      "name": "半山会所对面",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "半山会所对面(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33493,
+          22.9643
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "半山会所对面",
+        "lines": "1/8",
+        "walk": "可换乘 1/8 路",
+        "busText": "1/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "半山会所对面,途经 1/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_banshanqifujiaoyu",
+      "name": "半山祈福教育",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "半山祈福教育(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33385,
+          22.9663
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "半山祈福教育",
+        "lines": "1/8",
+        "walk": "可换乘 1/8 路",
+        "busText": "1/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "半山祈福教育,途经 1/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_banshanqifujiaoyuduimian",
+      "name": "半山祈福教育对面",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "半山祈福教育对面(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3343,
+          22.965467
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "半山祈福教育对面",
+        "lines": "1",
+        "walk": "",
+        "busText": "1 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "半山祈福教育对面,途经 1 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_dadaopailoukou",
+      "name": "大道牌楼口",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "大道牌楼口(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.333175,
+          22.96755
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "大道牌楼口",
+        "lines": "1/3/6",
+        "walk": "可换乘 1/3/6 路",
+        "busText": "1/3/6 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "大道牌楼口,途经 1/3/6 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_shanquanju",
+      "name": "山泉居",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "山泉居(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33439,
+          22.9653
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "山泉居",
+        "lines": "1/8",
+        "walk": "可换乘 1/8 路",
+        "busText": "1/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "山泉居,途经 1/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_jinfulou",
+      "name": "晋福楼",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "晋福楼(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.334075,
+          22.965883
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "晋福楼",
+        "lines": "1/8",
+        "walk": "可换乘 1/8 路",
+        "busText": "1/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "晋福楼,途经 1/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_yuemingxuanzongzhan",
+      "name": "月明轩总站",
+      "type": "邨巴",
+      "subType": "1/8线总站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "月明轩总站(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3352,
+          22.9638
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "月明轩总站",
+        "lines": "1/8",
+        "walk": "可换乘 1/8 路",
+        "busText": "1/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "月明轩总站,途经 1/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_yuzhengxuexiaolukou",
+      "name": "毓正学校路口",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "毓正学校路口(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33412,
+          22.9658
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "毓正学校路口",
+        "lines": "1",
+        "walk": "",
+        "busText": "1 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "毓正学校路口,途经 1 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_yuxiuxiaoxuemenkou",
+      "name": "毓秀小学门口",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "毓秀小学门口(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.334525,
+          22.96505
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "毓秀小学门口",
+        "lines": "1/8",
+        "walk": "可换乘 1/8 路",
+        "busText": "1/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "毓秀小学门口,途经 1/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_huolihuayuan",
+      "name": "活力花园",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "活力花园(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33304,
+          22.9678
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "活力花园",
+        "lines": "1/3/5/6",
+        "walk": "可换乘 1/3/5/6 路",
+        "busText": "1/3/5/6 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "活力花园,途经 1/3/5/6 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_qifujiaotongzhongxin",
+      "name": "祈福交通中心",
+      "type": "邨巴",
+      "subType": "枢纽总站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "祈福交通中心(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3325,
+          22.9688
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": true,
+      "bus": {
+        "hub": "祈福交通中心",
+        "lines": "1/2/3/5/6/A/C",
+        "walk": "邨巴核心换乘站，可在此转乘多条线路",
+        "busText": "1/2/3/5/6/A/C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "祈福交通中心,途经 1/2/3/5/6/A/C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_qifuyimeizhongxinduimian",
+      "name": "祈福医美中心对面",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "祈福医美中心对面(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3334,
+          22.967133
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "祈福医美中心对面",
+        "lines": "1/5/6",
+        "walk": "可换乘 1/5/6 路",
+        "busText": "1/5/6 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "祈福医美中心对面,途经 1/5/6 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_qifuyiyuan",
+      "name": "祈福医院",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "祈福医院(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33331,
+          22.9673
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "祈福医院",
+        "lines": "1/5/6",
+        "walk": "可换乘 1/5/6 路",
+        "busText": "1/5/6 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "祈福医院,途经 1/5/6 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_qifumingdou",
+      "name": "祈福名都",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "祈福名都(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33358,
+          22.9668
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "祈福名都",
+        "lines": "1/5/6/8",
+        "walk": "可换乘 1/5/6/8 路",
+        "busText": "1/5/6/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "祈福名都,途经 1/5/6/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_qifuxincunxuexiao",
+      "name": "祈福新邨学校",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "祈福新邨学校(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33385,
+          22.9663
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "祈福新邨学校",
+        "lines": "1",
+        "walk": "",
+        "busText": "1 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "祈福新邨学校,途经 1 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_fuhualu",
+      "name": "福华路",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "福华路(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.332725,
+          22.968383
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "福华路",
+        "lines": "1/2/3/A/C",
+        "walk": "可换乘 1/2/3/A/C 路",
+        "busText": "1/2/3/A/C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "福华路,途经 1/2/3/A/C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_binfenhui",
+      "name": "缤纷汇",
+      "type": "邨巴",
+      "subType": "枢纽总站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "缤纷汇(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33277,
+          22.9683
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": true,
+      "bus": {
+        "hub": "缤纷汇",
+        "lines": "1/2/3/5/6/A/C",
+        "walk": "邨巴核心换乘站，可在此转乘多条线路",
+        "busText": "1/2/3/5/6/A/C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "缤纷汇,途经 1/2/3/5/6/A/C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_yingfengge",
+      "name": "迎风阁",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "迎风阁(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33475,
+          22.964633
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "迎风阁",
+        "lines": "1/8",
+        "walk": "可换乘 1/8 路",
+        "busText": "1/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "迎风阁,途经 1/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_qingyi6jie",
+      "name": "青怡6街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "青怡6街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.333625,
+          22.966717
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "青怡6街",
+        "lines": "1/5",
+        "walk": "可换乘 1/5 路",
+        "busText": "1/5 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "青怡6街,途经 1/5 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_hongfulu",
+      "name": "鸿福路",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "鸿福路(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33295,
+          22.967967
+        ]
+      },
+      "coordEstimated": true,
+      "route": "1",
+      "isHub": false,
+      "bus": {
+        "hub": "鸿福路",
+        "lines": "1/2/3",
+        "walk": "可换乘 1/2/3 路",
+        "busText": "1/2/3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "鸿福路,途经 1/2/3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_equ21jie",
+      "name": "E区21街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "E区21街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3331,
+          22.963446
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "E区21街",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "E区21街,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_equ23jie",
+      "name": "E区23街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "E区23街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.333193,
+          22.962613
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "E区23街",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "E区23街,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_equ25jie",
+      "name": "E区25街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "E区25街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3332,
+          22.962554
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "E区25街",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "E区25街,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_yihuwan10chuang",
+      "name": "倚湖湾10幢",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "倚湖湾10幢(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3337,
+          22.958092
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "倚湖湾10幢",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "倚湖湾10幢,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_yihuwan3chuang",
+      "name": "倚湖湾3幢",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "倚湖湾3幢(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33354,
+          22.95952
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "倚湖湾3幢",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "倚湖湾3幢,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_yihuwan6chuang",
+      "name": "倚湖湾6幢",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "倚湖湾6幢(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.333627,
+          22.958747
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "倚湖湾6幢",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "倚湖湾6幢,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_yihuwan7chuang",
+      "name": "倚湖湾7幢",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "倚湖湾7幢(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3336,
+          22.958985
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "倚湖湾7幢",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "倚湖湾7幢,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_yihuwan8chuang",
+      "name": "倚湖湾8幢",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "倚湖湾8幢(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.333713,
+          22.957973
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "倚湖湾8幢",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "倚湖湾8幢,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_yihuwanzongzhan",
+      "name": "倚湖湾总站",
+      "type": "邨巴",
+      "subType": "2线总站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "倚湖湾总站(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3338,
+          22.9572
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "倚湖湾总站",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "倚湖湾总站,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_hujingju15jiesuidao",
+      "name": "湖景居15街隧道",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "湖景居15街隧道(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.333367,
+          22.961067
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "湖景居15街隧道",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "湖景居15街隧道,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_hujingju6jiesuidao",
+      "name": "湖景居6街隧道",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "湖景居6街隧道(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.333453,
+          22.960293
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "湖景居6街隧道",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "湖景居6街隧道,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_hupanhaoting",
+      "name": "湖畔豪庭",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "湖畔豪庭(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3333,
+          22.961662
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "湖畔豪庭",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "湖畔豪庭,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_huanhuxilu",
+      "name": "环湖西路",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "环湖西路(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3334,
+          22.960769
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "环湖西路",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "环湖西路,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_huanhuxiluwei",
+      "name": "环湖西路尾",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "环湖西路尾(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3335,
+          22.959877
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "环湖西路尾",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "环湖西路尾,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_lvyi13jie",
+      "name": "绿怡13街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "绿怡13街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3328,
+          22.966123
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "绿怡13街",
+        "lines": "2/3",
+        "walk": "可换乘 2/3 路",
+        "busText": "2/3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "绿怡13街,途经 2/3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_lvyi16jie",
+      "name": "绿怡16街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "绿怡16街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33276,
+          22.96648
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "绿怡16街",
+        "lines": "2/3",
+        "walk": "可换乘 2/3 路",
+        "busText": "2/3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "绿怡16街,途经 2/3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_lvyi1jie",
+      "name": "绿怡1街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "绿怡1街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.333,
+          22.964338
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "绿怡1街",
+        "lines": "2/8",
+        "walk": "可换乘 2/8 路",
+        "busText": "2/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "绿怡1街,途经 2/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_lvyi2jie",
+      "name": "绿怡2街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "绿怡2街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33302,
+          22.96416
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "绿怡2街",
+        "lines": "2/3",
+        "walk": "可换乘 2/3 路",
+        "busText": "2/3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "绿怡2街,途经 2/3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_lvyihuayuan16jie",
+      "name": "绿怡花园16街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "绿怡花园16街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3327,
+          22.967015
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "绿怡花园16街",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "绿怡花园16街,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_yingyuxuexiao1haomen",
+      "name": "英语学校1号门",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "英语学校1号门(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.332933,
+          22.964933
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "英语学校1号门",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "英语学校1号门,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_yingyuxuexiao5haomen",
+      "name": "英语学校5号门",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "英语学校5号门(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.332847,
+          22.965707
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "英语学校5号门",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "英语学校5号门,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_yingyuxuexiao5haomenduimian",
+      "name": "英语学校5号门对面",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "英语学校5号门对面(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3329,
+          22.965231
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "英语学校5号门对面",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "英语学校5号门对面,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_haotingdamenkou",
+      "name": "豪庭大门口",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "豪庭大门口(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33328,
+          22.96184
+        ]
+      },
+      "coordEstimated": true,
+      "route": "2",
+      "isHub": false,
+      "bus": {
+        "hub": "豪庭大门口",
+        "lines": "2",
+        "walk": "",
+        "busText": "2 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "豪庭大门口,途经 2 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_hujing12jie",
+      "name": "湖景12街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "湖景12街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331083,
+          22.966633
+        ]
+      },
+      "coordEstimated": true,
+      "route": "3",
+      "isHub": false,
+      "bus": {
+        "hub": "湖景12街",
+        "lines": "3",
+        "walk": "",
+        "busText": "3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "湖景12街,途经 3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_hujing13jie",
+      "name": "湖景13街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "湖景13街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331083,
+          22.966633
+        ]
+      },
+      "coordEstimated": true,
+      "route": "3",
+      "isHub": false,
+      "bus": {
+        "hub": "湖景13街",
+        "lines": "3",
+        "walk": "",
+        "busText": "3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "湖景13街,途经 3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_hujing18jie",
+      "name": "湖景18街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "湖景18街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331225,
+          22.96685
+        ]
+      },
+      "coordEstimated": true,
+      "route": "3",
+      "isHub": false,
+      "bus": {
+        "hub": "湖景18街",
+        "lines": "3",
+        "walk": "",
+        "busText": "3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "湖景18街,途经 3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_hujing20jie",
+      "name": "湖景20街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "湖景20街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331225,
+          22.96685
+        ]
+      },
+      "coordEstimated": true,
+      "route": "3",
+      "isHub": false,
+      "bus": {
+        "hub": "湖景20街",
+        "lines": "3",
+        "walk": "",
+        "busText": "3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "湖景20街,途经 3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_hujing25jie",
+      "name": "湖景25街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "湖景25街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331367,
+          22.967067
+        ]
+      },
+      "coordEstimated": true,
+      "route": "3",
+      "isHub": false,
+      "bus": {
+        "hub": "湖景25街",
+        "lines": "3/8",
+        "walk": "可换乘 3/8 路",
+        "busText": "3/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "湖景25街,途经 3/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_hujing7jie",
+      "name": "湖景7街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "湖景7街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.330942,
+          22.966417
+        ]
+      },
+      "coordEstimated": true,
+      "route": "3",
+      "isHub": false,
+      "bus": {
+        "hub": "湖景7街",
+        "lines": "3",
+        "walk": "",
+        "busText": "3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "湖景7街,途经 3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_qifudadaozongzhan",
+      "name": "祈福大道总站",
+      "type": "邨巴",
+      "subType": "3线总站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "祈福大道总站(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3308,
+          22.9662
+        ]
+      },
+      "coordEstimated": true,
+      "route": "3",
+      "isHub": false,
+      "bus": {
+        "hub": "祈福大道总站",
+        "lines": "3",
+        "walk": "",
+        "busText": "3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "祈福大道总站,途经 3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_lvyi10jie",
+      "name": "绿怡10街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "绿怡10街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331792,
+          22.967717
+        ]
+      },
+      "coordEstimated": true,
+      "route": "3",
+      "isHub": false,
+      "bus": {
+        "hub": "绿怡10街",
+        "lines": "3",
+        "walk": "",
+        "busText": "3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "绿怡10街,途经 3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_lvyi12jie",
+      "name": "绿怡12街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "绿怡12街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331792,
+          22.967717
+        ]
+      },
+      "coordEstimated": true,
+      "route": "3",
+      "isHub": false,
+      "bus": {
+        "hub": "绿怡12街",
+        "lines": "3",
+        "walk": "",
+        "busText": "3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "绿怡12街,途经 3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_lvyi15jie",
+      "name": "绿怡15街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "绿怡15街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331933,
+          22.967933
+        ]
+      },
+      "coordEstimated": true,
+      "route": "3",
+      "isHub": false,
+      "bus": {
+        "hub": "绿怡15街",
+        "lines": "3",
+        "walk": "",
+        "busText": "3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "绿怡15街,途经 3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_lvyi7jie",
+      "name": "绿怡7街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "绿怡7街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.33165,
+          22.9675
+        ]
+      },
+      "coordEstimated": true,
+      "route": "3",
+      "isHub": false,
+      "bus": {
+        "hub": "绿怡7街",
+        "lines": "3",
+        "walk": "",
+        "busText": "3 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "绿怡7街,途经 3 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_qingyi1jie",
+      "name": "青怡1街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "青怡1街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331508,
+          22.967283
+        ]
+      },
+      "coordEstimated": true,
+      "route": "3",
+      "isHub": false,
+      "bus": {
+        "hub": "青怡1街",
+        "lines": "3/5/6/8",
+        "walk": "可换乘 3/5/6/8 路",
+        "busText": "3/5/6/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "青怡1街,途经 3/5/6/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_qianseyuan",
+      "name": "千色园",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "千色园(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.330423,
+          22.968108
+        ]
+      },
+      "coordEstimated": true,
+      "route": "5",
+      "isHub": false,
+      "bus": {
+        "hub": "千色园",
+        "lines": "5/6",
+        "walk": "可换乘 5/6 路",
+        "busText": "5/6 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "千色园,途经 5/6 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_kangyi3jie",
+      "name": "康怡3街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "康怡3街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.324318,
+          22.966073
+        ]
+      },
+      "coordEstimated": true,
+      "route": "5",
+      "isHub": false,
+      "bus": {
+        "hub": "康怡3街",
+        "lines": "5",
+        "walk": "",
+        "busText": "5 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "康怡3街,途经 5 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_kangyi5jie",
+      "name": "康怡5街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "康怡5街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.325136,
+          22.966345
+        ]
+      },
+      "coordEstimated": true,
+      "route": "5",
+      "isHub": false,
+      "bus": {
+        "hub": "康怡5街",
+        "lines": "5",
+        "walk": "",
+        "busText": "5 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "康怡5街,途经 5 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_kangyi6jie",
+      "name": "康怡6街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "康怡6街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.324885,
+          22.966262
+        ]
+      },
+      "coordEstimated": true,
+      "route": "5",
+      "isHub": false,
+      "bus": {
+        "hub": "康怡6街",
+        "lines": "5",
+        "walk": "",
+        "busText": "5 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "康怡6街,途经 5 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_qifujituanzhongxin",
+      "name": "祈福集团中心",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "祈福集团中心(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331808,
+          22.968569
+        ]
+      },
+      "coordEstimated": true,
+      "route": "5",
+      "isHub": false,
+      "bus": {
+        "hub": "祈福集团中心",
+        "lines": "5/6",
+        "walk": "可换乘 5/6 路",
+        "busText": "5/6 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "祈福集团中心,途经 5/6 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_fuyiluzongzhan",
+      "name": "福怡路总站",
+      "type": "邨巴",
+      "subType": "5线总站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "福怡路总站(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3235,
+          22.9658
+        ]
+      },
+      "coordEstimated": true,
+      "route": "5",
+      "isHub": false,
+      "bus": {
+        "hub": "福怡路总站",
+        "lines": "5",
+        "walk": "",
+        "busText": "5 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "福怡路总站,途经 5 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_diewu7jie",
+      "name": "蝶舞7街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "蝶舞7街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.325955,
+          22.966618
+        ]
+      },
+      "coordEstimated": true,
+      "route": "5",
+      "isHub": false,
+      "bus": {
+        "hub": "蝶舞7街",
+        "lines": "5",
+        "walk": "",
+        "busText": "5 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "蝶舞7街,途经 5 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_diewu8jie",
+      "name": "蝶舞8街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "蝶舞8街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.325577,
+          22.966492
+        ]
+      },
+      "coordEstimated": true,
+      "route": "5",
+      "isHub": false,
+      "bus": {
+        "hub": "蝶舞8街",
+        "lines": "5",
+        "walk": "",
+        "busText": "5 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "蝶舞8街,途经 5 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_diewu9jie",
+      "name": "蝶舞9街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "蝶舞9街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.326773,
+          22.966891
+        ]
+      },
+      "coordEstimated": true,
+      "route": "5",
+      "isHub": false,
+      "bus": {
+        "hub": "蝶舞9街",
+        "lines": "5",
+        "walk": "",
+        "busText": "5 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "蝶舞9街,途经 5 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_qingyi10jie",
+      "name": "青怡10街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "青怡10街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.329731,
+          22.967877
+        ]
+      },
+      "coordEstimated": true,
+      "route": "5",
+      "isHub": false,
+      "bus": {
+        "hub": "青怡10街",
+        "lines": "5/6",
+        "walk": "可换乘 5/6 路",
+        "busText": "5/6 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "青怡10街,途经 5/6 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_qingyi3jie",
+      "name": "青怡3街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "青怡3街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.328409,
+          22.967436
+        ]
+      },
+      "coordEstimated": true,
+      "route": "5",
+      "isHub": false,
+      "bus": {
+        "hub": "青怡3街",
+        "lines": "5/6/8",
+        "walk": "可换乘 5/6/8 路",
+        "busText": "5/6/8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "青怡3街,途经 5/6/8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_qingyi8jie",
+      "name": "青怡8街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "青怡8街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.328346,
+          22.967415
+        ]
+      },
+      "coordEstimated": true,
+      "route": "5",
+      "isHub": false,
+      "bus": {
+        "hub": "青怡8街",
+        "lines": "5/6",
+        "walk": "可换乘 5/6 路",
+        "busText": "5/6 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "青怡8街,途经 5/6 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_haiqingjuzongzhan",
+      "name": "海晴居总站",
+      "type": "邨巴",
+      "subType": "6线总站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "海晴居总站(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3248,
+          22.9668
+        ]
+      },
+      "coordEstimated": true,
+      "route": "6",
+      "isHub": false,
+      "bus": {
+        "hub": "海晴居总站",
+        "lines": "6",
+        "walk": "",
+        "busText": "6 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "海晴居总站,途经 6 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_19jieaqu",
+      "name": "19街A区",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "19街A区(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.330314,
+          22.971257
+        ]
+      },
+      "coordEstimated": true,
+      "route": "8",
+      "isHub": false,
+      "bus": {
+        "hub": "19街A区",
+        "lines": "8",
+        "walk": "",
+        "busText": "8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "19街A区,途经 8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_19jiecqu",
+      "name": "19街C区",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "19街C区(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331129,
+          22.970014
+        ]
+      },
+      "coordEstimated": true,
+      "route": "8",
+      "isHub": false,
+      "bus": {
+        "hub": "19街C区",
+        "lines": "8/C",
+        "walk": "可换乘 8/C 路",
+        "busText": "8/C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "19街C区,途经 8/C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_19jieyuxueyuanlujiaojie",
+      "name": "19街与学院路交界",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "19街与学院路交界(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331536,
+          22.969393
+        ]
+      },
+      "coordEstimated": true,
+      "route": "8",
+      "isHub": false,
+      "bus": {
+        "hub": "19街与学院路交界",
+        "lines": "8",
+        "walk": "",
+        "busText": "8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "19街与学院路交界,途经 8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_aqubianlidian",
+      "name": "A区便利店",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "A区便利店(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.329907,
+          22.971879
+        ]
+      },
+      "coordEstimated": true,
+      "route": "8",
+      "isHub": false,
+      "bus": {
+        "hub": "A区便利店",
+        "lines": "8/A",
+        "walk": "可换乘 8/A 路",
+        "busText": "8/A 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "A区便利店,途经 8/A 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_aqubianlidianduimian",
+      "name": "A区便利店对面",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "A区便利店对面(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.329907,
+          22.971879
+        ]
+      },
+      "coordEstimated": true,
+      "route": "8",
+      "isHub": false,
+      "bus": {
+        "hub": "A区便利店对面",
+        "lines": "8/A",
+        "walk": "可换乘 8/A 路",
+        "busText": "8/A 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "A区便利店对面,途经 8/A 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_equ19jie",
+      "name": "E区19街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "E区19街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331536,
+          22.969393
+        ]
+      },
+      "coordEstimated": true,
+      "route": "8",
+      "isHub": false,
+      "bus": {
+        "hub": "E区19街",
+        "lines": "8",
+        "walk": "",
+        "busText": "8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "E区19街,途经 8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_tianhujuzongzhan",
+      "name": "天湖居总站",
+      "type": "邨巴",
+      "subType": "8/A线总站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "天湖居总站(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3295,
+          22.9725
+        ]
+      },
+      "coordEstimated": true,
+      "route": "8",
+      "isHub": false,
+      "bus": {
+        "hub": "天湖居总站",
+        "lines": "8/A",
+        "walk": "可换乘 8/A 路",
+        "busText": "8/A 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "天湖居总站,途经 8/A 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_xincunxuexiao",
+      "name": "新邨学校",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "新邨学校(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.333164,
+          22.966907
+        ]
+      },
+      "coordEstimated": true,
+      "route": "8",
+      "isHub": false,
+      "bus": {
+        "hub": "新邨学校",
+        "lines": "8",
+        "walk": "",
+        "busText": "8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "新邨学校,途经 8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_zonglvyuan",
+      "name": "棕榈园",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "棕榈园(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.330721,
+          22.970636
+        ]
+      },
+      "coordEstimated": true,
+      "route": "8",
+      "isHub": false,
+      "bus": {
+        "hub": "棕榈园",
+        "lines": "8",
+        "walk": "",
+        "busText": "8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "棕榈园,途经 8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_zonglvyuanduimian",
+      "name": "棕榈园对面",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "棕榈园对面(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.330721,
+          22.970636
+        ]
+      },
+      "coordEstimated": true,
+      "route": "8",
+      "isHub": false,
+      "bus": {
+        "hub": "棕榈园对面",
+        "lines": "8",
+        "walk": "",
+        "busText": "8 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "棕榈园对面,途经 8 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_aqu10jie",
+      "name": "A区10街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "A区10街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331136,
+          22.970482
+        ]
+      },
+      "coordEstimated": true,
+      "route": "A",
+      "isHub": false,
+      "bus": {
+        "hub": "A区10街",
+        "lines": "A",
+        "walk": "",
+        "busText": "A 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "A区10街,途经 A 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_aqu13jie",
+      "name": "A区13街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "A区13街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.330864,
+          22.970818
+        ]
+      },
+      "coordEstimated": true,
+      "route": "A",
+      "isHub": false,
+      "bus": {
+        "hub": "A区13街",
+        "lines": "A",
+        "walk": "",
+        "busText": "A 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "A区13街,途经 A 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_aqu16jie",
+      "name": "A区16街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "A区16街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.330591,
+          22.971155
+        ]
+      },
+      "coordEstimated": true,
+      "route": "A",
+      "isHub": false,
+      "bus": {
+        "hub": "A区16街",
+        "lines": "A",
+        "walk": "",
+        "busText": "A 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "A区16街,途经 A 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_aqu18jie",
+      "name": "A区18街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "A区18街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.330318,
+          22.971491
+        ]
+      },
+      "coordEstimated": true,
+      "route": "A",
+      "isHub": false,
+      "bus": {
+        "hub": "A区18街",
+        "lines": "A",
+        "walk": "",
+        "busText": "A 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "A区18街,途经 A 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_aqu19jie",
+      "name": "A区19街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "A区19街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3301,
+          22.97176
+        ]
+      },
+      "coordEstimated": true,
+      "route": "A",
+      "isHub": false,
+      "bus": {
+        "hub": "A区19街",
+        "lines": "A",
+        "walk": "",
+        "busText": "A 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "A区19街,途经 A 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_aqu3jie",
+      "name": "A区3街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "A区3街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3316,
+          22.96991
+        ]
+      },
+      "coordEstimated": true,
+      "route": "A",
+      "isHub": false,
+      "bus": {
+        "hub": "A区3街",
+        "lines": "A",
+        "walk": "",
+        "busText": "A 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "A区3街,途经 A 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_aqu5jie",
+      "name": "A区5街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "A区5街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331682,
+          22.969809
+        ]
+      },
+      "coordEstimated": true,
+      "route": "A",
+      "isHub": false,
+      "bus": {
+        "hub": "A区5街",
+        "lines": "A",
+        "walk": "",
+        "busText": "A 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "A区5街,途经 A 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_aqu7jie",
+      "name": "A区7街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "A区7街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331409,
+          22.970145
+        ]
+      },
+      "coordEstimated": true,
+      "route": "A",
+      "isHub": false,
+      "bus": {
+        "hub": "A区7街",
+        "lines": "A",
+        "walk": "",
+        "busText": "A 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "A区7街,途经 A 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_bqu12jie",
+      "name": "B区12街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "B区12街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.331,
+          22.97065
+        ]
+      },
+      "coordEstimated": true,
+      "route": "A",
+      "isHub": false,
+      "bus": {
+        "hub": "B区12街",
+        "lines": "A",
+        "walk": "",
+        "busText": "A 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "B区12街,途经 A 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_bqu16jie",
+      "name": "B区16街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "B区16街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3307,
+          22.97102
+        ]
+      },
+      "coordEstimated": true,
+      "route": "A",
+      "isHub": false,
+      "bus": {
+        "hub": "B区16街",
+        "lines": "A/C",
+        "walk": "可换乘 A/C 路",
+        "busText": "A/C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "B区16街,途经 A/C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_bqu18jie",
+      "name": "B区18街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "B区18街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3304,
+          22.97139
+        ]
+      },
+      "coordEstimated": true,
+      "route": "A",
+      "isHub": false,
+      "bus": {
+        "hub": "B区18街",
+        "lines": "A/C",
+        "walk": "可换乘 A/C 路",
+        "busText": "A/C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "B区18街,途经 A/C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_bqu9jie",
+      "name": "B区9街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "B区9街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3313,
+          22.97028
+        ]
+      },
+      "coordEstimated": true,
+      "route": "A",
+      "isHub": false,
+      "bus": {
+        "hub": "B区9街",
+        "lines": "A/C",
+        "walk": "可换乘 A/C 路",
+        "busText": "A/C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "B区9街,途经 A/C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_bquhuisuo",
+      "name": "B区会所",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "B区会所(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3319,
+          22.96954
+        ]
+      },
+      "coordEstimated": true,
+      "route": "A",
+      "isHub": false,
+      "bus": {
+        "hub": "B区会所",
+        "lines": "A/C",
+        "walk": "可换乘 A/C 路",
+        "busText": "A/C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "B区会所,途经 A/C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_bqu11jie",
+      "name": "B区11街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "B区11街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3254,
+          22.9673
+        ]
+      },
+      "coordEstimated": true,
+      "route": "C",
+      "isHub": false,
+      "bus": {
+        "hub": "B区11街",
+        "lines": "C",
+        "walk": "",
+        "busText": "C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "B区11街,途经 C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_cqu10jie",
+      "name": "C区10街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "C区10街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.326189,
+          22.967467
+        ]
+      },
+      "coordEstimated": true,
+      "route": "C",
+      "isHub": false,
+      "bus": {
+        "hub": "C区10街",
+        "lines": "C",
+        "walk": "",
+        "busText": "C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "C区10街,途经 C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_cqu13jie",
+      "name": "C区13街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "C区13街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.324611,
+          22.967133
+        ]
+      },
+      "coordEstimated": true,
+      "route": "C",
+      "isHub": false,
+      "bus": {
+        "hub": "C区13街",
+        "lines": "C",
+        "walk": "",
+        "busText": "C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "C区13街,途经 C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_cqu16jie",
+      "name": "C区16街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "C区16街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.323033,
+          22.9668
+        ]
+      },
+      "coordEstimated": true,
+      "route": "C",
+      "isHub": false,
+      "bus": {
+        "hub": "C区16街",
+        "lines": "C",
+        "walk": "",
+        "busText": "C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "C区16街,途经 C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_cqu18jie",
+      "name": "C区18街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "C区18街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.321456,
+          22.966467
+        ]
+      },
+      "coordEstimated": true,
+      "route": "C",
+      "isHub": false,
+      "bus": {
+        "hub": "C区18街",
+        "lines": "C",
+        "walk": "",
+        "busText": "C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "C区18街,途经 C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_cqu19jie",
+      "name": "C区19街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "C区19街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.319878,
+          22.966133
+        ]
+      },
+      "coordEstimated": true,
+      "route": "C",
+      "isHub": false,
+      "bus": {
+        "hub": "C区19街",
+        "lines": "C",
+        "walk": "",
+        "busText": "C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "C区19街,途经 C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_cqu3jie",
+      "name": "C区3街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "C区3街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.329344,
+          22.968133
+        ]
+      },
+      "coordEstimated": true,
+      "route": "C",
+      "isHub": false,
+      "bus": {
+        "hub": "C区3街",
+        "lines": "C",
+        "walk": "",
+        "busText": "C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "C区3街,途经 C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_cqu7jie",
+      "name": "C区7街",
+      "type": "邨巴",
+      "subType": "中途站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "C区7街(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.327767,
+          22.9678
+        ]
+      },
+      "coordEstimated": true,
+      "route": "C",
+      "isHub": false,
+      "bus": {
+        "hub": "C区7街",
+        "lines": "C",
+        "walk": "",
+        "busText": "C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "C区7街,途经 C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    },
+    {
+      "_id": "spot_bus_cxianzongzhan",
+      "name": "C线总站",
+      "type": "邨巴",
+      "subType": "C线总站",
+      "adultOnly": false,
+      "ageRange": "全年龄(居民/亲子出行)",
+      "address": "C线总站(祈福新邨)",
+      "coord": {
+        "type": "Point",
+        "coordinates": [
+          113.3183,
+          22.9658
+        ]
+      },
+      "coordEstimated": true,
+      "route": "C",
+      "isHub": false,
+      "bus": {
+        "hub": "C线总站",
+        "lines": "C",
+        "walk": "",
+        "busText": "C 路 · 祈福邨巴站点"
+      },
+      "external": false,
+      "desc": "C线总站,途经 C 路。坐标按线路图估算,待腾讯位置服务 geocoding 复核。",
+      "verifyStatus": "pending",
+      "verifySource": "",
+      "verifyUrl": "",
+      "verifyDueAt": "2026-12-13",
+      "source": "公众号《最新最全祈福邨巴路线图》(2026-08-25)",
+      "createdAt": "2026-09-22",
+      "updatedAt": "2026-09-22",
+      "coordSource": "按邨巴线路图估算,待腾讯位置服务 geocoding 复核"
+    }
+  ]
+}

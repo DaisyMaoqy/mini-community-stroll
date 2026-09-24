@@ -24,6 +24,147 @@ page { height: 100%; overflow: hidden; }
 }
 .tab.on { background: var(--green); color: #fff; }
 
+/* 邨巴线路切换 chips（与地图 marker / BUS_ROUTE_COLORS 配色一致） */
+.route-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 2px 2px 0; font-size: var(--fs-xs); }
+.route-chips__t { font-weight: 600; color: var(--text-1); margin-right: 2px; }
+.route-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 24px; height: 24px; padding: 0 9px;
+  border: 1px solid; border-radius: 999px; font-weight: 700; line-height: 1;
+}
+.route-chip.on { color: #fff; }
+
+/* ==========================================================================
+   邨巴「地铁式线路示意图」（M4）
+   说明：全部用 view + WXSS 绘制（小程序 <image> 对 SVG 支持差，且无法点选）。
+   类名一律拉丁字母 —— WXSS 不支持中文选择器。
+   ========================================================================== */
+
+/* ---- 固定区：线网总览扇形示意（8 线自枢纽发散） ---- */
+.metro-card { padding: 12px 14px 14px; }
+.metro-hd { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.metro-hd__t { font-size: var(--fs-lg); font-weight: 800; color: var(--ink); }
+.metro { display: flex; align-items: center; gap: 4px; }
+
+.metro__fan { position: relative; width: 132px; height: 150px; flex: 0 0 132px; }
+.metro__hub {
+  position: absolute; left: 50%; bottom: 26px;
+  width: 13px; height: 13px; margin-left: -6.5px; margin-bottom: -6.5px;
+  border-radius: 50%; box-shadow: 0 0 0 3px rgba(90, 103, 115, 0.15);
+}
+.metro__hub-t {
+  position: absolute; left: 50%; bottom: 3px; transform: translateX(-50%);
+  font-size: var(--fs-meta); color: var(--ink2); white-space: nowrap;
+}
+
+/* 单条发散线：以枢纽为旋转原点（transform-origin: 0 50%，盒高 0 即枢纽点） */
+.fan-line { position: absolute; left: 50%; bottom: 26px; width: 56px; height: 0; transform-origin: 0 50%; }
+.fan-line__bar { position: absolute; left: 0; top: -1.5px; height: 3px; width: 100%; border-radius: 2px; }
+.fan-line__end {
+  position: absolute; left: 100%; top: 0;
+  width: 18px; height: 18px; margin-left: -9px; margin-top: -9px;
+  border-radius: 50%; border: 2px solid; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--fs-meta); font-weight: 800; background: #fff;
+}
+
+.metro__legend { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lg { display: flex; align-items: center; gap: 6px; padding: 2px 4px; border-radius: 8px; }
+.lg--hover { background: var(--sand); }
+.lg.on { background: var(--sand); }
+.lg__badge {
+  flex: 0 0 auto; width: 17px; height: 17px; border-radius: 50%;
+  color: #fff; font-size: var(--fs-meta); font-weight: 800;
+  text-align: center; line-height: 17px;
+}
+.lg__t { font-size: var(--fs-xs); color: var(--ink2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---- 总览态：线路列表 ---- */
+.bus-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; }
+.bus-tip { padding: 0 2px; line-height: 1.6; }
+.bus-lc { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+.bus-lc--hover { background: var(--sand); }
+.bus-lc__badge {
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%;
+  color: #fff; font-size: var(--fs-md); font-weight: 800;
+  text-align: center; line-height: 30px;
+}
+.bus-lc__m { flex: 1 1 auto; min-width: 0; }
+.bus-lc__name { font-size: var(--fs-lg); font-weight: 700; color: var(--ink); }
+.bus-lc__ends { font-size: var(--fs-sm); color: var(--ink2); margin-top: 2px; }
+.bus-lc__via { margin-top: 3px; line-height: 1.5; }
+.bus-lc__r { flex: 0 0 auto; color: var(--ink3); display: flex; align-items: center; }
+
+/* ---- 单线路态 ---- */
+.bus-detail { display: flex; flex-direction: column; gap: 10px; padding-bottom: 14px; }
+
+.bus-hd { padding: 12px 14px; }
+.bus-hd__top { display: flex; align-items: center; gap: 8px; }
+.bus-hd__badge {
+  flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%;
+  color: #fff; font-size: var(--fs-sm); font-weight: 800;
+  text-align: center; line-height: 26px;
+}
+.bus-hd__name { font-size: var(--fs-lg); font-weight: 800; color: var(--ink); flex: 1 1 auto; }
+.bus-hd__back {
+  flex: 0 0 auto; font-size: var(--fs-xs); color: var(--green-d);
+  padding: 4px 10px; border-radius: 999px; background: var(--green-l);
+}
+.bus-hd__via { margin-top: 6px; line-height: 1.6; }
+.bus-hd__meta { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+
+.bus-dir { display: flex; align-items: center; gap: 8px; padding: 2px 2px 0; }
+.bus-dir__b {
+  padding: 6px 16px; border-radius: 999px; border: 1px solid var(--line);
+  background: #fff; font-size: var(--fs-sm); font-weight: 600; color: var(--ink2);
+  line-height: 1.2;
+}
+.bus-dir__b.on { color: #fff; }
+.bus-dir__n { margin-left: auto; }
+
+/* 竖向站点链（地铁线路图式） */
+.bus-chain { padding: 14px 14px 14px 16px; }
+.chain { position: relative; padding-left: 26px; }
+.stn { position: relative; padding: 7px 0; }
+/* 连接线：上接本站圆点下沿，下探至下一站圆点上沿（末站不渲染） */
+.stn__link { position: absolute; left: -17px; top: 24px; bottom: -13px; width: 4px; border-radius: 2px; opacity: .6; }
+.stn__dot {
+  position: absolute; left: -22px; top: 10px;
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 3px solid; box-sizing: border-box; background: #fff; z-index: 1;
+}
+.stn__dot.is-term { width: 16px; height: 16px; left: -23px; top: 9px; }
+.stn__main { min-width: 0; }
+.stn__row { display: flex; align-items: center; gap: 6px; }
+.stn__i { flex: 0 0 auto; width: 15px; font-size: var(--fs-meta); color: var(--ink3); text-align: right; }
+.stn__name { font-size: 15px; color: var(--ink); font-weight: 600; line-height: 1.4; }
+.stn__name.is-term { font-weight: 800; }
+.stn__tag {
+  flex: 0 0 auto; font-size: var(--fs-meta); padding: 1px 6px;
+  border-radius: 999px; background: var(--sand); color: var(--ink3);
+}
+.stn__tag.is-hub { background: #EDF0F2; }
+.stn__road {
+  display: inline-block; margin-top: 4px; padding: 1px 7px;
+  border: 1px solid; border-radius: 999px;
+  font-size: var(--fs-meta); line-height: 1.6; background: #fff;
+}
+
+/* 运行时刻表 */
+.bus-tt { padding: 12px 14px; }
+.bus-tt__hd { display: flex; align-items: center; gap: 6px; }
+.bus-tt__t { flex: 1 1 auto; font-size: var(--fs-md); font-weight: 700; color: var(--ink); }
+.bus-tt__sw { font-size: var(--fs-xs); }
+.tt-sec { margin-top: 10px; }
+.tt-sec__t { font-size: var(--fs-sm); font-weight: 700; color: var(--ink2); margin-bottom: 4px; }
+.tt-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 0; border-bottom: 1px dashed var(--line); font-size: var(--fs-sm);
+}
+.tt-row__r { color: var(--ink); font-weight: 600; }
+.tt-note { margin-top: 10px; font-size: var(--fs-xs); color: var(--ink3); line-height: 1.6; }
+.bus-src { text-align: center; padding: 2px 0 6px; font-size: var(--fs-meta); }
+
 /* POI 列表 */
 .poi-list { display: flex; flex-direction: column; gap: var(--gap-md); padding-bottom: 12px; }
 .poi { display: block; }
