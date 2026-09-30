@@ -1,0 +1,10 @@
+{
+  "name": "route",
+  "version": "1.0.0",
+  "description": "腾讯位置服务路线规划代理（步行 walking + 电动车 ebicycling），供出行决策按真实路线距离推荐步行/邨巴",
+  "main": "index.js",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.4.0"
+  }
+}
