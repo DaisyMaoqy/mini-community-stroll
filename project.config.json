@@ -69,7 +69,7 @@
   "srcMiniprogramRoot": "miniprogram/",
   "packOptions": {
     "ignore": [
-      { "type": "folder", "value": "assets/icons" },
+      { "type": "suffix", "value": ".svg" },
       { "type": "file", "value": "envList.js" },
       { "type": "file", "value": ".DS_Store" },
       { "type": "file", "value": "Thumbs.db" }
