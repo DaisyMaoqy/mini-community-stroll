@@ -1,4 +1,12 @@
+<image
+  wx:if="{{img}}"
+  class="svg-icon__img"
+  src="{{img}}"
+  mode="aspectFit"
+  style="width:{{size}}px;height:{{size}}px;"
+></image>
 <view
-  class="svg-icon {{mask ? 'is-ready' : ''}}"
+  wx:else
+  class="svg-icon {{mask ? 'is-ready' : ''}} {{tint ? 'tint-' + tint : ''}}"
   style="width:{{size}}px;height:{{size}}px;-webkit-mask-image:url('{{mask}}');-webkit-mask-repeat:no-repeat;-webkit-mask-position:center;-webkit-mask-size:contain;mask-image:url('{{mask}}');mask-repeat:no-repeat;mask-position:center;mask-size:contain;"
 ></view>

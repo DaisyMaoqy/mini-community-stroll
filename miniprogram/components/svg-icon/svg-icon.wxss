@@ -1,8 +1,18 @@
 /* 图标遮罩层：形状来自 mask，颜色由 background-color 决定，随主题 var(--green) 变化。
-   .is-ready 在 mask 计算完成后才上色，避免首帧出现整块绿色。 */
+   .is-ready 在 mask 计算完成后才上色，避免首帧出现整块绿色。
+   .tint-* 为可选着色（如宝宝胶囊用蜜桃色），不传仍随主题。 */
 .svg-icon {
   display: block;
 }
 .svg-icon.is-ready {
   background-color: var(--green);
+}
+.svg-icon.is-ready.tint-peach { background-color: var(--peach-d); }
+.svg-icon.is-ready.tint-red { background-color: var(--red); }
+.svg-icon.is-ready.tint-ink { background-color: var(--ink2); }
+.svg-icon.is-ready.tint-mint { background-color: var(--green-m); }
+
+/* 彩色 PNG 图标（ebike/walk 插画）：<image> 直渲，不随主题变色 */
+.svg-icon__img {
+  display: block;
 }
