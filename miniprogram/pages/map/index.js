@@ -82,6 +82,7 @@ Page({
     activeTab: 'all',
     filtered: [],
     markers: [],
+    activeMarkerId: -1, // 当前聚焦（放大高亮）的 marker 下标；-1 = 无聚焦
     points: [],        // include-points：让地图自适应缩放，保证所有 POI 首屏可见
     poiCount: 0,       // 已加载 POI 数（便于确认数据是否到位）
     detail: null,
@@ -124,6 +125,11 @@ Page({
     this.setData({ theme: app.resolveTheme() });
     // 切回地图（tab 切换 / 从详情返回）时重新拉取 POI，保证数据最新
     this.loadSpots();
+  },
+
+  onHide() {
+    // 切到其他 tabBar 页时关闭详情弹层，避免切回来时残留
+    if (this.data.detail) this.closeDetail();
   },
 
   async loadSpots() {
@@ -195,7 +201,7 @@ Page({
     const block = (app.globalData && app.globalData.block) || '';
     const list = (this.allSpots || []).map((s) => Object.assign({}, s));
     this.allSpots = list;
-    this.applyFilter(this.data.activeTab, this.data.activeRoute);
+    this.applyFilter(this.data.activeTab, this.data.activeRoute, this.data.activeMarkerId >= 0);
 
     // 逐 POI 计算出行方案（异步，串行避免并发打爆 route 云函数）
     const u = this.data.userLoc; // 定位仅作兜底原点
@@ -228,7 +234,7 @@ Page({
       }
     }
     // 结果回填到当前视图
-    this.applyFilter(this.data.activeTab, this.data.activeRoute);
+    this.applyFilter(this.data.activeTab, this.data.activeRoute, this.data.activeMarkerId >= 0);
     // 详情弹窗若已打开，用算好 _dist 的记录刷新（修复「先开弹窗、后算完距离」时弹窗停留占位）
     if (this.data.detail) {
       const cur = (this.allSpots || []).find((s) => s._id === this.data.detail._id);
@@ -236,7 +242,13 @@ Page({
     }
   },
 
-  applyFilter(tab, route) {
+  /**
+   * @param {string} tab 分类 tab
+   * @param {string} route 邨巴线路号（'all' = 总览）
+   * @param {boolean} [keepFocus] 是否保留当前聚焦态（异步距离计算收尾时传 true，
+   *        避免把用户已点开的放大图钉 / center / scale 冲掉）。不传 = 重置聚焦。
+   */
+  applyFilter(tab, route, keepFocus) {
     route = route || 'all';
     // 先按分类 tab 过滤
     let list = (this.allSpots || []).filter((s) => tab === 'all' || s.type === tab);
@@ -254,6 +266,11 @@ Page({
     //   ⚠ 无 coord 的 POI 不打点（cloudfunctions/spots 的 validateSpot 允许 coord 缺省入库），
     //     同样并入过滤条件而非 map 中跳过，避免 map 回调里的下标再次错位。
     const markerSpots = list.filter((s) => s.type !== '邨巴' && s.coord && s.coord.coordinates);
+    // 聚焦态保留：仅当调用方要求 keepFocus 且当前下标仍在有效范围内时保留，否则重置为 -1。
+    //   注意：聚焦只能按下标保留 —— computeDistances 已把 allSpots 对象整体克隆换新，
+    //   按对象引用（_idx.indexOf(oldSpot)）必然失配，故此处按 activeMarkerId 下标续接。
+    const cur = this.data.activeMarkerId;
+    const keep = (keepFocus && cur >= 0 && cur < markerSpots.length) ? cur : -1;
     const markers = markerSpots.map((s, i) => {
       const pin = (CAT[s.type] || { pin: 'civic' }).pin;
       return {
@@ -261,8 +278,8 @@ Page({
         latitude: s.coord.coordinates[1],
         longitude: s.coord.coordinates[0],
         iconPath: '/assets/pins/pin-' + pin + '.png',
-        width: 30,
-        height: 38,
+        width: i === keep ? 42 : 30,
+        height: i === keep ? 53 : 38,
         anchor: { x: 0.5, y: 1 },
       };
     });
@@ -271,12 +288,14 @@ Page({
     // include-points：把当前筛选出的点位交给地图自适应缩放。
     // 小区 POI 经度跨度 ~2.7km、纬度 ~3km，固定 scale=15 首屏只能露出 1/13，
     // 大量 pin 落在屏外（用户会误以为「没打点」）。交给 include-points 自动 fit 最稳。
+    // 但保留聚焦态时必须清空 include-points，否则自适应会覆盖 focusMarker 设定的 center/scale。
     const points = markers.map((m) => ({ latitude: m.latitude, longitude: m.longitude }));
 
     this.setData({
       filtered: list,
       markers: markers,
-      points: points,
+      points: keep >= 0 ? [] : points,
+      activeMarkerId: keep, // 切换 tab / 筛选后聚焦状态重置（keep === -1）
       activeTab: tab,
       activeRoute: route,
     });
@@ -332,17 +351,20 @@ Page({
 
   onTab(e) {
     const tab = e.currentTarget.dataset.tab;
+    if (this.data.detail) this.closeDetail(); // 切换分类前先关详情，避免弹层残留
     this.setData({ activeRoute: 'all' }); // 切换分类时回到线网总览
     this.applyFilter(tab, 'all');
   },
 
   // 邨巴线路筛选：点线路 chip 切换 activeRoute（同时驱动示意图）
   onRouteTap(e) {
+    if (this.data.detail) this.closeDetail(); // 切换线路前先关详情
     this.applyFilter(this.data.activeTab, e.currentTarget.dataset.route);
   },
 
   // 总览列表 / 图例点选线路
   onLineTap(e) {
+    if (this.data.detail) this.closeDetail(); // 点选线路前先关详情
     this.applyFilter('邨巴', e.currentTarget.dataset.route);
   },
 
@@ -359,6 +381,12 @@ Page({
     this.setData({ ttOpen: !this.data.ttOpen });
   },
 
+  // ⚠ 禁止再给 <map> 加 bindtap（如 onMapTap）！
+  //   微信 map 组件点 marker 时 bindmarkertap 与 bindtap 会同时触发，且 markertap 先执行。
+  //   若 <map> 上挂了 tap，时序会是：onMarkerTap → openDetail（detail 变非空）
+  //   → 紧接着 tap 回调看到 detail 为真 → closeDetail，导致刚打开的详情被立即关闭，
+  //   表现为「点图钉弹不出详情」（回归源：commit fd3f476）。
+  //   因此「点地图空白处关闭详情」不要用 map 的 bindtap 实现；关闭详情统一走遮罩/关闭按钮。
   onMarkerTap(e) {
     // 详情已打开时：原生 map 图层盖在遮罩之上，点图钉会穿透到这里（遮罩拦不住）。
     // 图钉按用户要求保留可见，但这一次点击统一按「点遮罩」处理 → 关闭详情，
@@ -368,17 +396,44 @@ Page({
     if (s) this.openDetail(s);
   },
 
-  // 点地图空白处：详情打开时等同于点遮罩 → 关闭（与 onMarkerTap 同源，兜住不同基础库的事件差异）
-  onMapTap() {
-    if (this.data.detail) this.closeDetail();
-  },
-
   onCardTap(e) {
     const s = (this.data.filtered || [])[e.currentTarget.dataset.idx];
     if (s) this.openDetail(s);
   },
 
+  /**
+   * 聚焦某个 POI：放大地图上对应的图钉，并把地图以该点为中心放大到合适层级。
+   * @param {Object} s POI 对象（需含 coord.coordinates）
+   */
+  focusMarker(s) {
+    // 邨巴 / 无坐标点没有 marker（applyFilter 已把这类点排除在 markers 之外），直接返回
+    if (!s || !s.coord || !s.coord.coordinates) return;
+    // 用对象引用定位 marker 下标：markerSpots 与 filtered 共享同一批对象引用，indexOf 可靠，
+    // 避免用 name 匹配等脆弱方案。
+    const idx = (this._idx || []).indexOf(s);
+    if (idx < 0) return; // 未命中（理论上不会发生）
+    // 克隆 markers，命中项放大到 42x53（保持 30:38 比例）；anchor 在尖端（y=1），放大会向上生长。
+    const markers = (this.data.markers || []).map((m, i) => {
+      const hit = i === idx;
+      return Object.assign({}, m, {
+        width: hit ? 42 : 30,
+        height: hit ? 53 : 38,
+        anchor: { x: 0.5, y: 1 },
+      });
+    });
+    // ⚠ 必须清空 include-points：map 同时绑定 include-points 时，改 scale/center 会被
+    //   自适应缩放覆盖。清空后 map 才会按我们设定的 center/scale 渲染。
+    this.setData({
+      markers: markers,
+      activeMarkerId: idx,
+      points: [],
+      center: { lat: s.coord.coordinates[1], lng: s.coord.coordinates[0] },
+      scale: 16,
+    });
+  },
+
   openDetail(s) {
+    this.focusMarker(s); // 列表点击与图钉点击统一：聚焦图钉 + 地图居中放大
     const d = Object.assign({}, s);
     if (s.type === '邨巴' && s.bus) {
       d.busColor = s.isHub ? BUS_ROUTE_COLORS.hub : (BUS_ROUTE_COLORS[s.route] || '#FF9E6D');

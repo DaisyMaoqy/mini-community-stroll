@@ -88,6 +88,13 @@ Page({
     this.syncOutdoor();
   },
 
+  onHide() {
+    // 切到其他 tabBar 页：关闭残留弹层（否则切回时 blockSheetOpen / babySheetOpen 仍为 true，
+    // 既锁住滚动，又让 canvas 保持 0 尺寸 → onShow 的 syncOutdoor 重绘会崩）。
+    // 关闭后重绘：此时页面通常已不可见，canvas 尺寸为 0，绘制被守卫跳过，无害。
+    this.setData({ blockSheetOpen: false, babySheetOpen: false }, () => this._redrawRings());
+  },
+
   onUnload() {
     // 离开页面：结算本次计时（不 reset 全局，时长已按时间戳实时落账）
     this.pauseTimer();
@@ -153,16 +160,17 @@ Page({
 
   // ---- 板块切换 sheet（v9）----
   openBlockSheet() { this.setData({ blockSheetOpen: true }); },
-  closeBlockSheet() { this.setData({ blockSheetOpen: false }); },
+  // 关闭 sheet 后重绘两环：canvas 隐藏期间尺寸为 0、绘制被守卫跳过，重新显形必须补画
+  closeBlockSheet() { this.setData({ blockSheetOpen: false }, () => this._redrawRings()); },
   pickBlock(e) {
     const b = e.currentTarget.dataset.b;
     app.setBlock(b);
-    this.setData({ block: b, blockSheetOpen: false });
+    this.setData({ block: b, blockSheetOpen: false }, () => this._redrawRings());
   },
 
   // ---- 宝宝档案 sheet（v15）----
   openBabySheet() { this.setData({ babySheetOpen: true, newName: '', newBirth: '' }); },
-  closeBabySheet() { this.setData({ babySheetOpen: false }); },
+  closeBabySheet() { this.setData({ babySheetOpen: false }, () => this._redrawRings()); },
   pickBaby(e) {
     const i = +e.currentTarget.dataset.i;
     if (i === app.globalData.babyIdx) { this.closeBabySheet(); return; }
@@ -170,7 +178,7 @@ Page({
     this.setData({ theme: app.resolveTheme() }); // 月龄变了，主题可能跟着切
     this.syncTopbar();
     this.refreshGreeting();
-    this.closeBabySheet();
+    this.closeBabySheet(); // 内部回调会重绘两环 → 环色随新主题更新
   },
   delBaby(e) {
     const i = +e.currentTarget.dataset.i;
@@ -299,11 +307,17 @@ Page({
       const ctx = canvas.getContext('2d');
       const w = res[0].width;
       const h = res[0].height;
+      // 守卫①：canvas 被 hidden="{{blockSheetOpen || babySheetOpen}}"（index.wxml:35/74）隐藏时
+      //   尺寸为 0。此处必须提前 return —— 否则 r = 0 - lw/2 - 1 会算出负数（户外环 lw=8 → -5），
+      //   arc 会抛 IndexSizeError。守卫放在 canvas.width / ctx.scale 之前，避免留下半初始化状态。
+      if (!w || !h) return;
       const dpr = ((wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).pixelRatio) || 2;
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       ctx.scale(dpr, dpr);
       const cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - lw / 2 - 1;
+      // 守卫②：极小尺寸下 r 仍可能 ≤ 0，直接不画，避免 arc 再次抛错。
+      if (r <= 0) return;
       ctx.clearRect(0, 0, w, h);
       // 底环
       ctx.beginPath();
@@ -326,6 +340,12 @@ Page({
     const pal = palette(this.data.theme);
     const pct = (this.data.idxScore != null ? this.data.idxScore : this.data.indexPercent) / 100;
     this._paintRing('#indexRing', pct, pal.green, '#CFE6DA');
+  },
+
+  // sheet 关闭后补画两环（canvas 隐藏期间尺寸为 0，绘制被守卫跳过，重新显形需主动重绘）
+  _redrawRings() {
+    this.drawRing();
+    this.drawOutRing();
   },
 
   // 户外环（v15 ring-card 截图比例）：绿色 + sand 底，112px 环配 8px 描边
