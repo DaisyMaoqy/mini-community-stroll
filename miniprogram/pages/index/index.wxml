@@ -1,61 +1,93 @@
+<page-meta page-style="{{(blockSheetOpen || babySheetOpen) ? 'overflow: hidden' : ''}}"></page-meta>
 <!-- pages/index/index.wxml 首页（M2：接 local_spots 真实数据） -->
+<!-- 弹层打开时锁住页面滚动：否则在弹层本体上拖动会带动背景一起滚（用户反馈 2026-09-30）。
+     用 page-meta 的 page-style 而不是给弹层加 catchtouchmove —— 后者会 preventDefault 掉
+     弹层内 .opts / .baby-list 自身的滚动。 -->
 <view class="container home" data-theme="{{theme}}">
   <block wx:if="{{ready}}">
-    <!-- 顶部问候 -->
-    <view class="home-hero">
+    <!-- 顶部定位栏（v9 板块切换 + v15 宝宝胶囊） -->
+    <view class="locbar">
+      
+      <view class="blk-pill" bindtap="openBlockSheet">
+        <svg-icon name="pin" size="20"></svg-icon>
+        <text>{{block || '选择板块'}}</text>
+        <text class="blk-caret">></text>
+      </view>
+      <view class="baby-chip" bindtap="openBabySheet">
+        <svg-icon name="baby" size="22" tint="peach"></svg-icon>
+        <text class="baby-chip__txt">{{babyChip}}</text>
+      </view>
+    </view>
+    <!-- <view class="home-hero home-hero--slim">
       <view class="home-hero__hi">{{greeting}}{{babyName ? '，' + babyName + '妈妈' : ''}}</view>
       <view class="home-hero__sub muted">今天带娃去哪儿遛一遛？</view>
-    </view>
+    </view> -->
 
-    <!-- 遛娃指数环 -->
+    <!-- 遛娃指数卡（对齐 v15：环中心档位大字+分数 · 右侧大标题+灯泡建议 · 底部整行四分项；天气获取中显示卡内骨架） -->
     <view class="card index-card">
-      <view class="row between">
-        <view class="sec">今日遛娃指数</view>
-        <view class="muted">{{updatedAt}}</view>
-      </view>
+      <!-- <view class="row between">
+        <view class="sec">遛娃指数</view>
+        <view class="muted rmuted">{{idxLoading ? '获取中…' : updatedAt + (weatherMock ? ' · 估算' : '')}}</view>
+      </view> -->
       <view class="index-main">
         <view class="ring-wrap">
-          <canvas type="2d" id="indexRing" class="ring-canvas"></canvas>
-          <view class="ring-center">
-            <view class="ring-num">{{indexPercent}}%</view>
-            <view class="ring-cap muted">户外完成度</view>
+          <!-- canvas 为原生组件：同层渲染在部分环境失效会穿透弹窗遮罩，开 sheet 时临时隐藏 -->
+          <canvas type="2d" id="indexRing" class="ring-canvas" hidden="{{blockSheetOpen || babySheetOpen}}"></canvas>
+          <view class="ring-center" wx:if="{{!idxLoading}}">
+            <view class="ring-lv">{{idxLevel}}</view>
+            <view class="ring-score">{{idxScore != null ? idxScore + ' 分' : '—'}}</view>
+          </view>
+          <view class="ring-center" wx:else>
+            <view class="sk sk-line" style="width:26px;height:14px"></view>
+            <view class="sk sk-line" style="width:24px;height:9px;margin-top:5px"></view>
           </view>
         </view>
-        <view class="index-side">
-          <view class="index-tip">{{indexTip}}</view>
-          <view class="index-metrics">
-            <view class="metric">
-              <text class="metric-num">{{outdoorText}}</text>
-              <text class="metric-cap muted">室外</text>
-            </view>
-            <view class="metric">
-              <text class="metric-num">{{indoorText}}</text>
-              <text class="metric-cap muted">室内</text>
-            </view>
+        <view class="index-txt" wx:if="{{!idxLoading}}">
+          <view class="muted rmuted">{{idxLoading ? '获取中…' : updatedAt + (weatherMock ? ' · 估算' : '')}}</view>
+          <view class="index-h2">{{indexH2}}</view>
+          <view class="index-tip">
+            <svg-icon name="bulb" size="15" tint="mint"></svg-icon>
+            <text>{{indexTip}}</text>
           </view>
-          <view class="muted index-note">目标每日户外 {{goalMin}} 分钟</view>
         </view>
+        <view class="index-txt" wx:else style="display:flex;flex-direction:column;gap:10px">
+          <view class="sk sk-line w-70" style="height:18px"></view>
+          <view class="sk sk-line w-90"></view>
+          <view class="sk sk-line w-60"></view>
+        </view>
+      </view>
+      <view class="metrics" wx:if="{{!idxLoading}}">
+        <view class="m" wx:for="{{idxItems}}" wx:key="icon">
+          <svg-icon name="{{item.icon}}" size="15" tint="mint"></svg-icon>
+          <text class="m-v">{{item.v}}</text>
+          <text class="m-k">{{item.k}}</text>
+        </view>
+      </view>
+      <view class="metrics" wx:else>
+        <view class="sk sk-block idx-sk-cell" wx:for="{{[0,1,2,3]}}" wx:key="*this"></view>
       </view>
     </view>
 
-    <!-- 户外陪伴计时 -->
-    <view class="card outdoor">
-      <view class="sec">户外陪伴计时</view>
-      <view class="outdoor__row">
-        <view class="outdoor__cell {{timerMode === 'indoor' ? 'on' : ''}}">
-          <text class="outdoor__num">{{indoorText}}</text>
-          <text class="outdoor__lbl muted">室内</text>
-        </view>
-        <view class="outdoor__cell {{timerMode === 'outdoor' ? 'on' : ''}}">
-          <text class="outdoor__num">{{outdoorText}}</text>
-          <text class="outdoor__lbl muted">室外</text>
+    <!-- 户外陪伴计时（v15 ring-card：左环有效户外 + 右侧建议/计时中状态/主按钮） -->
+    <view class="card ring-card">
+      <view class="oring">
+        <canvas type="2d" id="outRing" class="oring-canvas" hidden="{{blockSheetOpen || babySheetOpen}}"></canvas>
+        <view class="oring-center">
+          <view class="o-num">{{outdoorMin}}</view>
+          <view class="o-goal muted">/{{goalMin}}′</view>
+          <view class="o-lab muted">有效户外</view>
         </view>
       </view>
-      <view class="outdoor__actions">
-        <button class="btn-timer {{timerRunning ? 'running' : ''}}" bindtap="toggleTimer">{{timerRunning ? '停止计时' : '开始计时'}}</button>
-        <button class="btn-switch" bindtap="switchMode">切换为{{timerMode === 'outdoor' ? '室内' : '室外'}}</button>
+      <view class="ring-info">
+        <view class="ring-tip">{{ringTip}}</view>
+        <view class="timer-meta muted" wx:if="{{timerRunning}}">
+          <view class="timer-meta__dot"></view>
+          <text>本次已记 {{sessionText}} · 户外陪伴进行中</text>
+        </view>
+        <button class="btn-primary {{timerRunning ? 'running' : ''}}" bindtap="toggleTimer">
+          {{timerRunning ? '⏸ 暂停计时' : (outdoorMin > 0 ? '▶ 继续计时' : '▶ 开始计时')}}
+        </button>
       </view>
-      <view class="muted">当前计时：{{timerMode === 'outdoor' ? '室外' : '室内'}}{{timerRunning ? ' · 计时中' : ''}}</view>
     </view>
 
     <!-- 推荐出门时段 -->
@@ -86,44 +118,129 @@
   <block wx:else>
     <template is="homeSkeleton" />
   </block>
+
+  <!-- 板块切换 sheet（v9 交互 · 数据源 PRD §7.1 分组 19 板块） -->
+  <view class="sheet-mask" wx:if="{{blockSheetOpen}}" bindtap="closeBlockSheet" catchtouchmove="noop"></view>
+  <view class="sheet" wx:if="{{blockSheetOpen}}" catchtap="noop">
+    <view class="sheet__hd">切换所在板块</view>
+    <view class="sheet__sub muted">租房搬家？随时切换，首页天气与「步行/邨巴」决策据此实时更新</view>
+    <view class="opts">
+      <block wx:for="{{blockGroups}}" wx:key="g" wx:for-item="grp">
+        <view class="opts__g muted">{{grp.g}}</view>
+        <view class="opts__items">
+          <view
+            class="opt {{block === item ? 'on' : ''}}"
+            wx:for="{{grp.items}}"
+            wx:key="*this"
+            data-b="{{item}}"
+            bindtap="pickBlock"
+          >{{item}}</view>
+        </view>
+      </block>
+    </view>
+    <button class="sheet__cancel" bindtap="closeBlockSheet">取消</button>
+  </view>
+
+  <!-- 宝宝档案 sheet（v15：列表切换/添加/删除，月龄由生日推） -->
+  <view class="sheet-mask" wx:if="{{babySheetOpen}}" bindtap="closeBabySheet" catchtouchmove="noop"></view>
+  <view class="sheet" wx:if="{{babySheetOpen}}" catchtap="noop">
+    <view class="sheet__hd sheet__hd--row">
+      <text>宝宝档案</text>
+    </view>
+    <view class="sheet__sub muted">点宝宝切换为当前档案；月龄按生日自动计算并驱动成长主题</view>
+    <view class="baby-list">
+      <view
+        class="baby-item {{item.cur ? 'on' : ''}}"
+        wx:for="{{babies}}"
+        wx:key="idx"
+        data-i="{{index}}"
+        bindtap="pickBaby"
+      >
+        <view class="baby-item__av"><svg-icon name="baby" size="26"></svg-icon></view>
+        <view class="baby-item__info">
+          <view class="baby-item__nm">{{item.name}}</view>
+          <view class="baby-item__ag muted">{{item.birth || '未设置生日'}}{{item.age ? ' · ' + item.age : ''}}</view>
+        </view>
+        <view class="baby-item__del" wx:if="{{babies.length > 1}}" data-i="{{index}}" catchtap="delBaby">删除</view>
+        <view class="baby-item__chk">{{item.cur ? '当前 ✓' : '切换'}}</view>
+      </view>
+    </view>
+    <view class="add-form">
+      <input class="add-form__input" placeholder="宝宝小名" value="{{newName}}" bindinput="onNewName" />
+      <picker mode="date" value="{{newBirth}}" end="{{today}}" bindchange="onNewBirth">
+        <view class="add-form__input add-form__picker {{newBirth ? '' : 'placeholder'}}">{{newBirth || '出生日期'}}</view>
+      </picker>
+      <button class="add-form__btn" bindtap="addBaby">添加</button>
+    </view>
+    <button class="sheet__cancel" bindtap="closeBabySheet">取消</button>
+  </view>
 </view>
 
-<!-- 首页首屏骨架模板（复用全局 .sk 流光类，形状对齐真实五大模块） -->
+<!-- 首页首屏骨架模板（对齐当前五大模块实际布局：定位栏 / hero / 指数卡 / 户外环卡 / 时段卡 / 关怀横幅） -->
 <template name="homeSkeleton">
-  <view class="home-hero">
+  <!-- 顶部定位栏：板块胶囊 + 宝宝胶囊 -->
+  <view class="locbar">
+    <view class="sk sk-block" style="width:96px;height:32px;border-radius:20px"></view>
+    <view class="sk sk-block" style="width:112px;height:32px;border-radius:20px;margin-left:auto"></view>
+  </view>
+  <!-- hero：问候语 + 副标题 -->
+  <view class="home-hero home-hero--slim">
     <view class="sk sk-line w-50" style="height:22px"></view>
     <view class="sk sk-line w-80" style="margin-top:10px"></view>
   </view>
 
+  <!-- 遛娃指数卡：标题行 + 环(84)右侧三行 + 底部四分项 -->
   <view class="card index-card">
     <view class="sk sk-line w-40" style="height:16px"></view>
-    <view style="display:flex;align-items:center;margin-top:16px">
+    <view style="display:flex;align-items:center;margin-top:14px">
       <view class="sk sk-circle" style="width:84px;height:84px;flex:none"></view>
       <view style="flex:1;display:flex;flex-direction:column;gap:10px;padding-left:16px">
-        <view class="sk sk-line w-90"></view>
+        <view class="sk sk-line w-90" style="height:18px"></view>
         <view class="sk sk-line w-70"></view>
         <view class="sk sk-line w-50"></view>
       </view>
     </view>
-  </view>
-
-  <view class="card outdoor">
-    <view class="sk sk-line w-40" style="height:16px"></view>
-    <view style="display:flex;gap:10px;margin-top:16px">
-      <view class="sk sk-block" style="flex:1;height:64px"></view>
-      <view class="sk sk-block" style="flex:1;height:64px"></view>
+    <view style="display:flex;gap:10px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)">
+      <view class="sk sk-block" style="flex:1;height:48px"></view>
+      <view class="sk sk-block" style="flex:1;height:48px"></view>
+      <view class="sk sk-block" style="flex:1;height:48px"></view>
+      <view class="sk sk-block" style="flex:1;height:48px"></view>
     </view>
   </view>
 
+  <!-- 户外环卡：大环(112) + 右侧文案/按钮 -->
+  <view class="card ring-card">
+    <view class="sk sk-circle" style="width:112px;height:112px;flex:none"></view>
+    <view style="flex:1;display:flex;flex-direction:column;gap:12px">
+      <view class="sk sk-line w-90"></view>
+      <view class="sk sk-line w-70"></view>
+      <view class="sk sk-block" style="width:100%;height:44px;border-radius:18px"></view>
+    </view>
+  </view>
+
+  <!-- 推荐出门时段：标题 + 三行 win-row -->
   <view class="card slot">
     <view class="sk sk-line w-40" style="height:16px"></view>
-    <view style="display:flex;flex-direction:column;gap:14px;margin-top:16px">
-      <view class="sk sk-line w-100"></view>
-      <view class="sk sk-line w-100"></view>
-      <view class="sk sk-line w-100"></view>
+    <view style="display:flex;flex-direction:column;gap:12px;margin-top:14px">
+      <view style="display:flex;align-items:center;gap:10px">
+        <view class="sk sk-line" style="width:48px;height:16px;flex:none"></view>
+        <view class="sk sk-line" style="width:120px;height:14px;flex:none"></view>
+        <view class="sk sk-line" style="flex:1;height:14px"></view>
+      </view>
+      <view style="display:flex;align-items:center;gap:10px">
+        <view class="sk sk-line" style="width:48px;height:16px;flex:none"></view>
+        <view class="sk sk-line" style="width:120px;height:14px;flex:none"></view>
+        <view class="sk sk-line" style="flex:1;height:14px"></view>
+      </view>
+      <view style="display:flex;align-items:center;gap:10px">
+        <view class="sk sk-line" style="width:48px;height:16px;flex:none"></view>
+        <view class="sk sk-line" style="width:120px;height:14px;flex:none"></view>
+        <view class="sk sk-line" style="flex:1;height:14px"></view>
+      </view>
     </view>
   </view>
 
+  <!-- 关怀版横幅 -->
   <view class="card" style="display:flex;align-items:center;gap:12px">
     <view class="sk sk-circle" style="width:22px;height:22px;flex:none"></view>
     <view style="flex:1;display:flex;flex-direction:column;gap:8px">

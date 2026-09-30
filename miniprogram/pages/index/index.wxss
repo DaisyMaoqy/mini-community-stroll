@@ -1,60 +1,185 @@
 /* pages/index/index.wxss 首页（M2：接真实数据） */
 /* 模块纵向间距对齐 v15 原型 .view{gap:12px}：各卡片统一 12px，原来三张主卡贴在一起(0)、关怀横幅前又突兀 20px */
 .home { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
-.home-hero { padding: 8px 4px 4px; }
+.home-hero { padding: 0 4px; }
+.home-hero--slim { margin-top: -4px; }
 .home-hero__hi { font-size: var(--fs-xl); font-weight: 700; color: var(--ink); }
 .home-hero__sub { margin-top: 4px; }
+
+/* ============ 顶部定位栏（v9 板块 + v15 宝宝胶囊） ============ */
+.locbar { display: flex; align-items: center; gap: 8px; padding: 8px 4px 0; }
+.blk-pill {
+  display: inline-flex; align-items: center;
+  background: var(--green-l); color: var(--green-d);
+  font-size: var(--fs-md); font-weight: 700;
+  padding: 7px 13px; border-radius: 20px;
+  transition: background .2s;
+}
+.blk-pill:active { background: var(--green); color: #fff; }
+.blk-caret { font-size: 12px; opacity: .75; margin-left: 4px; transform: translateY(-1px); }
+.baby-chip {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 5px;
+  background: var(--peach-l); color: var(--peach-d);
+  font-size: var(--fs-sm); font-weight: 700;
+  padding: 8px 12px; border-radius: 20px; max-width: 62%;
+  transition: transform .15s;
+}
+.baby-chip:active { transform: scale(.96); }
+.baby-chip__txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ============ 底部弹层（板块 / 宝宝档案共用） ============ */
+.sheet-mask {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(40, 50, 44, .45);
+  animation: sheetFade .2s ease;
+}
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 61;
+  background: var(--card);
+  border-radius: var(--r) var(--r) 0 0;
+  padding: 18px 18px calc(20px + env(safe-area-inset-bottom));
+  animation: sheetUp .25s ease;
+}
+@keyframes sheetFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheetUp { from { transform: translateY(80px); opacity: .5; } to { transform: translateY(0); opacity: 1; } }
+.sheet__hd { font-size: var(--fs-lg); font-weight: 800; color: var(--ink); }
+.sheet__hd--row { display: flex; align-items: center; }
+.sheet__sub { margin-top: 4px; font-size: var(--fs-xs); line-height: 1.55; }
+.opts { margin-top: 14px; max-height: 46vh; overflow-y: auto; }
+.opts__g { font-size: var(--fs-xs); font-weight: 700; margin: 12px 0 0; }
+.opts__items { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.opt {
+  padding: 10px 20px; background: var(--sand);
+  border-radius: var(--r-sm); border: 2px solid transparent;
+  font-size: var(--fs-md); font-weight: 700; color: var(--ink2);
+}
+.opt.on { background: var(--green-l); color: var(--green-d); border-color: var(--green); }
+.sheet__cancel {
+  margin-top: 16px; width: 100%; line-height: 1.2;
+  background: var(--sand); color: var(--ink2);
+  font-size: var(--fs-md); font-weight: 700;
+  padding: 13px 0; border-radius: var(--r-sm);
+}
+.sheet__cancel::after { border: none; }
+
+/* 宝宝档案列表（v15） */
+.baby-list { margin-top: 14px; max-height: 46vh; overflow-y: auto; }
+.baby-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; margin-bottom: 10px;
+  background: var(--sand); border-radius: 16px; border: 2px solid transparent;
+}
+.baby-item.on { border-color: var(--green); background: var(--green-l2); }
+.baby-item__av {
+  width: 46px; height: 46px; border-radius: 14px; flex: none;
+  background: linear-gradient(150deg, #CFEEDD, #A9DCC2);
+  display: flex; align-items: center; justify-content: center;
+}
+.baby-item__info { flex: 1; min-width: 0; }
+.baby-item__nm { font-size: 15px; font-weight: 800; color: var(--ink); }
+.baby-item__ag { font-size: var(--fs-xs); margin-top: 3px; }
+.baby-item__del {
+  flex: none; font-size: var(--fs-xs); font-weight: 700; color: var(--red);
+  background: var(--red-l); padding: 5px 9px; border-radius: 10px;
+}
+.baby-item__chk {
+  flex: none; font-size: var(--fs-xs); font-weight: 800; color: var(--green-d);
+}
+/* 添加宝宝表单 */
+.add-form { display: flex; gap: 8px; margin-top: 4px; align-items: center; }
+.add-form__input {
+  flex: 1; min-width: 0; background: var(--sand); border-radius: var(--r-sm);
+  padding: 10px 12px; font-size: var(--fs-md); color: var(--ink);
+}
+.add-form__picker { color: var(--ink); }
+.add-form__picker.placeholder { color: var(--ink3); }
+.add-form__btn {
+  flex: none; width: 100px; line-height: 1.2; margin: 0; text-align: center;
+  background: var(--green); color: #fff;
+  font-size: var(--fs-md); font-weight: 700;
+  padding: 10px 0; border-radius: var(--r-sm);
+}
+.add-form__btn::after { border: none; }
 
 .row { display: flex; align-items: center; }
 .between { justify-content: space-between; }
 
-/* 遛娃指数环 —— 84px 视口对齐 v15，浅绿渐变卡片 */
-.index-main { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
-.ring-wrap { position: relative; width: 84px; height: 84px; flex: 0 0 84px; }
-.ring-canvas { width: 84px; height: 84px; display: block; }
+/* 遛娃指数卡 —— 精确对齐 v15 原型：渐变绿卡(具体色值) + 环(84/描边7) + 档位大字(固定深绿) + 分数灰字 + 整行四分项 */
 .index-card {
-  background: linear-gradient(160deg, var(--green-l), var(--green-l2));
-  border: 1px solid var(--green-line);
+  background: linear-gradient(160deg, #EAF8F1 0%, #E4F5EC 100%);
+  border: 1px solid #d6ecdf;
 }
+.index-main { display: flex; align-items: center; gap: 16px; }
+.ring-wrap { position: relative; width: 84px; height: 84px; flex: 0 0 84px; }
+.ring-canvas { width: 84px; height: 84px; display: block; pointer-events: none; }
 .ring-center {
-  position: absolute; inset: 0;
+  position: absolute; inset: 0; line-height: 1;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
-.ring-num { font-size: 24px; font-weight: 800; color: var(--green-d); line-height: 1; }
-.ring-cap { font-size: var(--fs-meta); margin-top: 2px; }
-.index-side { flex: 1; min-width: 0; }
-.index-tip { font-size: var(--fs-sm); color: var(--ink2); line-height: 1.5; margin-bottom: 10px; }
-.index-metrics { display: flex; gap: 10px; }
-.metric { flex: 1; background: var(--green-l); border-radius: var(--r-sm); padding: 10px; text-align: center; }
-.metric-num { display: block; font-size: 18px; font-weight: 700; color: var(--green-d); font-variant-numeric: tabular-nums; }
-.metric-cap { font-size: var(--fs-meta); }
-.index-note { margin-top: 10px; }
+.ring-lv { font-size: 20px; font-weight: 800; color: var(--green-d); }
+.ring-score { font-size: var(--fs-meta); color: var(--ink2); margin-top: 3px; }
+.index-txt { flex: 1; min-width: 0; }
+.index-h2 {
+  font-size: var(--fs-xl); font-weight: 800; letter-spacing: .3px;
+  line-height: 1.2; color: var(--ink); margin-bottom: 6px;
+}
+.index-tip {
+  display: flex; align-items: flex-start; gap: 5px;
+  font-size: var(--fs-xs); color: var(--ink2);
+  line-height: 1.5;
+}
+/* 整行四分项：上虚线分隔(具体色) + 竖分隔线，图标绿-m · 数值 800 · 说明灰 */
+.metrics {
+  display: flex;
+  border-top: 1px dashed #cfe6d8;
+  padding-top: var(--gap-md);
+  margin-top: 14px;
+}
+.m {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 3px; text-align: center;
+  border-right: 1px solid #dcebe0;
+}
+.m:last-child { border-right: none; }
+.m-v { font-size: var(--fs-md); font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.m-k { font-size: var(--fs-meta); color: var(--ink3); }
+/* 分项加载骨架块：与真实 .m 单元同高（图标15+数值+说明≈52px） */
+.idx-sk-cell { flex: 1; height: 52px; border-right: 1px solid #dcebe0; border-radius: 8px; }
+.idx-sk-cell:last-child { border-right: none; }
 
-/* 户外双计时 —— 浅绿渐变卡片 */
-.outdoor {
-  background: linear-gradient(135deg, var(--card), var(--green-l2));
-  border: 1px solid var(--green-line);
+/* 户外环卡 —— 对齐 v15 ring-card 截图比例：大环(112px，约占卡高一半) + 右侧文案/主按钮 */
+.ring-card { display: flex; align-items: center; gap: 16px; }
+.oring { position: relative; width: 112px; height: 112px; flex: 0 0 112px; }
+.oring-canvas { width: 112px; height: 112px; display: block; pointer-events: none; }
+.oring-center {
+  position: absolute; inset: 0; line-height: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
-.outdoor__row { display: flex; gap: var(--gap-md); margin: 10px 0; }
-.outdoor__cell {
-  flex: 1; background: var(--sand); border-radius: var(--r-sm);
-  padding: 12px; text-align: center; box-sizing: border-box; border: 1px solid transparent;
+.o-num { font-size: 28px; font-weight: 800; color: var(--green-d); font-variant-numeric: tabular-nums; }
+.o-goal { font-size: var(--fs-sm); margin-top: 3px; }
+.o-lab { font-size: var(--fs-meta); margin-top: 4px; }
+.ring-info { flex: 1; min-width: 0; }
+.ring-tip { font-size: var(--fs-md); color: var(--ink2); line-height: 1.55; }
+/* 计时中状态条：绿点呼吸 + 本次时长 */
+.timer-meta {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 10px; font-size: var(--fs-xs);
 }
-.outdoor__cell.on { background: var(--green-l); border-color: var(--green-m); }
-.outdoor__num { display: block; font-size: 24px; font-weight: 700; color: var(--green-d); margin-bottom: 2px; font-variant-numeric: tabular-nums; }
-.outdoor__lbl { font-size: var(--fs-sm); }
-.outdoor__actions { display: flex; gap: 10px; margin: 6px 0; }
-.btn-timer {
-  flex: 1; background: linear-gradient(135deg, var(--green), var(--green-d)); color: #fff;
-  border-radius: var(--r-sm); font-size: var(--fs-md); font-weight: 600; padding: 10px 0; line-height: 1.2;
+.timer-meta__dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+  flex: none; animation: blink 1.4s ease-in-out infinite;
 }
-.btn-timer::after { border: none; }
-.btn-timer.running { background: linear-gradient(135deg, var(--red), #c9533f); }
-.btn-switch {
-  flex: 1; background: var(--green-l); color: var(--green-d);
-  border-radius: var(--r-sm); font-size: var(--fs-md); padding: 10px 0; line-height: 1.2;
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+/* 主计时按钮：v15 大绿钮（高胖圆角，右侧满宽） */
+.btn-primary {
+  margin: 14px 0 0; width: 100%; line-height: 1.2;
+  background: var(--green); color: #fff;
+  font-size: var(--fs-lg); font-weight: 700;
+  padding: 13px 0; border-radius: 18px;
 }
-.btn-switch::after { border: none; }
+.btn-primary::after { border: none; }
+.btn-primary:active { opacity: .85; }
+.btn-primary.running { background: var(--red); }
 
 /* 推荐出门时段 */
 .win-list { margin-top: 8px; }

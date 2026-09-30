@@ -36,5 +36,6 @@ page {
 .chip.green { background: var(--green-l); color: var(--green-d); }
 .chip.peach { background: var(--peach-l); color: var(--peach-d); }
 .muted { color: var(--ink3); font-size: var(--fs-xs); }
+.rmuted { display: flex;  justify-content: end; }
 .sec { font-size: var(--fs-lg); font-weight: 700; color: var(--ink); }
 .toggle { display: inline-flex; }
