@@ -61,9 +61,11 @@
     <!-- 其他 tab：真实地图 -->
     <block wx:else>
       <view class="card map-card">
-        <!-- 弹层打开时关掉地图手势，并把「点地图 / 点图钉」当作点遮罩处理（关闭弹层）：
-             原生 map 图层在本环境盖在遮罩（普通 view）之上，图钉仍能接到 tap，
-             遮罩拦不住它，只能改由事件处理函数拦截（用户反馈 2026-09-30）。图钉保留不隐藏。 -->
+        <!-- ⚠ 禁止给 <map> 加 bindtap（如 onMapTap）：点 marker 时 bindmarkertap 与 bindtap
+             会同时触发且 markertap 先执行 → 刚 openDetail 就被 tap 里的 closeDetail 关掉，
+             表现为「点图钉弹不出详情」（回归源见 commit fd3f476）。
+             弹层打开时点图钉由 onMarkerTap 内的拦截逻辑关闭详情；
+             原生 map 图层在本环境盖在遮罩之上，图钉保留不隐藏（用户明确要求）。 -->
         <map
           wx:if="{{!loading}}"
           id="map"
@@ -77,7 +79,6 @@
           enable-scroll="{{!detail}}"
           enable-zoom="{{!detail}}"
           enable-rotate="{{!detail}}"
-          bindtap="onMapTap"
           bindmarkertap="onMarkerTap"
           bindupdated="onMapUpdated"
         ></map>
