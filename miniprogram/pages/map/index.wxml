@@ -1,5 +1,7 @@
+<page-meta page-style="{{detail ? 'overflow: hidden' : ''}}"></page-meta>
 <!-- pages/map/index.wxml 遛娃地图（M3：接真实 POI + 标记 + 详情）
      M4：邨巴 tab 改为「地铁式线路示意图」（WXML+WXSS 绘制，不使用 SVG/真实地图打点） -->
+<!-- 详情弹层打开时锁住页面滚动（与首页同一处理，见 index.wxml 注释） -->
 <view class="container map-page" data-theme="{{theme}}">
   <!-- 固定区：标题 / 地图或线网示意图 / 分类筛选（不随下方列表滚动） -->
   <view class="map-fixed">
@@ -59,6 +61,9 @@
     <!-- 其他 tab：真实地图 -->
     <block wx:else>
       <view class="card map-card">
+        <!-- 弹层打开时关掉地图手势，并把「点地图 / 点图钉」当作点遮罩处理（关闭弹层）：
+             原生 map 图层在本环境盖在遮罩（普通 view）之上，图钉仍能接到 tap，
+             遮罩拦不住它，只能改由事件处理函数拦截（用户反馈 2026-09-30）。图钉保留不隐藏。 -->
         <map
           wx:if="{{!loading}}"
           id="map"
@@ -67,12 +72,22 @@
           latitude="{{center.lat}}"
           scale="{{scale}}"
           markers="{{markers}}"
+          include-points="{{points}}"
           show-location="{{true}}"
+          enable-scroll="{{!detail}}"
+          enable-zoom="{{!detail}}"
+          enable-rotate="{{!detail}}"
+          bindtap="onMapTap"
           bindmarkertap="onMarkerTap"
           bindupdated="onMapUpdated"
         ></map>
         <view wx:else class="sk sk-map"></view>
       </view>
+      <!-- 点位计数：便于确认云端数据是否到位（0 个 = 需先跑一次 initSpots） -->
+      
+      <!-- <view class="map-loading" wx:if="{{!loading && !loadError}}">
+        <text class="muted">{{loading}}{{loadError}}已加载 {{poiCount}} 个点位</text>
+      </view> -->
       <!-- 地图瓦片加载提示（原生 map 之上无法叠层，置于卡片下方） -->
       <view class="map-loading" wx:if="{{!loading && !mapReady}}">
         <view class="spinner"></view>
@@ -90,6 +105,13 @@
         bindtap="onTab"
         >{{item.label}}</view>
     </scroll-view>
+    <!-- 加载中 tabs 骨架（真实 tabs 隐藏时占位，避免布局跳变） -->
+    <view class="tabs tabs--sk" wx:else>
+      <view class="sk sk-block" style="width:64px;height:34px;border-radius:999px;flex:none"></view>
+      <view class="sk sk-block" style="width:64px;height:34px;border-radius:999px;flex:none"></view>
+      <view class="sk sk-block" style="width:64px;height:34px;border-radius:999px;flex:none"></view>
+      <view class="sk sk-block" style="width:64px;height:34px;border-radius:999px;flex:none"></view>
+    </view>
     <!-- 邨巴线路切换：仅在邨巴 tab 展示，点 chip 切换线路并高亮示意图 -->
     <view class="route-chips" wx:if="{{activeTab === '邨巴'}}">
       <text class="route-chips__t">线路</text>
@@ -210,21 +232,15 @@
       <!-- POI 列表：加载中骨架 / 加载失败重试 / 有数据 / 空 -->
       <view class="poi-list" wx:if="{{loading}}">
         <view class="card sk-poi" wx:for="{{[0,1,2,3]}}" wx:key="*this">
-          <view class="sk-poi__head">
-            <view class="sk sk-circle sk-poi__avatar"></view>
-            <view class="sk-poi__title">
-              <view class="sk sk-line w-60" style="height:16px"></view>
-              <view class="sk sk-line w-40"></view>
-            </view>
+          <view style="display:flex;align-items:center;justify-content:space-between">
+            <view class="sk sk-line w-50" style="height:18px"></view>
+            <view class="sk sk-tag"></view>
           </view>
-          <view class="sk sk-line w-100"></view>
+          <view class="sk sk-line w-80"></view>
+          <view class="sk sk-line w-60"></view>
           <view class="sk-poi__tags">
             <view class="sk sk-tag"></view>
             <view class="sk sk-tag"></view>
-          </view>
-          <view class="sk-actions">
-            <view class="sk sk-btn"></view>
-            <view class="sk sk-btn"></view>
           </view>
         </view>
       </view>
@@ -251,9 +267,13 @@
             <text class="poi__type t-{{item.typeClass}}">{{item.type}}</text>
           </view>
           <view class="poi__addr muted">{{item.address}}</view>
-          <view class="poi__meta" wx:if="{{item._walkMin}}">
-            <svg-icon name="walk" size="14"></svg-icon>
-            <text class="muted">步行约 {{item._walkMin}} 分钟（{{item._dist}} 米）</text>
+          <view class="poi__meta" wx:if="{{item._distText}}">
+            <svg-icon name="{{item._mode === 'bus' ? 'bus' : 'walk'}}" size="14"></svg-icon>
+            <text class="muted">{{item._distText}}</text>
+            <text wx:if="{{item._ebike}}" class="muted poi__ebike">· {{item._ebike}}</text>
+          </view>
+          <view class="poi__meta" wx:if="{{item._mode === 'bus' && item._busText}}">
+            <text class="muted">{{item._busText}}</text>
           </view>
           <view class="poi__tags">
             <text wx:if="{{item.adultOnly}}" class="tag tag-red">仅成人</text>
@@ -268,11 +288,12 @@
   </scroll-view>
 
   <!-- POI 详情 sheet -->
-  <view wx:if="{{detail}}" class="sheet-mask" bindtap="closeDetail">
+  <view wx:if="{{detail}}" class="sheet-mask" bindtap="closeDetail" catchtouchmove="noop">
     <view class="sheet" catchtap="noop">
       <view class="sheet__hd">
         <text class="sheet__title">{{detail.name}}</text>
         <text class="poi__type t-{{detail.typeClass}}">{{detail.type}}</text>
+        <text class="poi__fix" bindtap="reportFix">信息有误？反馈</text>
       </view>
 
       <view class="sheet__row" wx:if="{{detail.subType}}"><text class="sheet__k muted">类型</text><text>{{detail.subType}}</text></view>
@@ -283,14 +304,14 @@
 
       <view class="sheet__row" wx:if="{{detail.bus}}">
         <text class="sheet__k muted">邨巴</text>
-        <text style="color:{{detail.busColor}};font-weight:600">{{detail.bus.hub}}{{detail.bus.lines ? ' · ' + detail.bus.lines + ' 路' : ''}}{{detail.bus.walk ? ' · ' + detail.bus.walk : ''}}</text>
+        <text style="color:{{detail.busColor}};font-weight:600">{{detail.bus.hub}}{{!detail.bus.lines ? '': ' · ' + detail.bus.lines + ' 路' }}{{detail.bus.walk ? ' · ' + detail.bus.walk : ''}}</text>
       </view>
 
-      <view class="sheet__row" wx:if="{{detail._walkMin}}">
+      <view class="sheet__row" wx:if="{{detail._distText}}">
         <text class="sheet__k muted">出行</text>
-        <text>步行约 {{detail._walkMin}} 分钟（{{detail._dist}} 米）</text>
+        <text>{{detail._distText}}{{detail._distMText ? ' · 约 ' + detail._distMText : ''}}</text>
       </view>
-      <view class="sheet__row" wx:if="{{!detail._walkMin}}">
+      <view class="sheet__row" wx:if="{{!detail._distText}}">
         <text class="sheet__k muted">出行</text>
         <text class="muted">授权定位后可显示步行距离</text>
       </view>
@@ -303,7 +324,6 @@
       </view>
 
       <view class="sheet__actions">
-        <button class="btn-fix" bindtap="reportFix">信息有误</button>
         <button class="btn-close" bindtap="closeDetail">关闭</button>
       </view>
     </view>

@@ -17,6 +17,7 @@ page { height: 100%; overflow: hidden; }
 
 /* 分类筛选 */
 .tabs { white-space: nowrap; margin: 0; }
+.tabs--sk { display: flex; gap: 8px; overflow: hidden; }
 .tab {
   display: inline-block; padding: 6px 16px; margin-right: 8px;
   background: var(--green-l); color: var(--green-d);
@@ -172,6 +173,7 @@ page { height: 100%; overflow: hidden; }
 .poi__name { font-size: var(--fs-lg); font-weight: 700; color: var(--ink); }
 .poi__addr { margin-top: 4px; }
 .poi__meta { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+.poi__ebike { margin-left: 2px; }
 .poi__tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .empty { padding: 20px; text-align: center; }
 
@@ -213,11 +215,8 @@ page { height: 100%; overflow: hidden; }
 .sheet__k { width: 52px; flex: 0 0 52px; }
 .sheet__tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
 .sheet__actions { display: flex; gap: 10px; margin-top: 6px; }
-.btn-fix {
-  flex: 1; background: var(--red-l); color: var(--red);
-  border-radius: var(--r-sm); font-size: var(--fs-md); padding: 10px 0; line-height: 1.2;
-}
-.btn-fix::after { border: none; }
+/* 纠错入口：标题行右侧小字（用户 2026-09-30 指定位置）；nowrap 防被长标题挤压换行 */
+.poi__fix { flex: 0 0 auto; white-space: nowrap; font-size: var(--fs-xs); color: var(--ink3); }
 .btn-close {
   flex: 1; background: var(--green-l); color: var(--green-d);
   border-radius: var(--r-sm); font-size: var(--fs-md); padding: 10px 0; line-height: 1.2;

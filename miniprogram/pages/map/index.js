@@ -4,6 +4,8 @@
 //     站点级需要 ±20~50m，打点与 polyline 会误导用户，故移除。
 const app = getApp();
 const { callCloud } = require('../../utils/cloud.js');
+const { planRoute, planRouteBlockless } = require('../../utils/routePlan.js');
+const { fmtDist } = require('../../utils/geo.js');
 const busData = require('./busRoutes.js');
 
 const CAT = {
@@ -46,16 +48,7 @@ const FAN_LINES = LINE_SUMMARY.map((line, i) => {
   return Object.assign({}, line, { angle: angle, counterAngle: -angle });
 });
 
-function haversine(lat1, lng1, lat2, lng2) {
-  const R = 6371000;
-  const toRad = (x) => (x * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-}
+// 出行距离由 utils/routePlan.js（haversine 兜底 + route 云函数）统一提供，本页不再内联 haversine。
 
 // 调试用加载模拟（仅「开发者工具模拟器」内生效；真机 / 真机调试恒返回 0，走真实网络）。
 // 微信开发者工具的网络面板只会节流 WebView 请求，不会节流 wx.cloud.callFunction（走云 SDK 独立通道），
@@ -81,6 +74,7 @@ function debugLoadMode() {
 }
 
 Page({
+  _distSeq: 0,
   data: {
     center: { lat: 22.963, lng: 113.33 },
     scale: 15,
@@ -88,6 +82,8 @@ Page({
     activeTab: 'all',
     filtered: [],
     markers: [],
+    points: [],        // include-points：让地图自适应缩放，保证所有 POI 首屏可见
+    poiCount: 0,       // 已加载 POI 数（便于确认数据是否到位）
     detail: null,
     userLoc: null,
     loading: true,
@@ -158,8 +154,11 @@ Page({
       // 给每个 POI 加一个 CSS 安全的类型类名（WXSS 不允许中文选择器）
       const TYPE_CLASS = { '接种': 't-vac', '遛娃': 't-play', '便民': 't-civic', '邨巴': 't-bus' };
       this.allSpots = list.map((s) => Object.assign({}, s, { typeClass: TYPE_CLASS[s.type] || 't-civic' }));
-      this.setData({ tabs, activeTab: 'all', center: { lat: clat, lng: clng }, loading: false, loadError: false, mapReady: false });
+      this.setData({ tabs, activeTab: 'all', center: { lat: clat, lng: clng }, poiCount: list.length, loading: false, loadError: false, mapReady: false });
       this.applyFilter('all');
+      // 数据就绪后（重新）计算出行距离。此前只在定位回调里触发，若定位先于数据返回
+      // （如首次授权弹窗期间），computeDistances 会跑在空列表上且无人再触发 → 详情永远占位。
+      this.computeDistances();
       // 地图瓦片加载兜底：bindupdated 未触发时 1.5s 后结束"地图加载中"
       setTimeout(() => { if (!this.data.mapReady) this.setData({ mapReady: true }); }, 1500);
     } catch (e) {
@@ -181,27 +180,60 @@ Page({
         self.computeDistances();
       },
       fail() {
-        // 用户拒绝授权：不显示距离即可
+        // 用户拒绝授权：仍可用「所选板块坐标」算距离（PRD §4.5 原点=板块）
         self.setData({ locating: false });
+        self.computeDistances();
       },
     });
   },
 
-  computeDistances() {
-    const u = this.data.userLoc;
-    if (!u) return;
-    const list = (this.allSpots || []).map((s) => {
-      const ns = Object.assign({}, s);
-      if (s.coord && s.coord.coordinates) {
-        const d = haversine(u.lat, u.lng, s.coord.coordinates[1], s.coord.coordinates[0]);
-        ns._dist = d;
-        ns._walkMin = Math.max(1, Math.round(d / 70)); // 约 70m/min
-      }
-      return ns;
-    });
+  // 出行距离/方式：原点=用户所选板块（app.globalData.block，PRD §4.5），
+  // 真实路线距离由 route 云函数提供（降级直线距离），决策=步行/邨巴 + 电动车可选替代。
+  // 序号防并发：onShow/loadSpots/getLocation 可能多次触发，仅最新一次生效。
+  async computeDistances() {
+    const seq = ++this._distSeq;
+    const block = (app.globalData && app.globalData.block) || '';
+    const list = (this.allSpots || []).map((s) => Object.assign({}, s));
     this.allSpots = list;
-    // 保留当前线路选择（定位异步返回时不要清掉用户已选线路）
     this.applyFilter(this.data.activeTab, this.data.activeRoute);
+
+    // 逐 POI 计算出行方案（异步，串行避免并发打爆 route 云函数）
+    const u = this.data.userLoc; // 定位仅作兜底原点
+    for (const s of list) {
+      if (!s.coord || !s.coord.coordinates) continue;
+      try {
+        // 若已选板块 → 用板块坐标；否则回退定位；再无 → 跳过
+        let plan = null;
+        if (block) {
+          plan = await planRoute(block, s);
+        } else if (u) {
+          plan = await planRouteBlockless(u.lat, u.lng, s);
+        }
+        if (seq !== this._distSeq) return; // 已被更新的调用取代
+        if (plan) {
+          s._mode = plan.mode;
+          s._modeText = plan.modeText;
+          s._min = plan.min;
+          s._dist = plan.distM;
+          s._distMText = fmtDist(plan.distM); // <1km「520 米」/ ≥1km「1公里350米」
+          s._distText = plan.modeText + (plan.min != null ? ' ' + plan.min + ' 分钟' : '') + (plan.degraded ? '（估）' : '');
+          s._ebike = plan.ebike && plan.ebike.available
+            ? '也可骑电动车约 ' + plan.ebike.min + ' 分钟'
+            : '';
+          s._busText = plan.bus && plan.bus.text ? plan.bus.text : '';
+          s._degraded = plan.degraded;
+        }
+      } catch (e) {
+        // 单个 POI 失败不影响整体
+      }
+    }
+    // 结果回填到当前视图
+    this.applyFilter(this.data.activeTab, this.data.activeRoute);
+    // 详情弹窗若已打开，用算好 _dist 的记录刷新（修复「先开弹窗、后算完距离」时弹窗停留占位）
+    if (this.data.detail) {
+      const cur = (this.allSpots || []).find((s) => s._id === this.data.detail._id);
+      if (cur) this.setData({ detail: Object.assign({}, cur) });
+    }
   },
 
   applyFilter(tab, route) {
@@ -236,9 +268,15 @@ Page({
     });
     this._idx = markerSpots; // marker.id 与本数组的下标一一对应
 
+    // include-points：把当前筛选出的点位交给地图自适应缩放。
+    // 小区 POI 经度跨度 ~2.7km、纬度 ~3km，固定 scale=15 首屏只能露出 1/13，
+    // 大量 pin 落在屏外（用户会误以为「没打点」）。交给 include-points 自动 fit 最稳。
+    const points = markers.map((m) => ({ latitude: m.latitude, longitude: m.longitude }));
+
     this.setData({
       filtered: list,
       markers: markers,
+      points: points,
       activeTab: tab,
       activeRoute: route,
     });
@@ -322,8 +360,17 @@ Page({
   },
 
   onMarkerTap(e) {
+    // 详情已打开时：原生 map 图层盖在遮罩之上，点图钉会穿透到这里（遮罩拦不住）。
+    // 图钉按用户要求保留可见，但这一次点击统一按「点遮罩」处理 → 关闭详情，
+    // 避免误切换到另一个 POI。关闭后再点图钉才是正常打开详情。
+    if (this.data.detail) { this.closeDetail(); return; }
     const s = (this._idx || [])[e.detail.markerId];
     if (s) this.openDetail(s);
+  },
+
+  // 点地图空白处：详情打开时等同于点遮罩 → 关闭（与 onMarkerTap 同源，兜住不同基础库的事件差异）
+  onMapTap() {
+    if (this.data.detail) this.closeDetail();
   },
 
   onCardTap(e) {
