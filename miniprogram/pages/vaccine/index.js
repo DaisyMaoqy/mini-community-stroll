@@ -1,7 +1,7 @@
 // pages/vaccine/index.js 接种页（M3/M4：接 local_spots 真实接种类 POI + 天气/出行建议）
 const app = getApp();
 const { callCloud } = require('../../utils/cloud.js');
-const { haversine, fmtDist, travelByDist } = require('../../utils/geo.js');
+const { planRoute, planRouteBlockless } = require('../../utils/routePlan.js');
 const { getWeather, advice, travelTip } = require('../../utils/weather.js');
 
 const TABS = [
@@ -29,15 +29,21 @@ function enrich(s) {
     busText: (s.bus && s.bus.busText) || '',
     adultOnly: !!s.adultOnly,
     external: !!s.external,
+    // 候诊方式：indoor=室内候诊 / outdoor=室外排队 / 未传=未知（决定天气提示措辞）
+    queue: s.queue || '',
     verified: s.verifyStatus === 'verified',
     verifySource: s.verifySource || '',
     verifyUrl: s.verifyUrl || '',
     lng: coords[0],
     lat: coords[1],
+    // 供 utils/routePlan.js 出行决策用：保留 coord（gcj02）与 bus（邨巴可达性）
+    coord: s.coord || null,
+    bus: s.bus || null,
   };
 }
 
 Page({
+  _decorateSeq: 0,
   data: {
     babyName: '',
     tabs: TABS,
@@ -105,7 +111,7 @@ Page({
     }
   },
 
-  // 定位（失败不阻塞；无定位则不显示距离/排序）
+  // 定位（失败不阻塞；PRD §4.5 原点=用户所选板块，定位仅作兜底）
   locate() {
     wx.getLocation({
       type: 'gcj02',
@@ -113,32 +119,56 @@ Page({
         this._user = { lat: res.latitude, lng: res.longitude };
         this.decorate();
       },
-      fail: () => {},
+      fail: () => {
+        // 无定位仍可用板块坐标算距离
+        this.decorate();
+      },
     });
   },
 
-  // 给每条接种点补「距离 + 出行方式 + 天气提示」，有定位时按距离排序
-  decorate() {
-    const u = this._user;
+  // 给每条接种点补「距离 + 出行方式（步行/邨巴/电动车）+ 天气提示」，有板块/定位时按距离排序
+  // 用请求序号防并发乱序：load/loadWeather/locate 都可能触发 decorate，仅最新一次生效。
+  async decorate() {
+    const seq = ++this._decorateSeq;
     const w = this._weather;
-    let rows = (this._vacs || []).map((v) => {
+    const block = (app.globalData && app.globalData.block) || '';
+    const rows = [];
+    for (const v of this._vacs || []) {
       const nv = Object.assign({}, v);
-      if (u && typeof v.lat === 'number' && typeof v.lng === 'number') {
-        const d = haversine(u.lat, u.lng, v.lat, v.lng);
-        const t = travelByDist(d);
-        nv._dist = d;
-        nv._distText = fmtDist(d) + ' · ' + t.mode + ' ' + t.min + ' 分钟';
+      // 出行方案：板块坐标优先，回退定位
+      let plan = null;
+      try {
+        if (block) {
+          plan = await planRoute(block, nv);
+        } else if (this._user) {
+          plan = await planRouteBlockless(this._user.lat, this._user.lng, nv);
+        }
+      } catch (e) { plan = null; }
+      if (seq !== this._decorateSeq) return; // 已被更新的 decorate 取代，放弃本次结果
+      if (plan && plan.min != null) {
+        nv._dist = plan.distM;
+        nv._distText = plan.modeText + ' ' + plan.min + ' 分钟' + (plan.degraded ? '（估）' : '');
+        nv._mode = plan.mode;
+        nv._ebike = plan.ebike && plan.ebike.available
+          ? '也可骑电动车约 ' + plan.ebike.min + ' 分钟'
+          : '';
+        nv._busText = plan.bus && plan.bus.text ? plan.bus.text : '';
+        nv._degraded = plan.degraded;
       }
       // 副标题行 = 门诊类型 · 距离/出行方式（参考「预防接种门诊 · 1.2 km · 步行 16 分钟」）
       nv._meta = [nv.subType, nv._distText].filter(Boolean).join(' · ');
-      nv._tip = w ? travelTip(w) : '';
-      return nv;
-    });
-    if (u) {
-      rows = rows.sort((a, b) => (a._dist == null ? 1e9 : a._dist) - (b._dist == null ? 1e9 : b._dist));
+      // 天气提示：按候诊方式分流（室内候诊不再出现「室外排队」），社区外点额外叠加换乘提示
+      nv._tip = w ? travelTip(w, nv.queue) : '';
+      if (nv._tip && nv.external) {
+        nv._tip += '；社区外接种点，需换乘前往，请预留路程时间';
+      }
+      rows.push(nv);
+    }
+    if (block || this._user) {
+      rows.sort((a, b) => (a._dist == null ? 1e9 : a._dist) - (b._dist == null ? 1e9 : b._dist));
     }
     this._rows = rows;
-    this.setData({ hasLoc: !!u });
+    this.setData({ hasLoc: !!(block || this._user) });
     this.applyFilter(this.data.activeTab);
   },
 
