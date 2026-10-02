@@ -46,7 +46,7 @@
   },
   "appid": "wxb9e522d61973da61",
   "projectname": "祈福遛一遛",
-  "libVersion": "2.20.1",
+  "libVersion": "3.17.2",
   "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
   "condition": {
     "search": {
