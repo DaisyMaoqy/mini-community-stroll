@@ -94,7 +94,7 @@
 .add-form__picker { color: var(--ink); }
 .add-form__picker.placeholder { color: var(--ink3); }
 .add-form__btn {
-  flex: none; width: 100px; line-height: 1.2; margin: 0; text-align: center;
+  flex: none; width: 100px !important; line-height: 1.2; margin: 0; text-align: center;
   background: var(--green); color: #fff;
   font-size: var(--fs-md); font-weight: 700;
   padding: 10px 0; border-radius: var(--r-sm);
@@ -176,7 +176,10 @@
   background: var(--green); color: #fff;
   font-size: var(--fs-lg); font-weight: 700;
   padding: 13px 0; border-radius: 18px;
+  display: flex; align-items: center; justify-content: center; gap: 9px;
 }
+/* 按钮内图标宿主（svg-icon 自定义组件节点）撑起尺寸 */
+.btn-primary .btn-ico { display: flex; align-items: center; }
 .btn-primary::after { border: none; }
 .btn-primary:active { opacity: .85; }
 .btn-primary.running { background: var(--red); }

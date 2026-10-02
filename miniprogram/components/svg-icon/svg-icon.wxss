@@ -11,6 +11,7 @@
 .svg-icon.is-ready.tint-red { background-color: var(--red); }
 .svg-icon.is-ready.tint-ink { background-color: var(--ink2); }
 .svg-icon.is-ready.tint-mint { background-color: var(--green-m); }
+.svg-icon.is-ready.tint-white { background-color: #ffffff; }
 
 /* 彩色 PNG 图标（ebike/walk 插画）：<image> 直渲，不随主题变色 */
 .svg-icon__img {

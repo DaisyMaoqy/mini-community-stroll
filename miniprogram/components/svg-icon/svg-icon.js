@@ -23,7 +23,7 @@ Component({
       type: Number,
       value: 19,
     },
-    // 可选着色：'' 默认主题绿；'peach' 蜜桃（宝宝胶囊）；'red' 红；'ink' 墨灰；'mint' 浅绿（v15 指数分项）
+    // 可选着色：'' 默认主题绿；'peach' 蜜桃（宝宝胶囊）；'red' 红；'ink' 墨灰；'mint' 浅绿（v15 指数分项）；'white' 白（实底按钮内图标）
     // 对 PNG 彩色图标无效（保持插画原色）
     tint: {
       type: String,

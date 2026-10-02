@@ -85,7 +85,10 @@
           <text>本次已记 {{sessionText}} · 户外陪伴进行中</text>
         </view>
         <button class="btn-primary {{timerRunning ? 'running' : ''}}" bindtap="toggleTimer">
-          {{timerRunning ? '⏸ 暂停计时' : (outdoorMin > 0 ? '▶ 继续计时' : '▶ 开始计时')}}
+          <view class="btn-ico">
+            <svg-icon name="{{timerRunning ? 'pause' : 'play'}}" size="22" tint="white"></svg-icon>
+          </view>
+          <text>{{timerRunning ? '暂停计时' : (outdoorMin > 0 ? '继续计时' : '开始计时')}}</text>
         </button>
       </view>
     </view>
