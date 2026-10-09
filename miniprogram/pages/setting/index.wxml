@@ -1,0 +1,25 @@
+<!-- pages/setting/index.wxml 设置（本期：审核入口迁移 + 关于占位） -->
+<view class="container setting-page" data-theme="{{theme}}">
+  <!-- 运营：仅开发者/运营（isAdmin）可见；非 admin 完全不渲染入口行 -->
+  <view class="group">
+    <view class="sec">运营</view>
+    <view class="list">
+      <view class="list__item card" wx:if="{{isAdmin}}" bindtap="goReview">
+        <svg-icon name="edit" size="20"></svg-icon>
+        <text class="list__label">纠错审核</text>
+        <svg-icon name="chev" size="16"></svg-icon>
+      </view>
+    </view>
+  </view>
+
+  <!-- 关于：占位展示，本期不实现真实功能 -->
+  <view class="group">
+    <view class="sec">关于</view>
+    <view class="list">
+      <view class="list__item card">
+        <svg-icon name="bulb" size="20"></svg-icon>
+        <text class="list__label muted">版本 {{version}} · 祈福遛一遛</text>
+      </view>
+    </view>
+  </view>
+</view>

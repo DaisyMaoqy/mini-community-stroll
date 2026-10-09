@@ -1,0 +1,11 @@
+/* pages/setting/index.wxss 设置（视觉对齐 v15；类名骨架复用「我的」页） */
+.setting-page { display: flex; flex-direction: column; gap: var(--gap-lg); padding-bottom: 40px; }
+
+/* 分组：组标题 + 列表，纵向 10px 间距 */
+.group { display: flex; flex-direction: column; gap: var(--gap-sm); }
+.group .sec { padding-left: 4px; }
+
+/* 列表骨架：与「我的」页一致（WXSS 页面级作用域，需在本页复刻） */
+.list { display: flex; flex-direction: column; gap: var(--gap-md); }
+.list__item { display: flex; align-items: center; gap: 10px; }
+.list__label { flex: 1; font-size: var(--fs-md); color: var(--ink); }
