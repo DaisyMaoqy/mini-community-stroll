@@ -49,5 +49,11 @@
       <text class="list__label">设置</text>
       <svg-icon name="chev" size="16"></svg-icon>
     </view>
+    <!-- 纠错审核入口：仅运营（isAdmin）渲染；非 admin 完全不显示 -->
+    <view class="list__item card" wx:if="{{isAdmin}}" bindtap="goReview">
+      <svg-icon name="edit" size="20"></svg-icon>
+      <text class="list__label">纠错审核</text>
+      <svg-icon name="chev" size="16"></svg-icon>
+    </view>
   </view>
 </view>

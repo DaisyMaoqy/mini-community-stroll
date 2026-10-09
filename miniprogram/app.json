@@ -4,7 +4,8 @@
     "pages/vaccine/index",
     "pages/map/index",
     "pages/mine/index",
-    "pages/elder/index"
+    "pages/elder/index",
+    "pages/review/index"
   ],
   "window": {
     "backgroundColor": "#EDEBE3",

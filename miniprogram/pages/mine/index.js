@@ -1,5 +1,6 @@
 // pages/mine/index.js 我的（M5-lite：宝宝资料 + 成长主题）
 const app = getApp();
+const { callCloud } = require('../../utils/cloud.js');
 
 function todayStr() {
   const d = new Date();
@@ -17,6 +18,8 @@ Page({
     monthAge: null,
     theme: 'toddler',
     themeMode: 'auto',
+    // 是否运营（审核端入口显隐）：onShow 调 whoami 探测，非 admin 完全不渲染入口行
+    isAdmin: false,
   },
 
   onShow() {
@@ -35,6 +38,24 @@ Page({
       themeMode,
       theme: app.resolveTheme(),
     });
+    // 提权探测（独立于上方资料渲染，失败静默降级，不阻塞「我的」页其余功能）
+    this.checkAdmin();
+  },
+
+  // 调 reports.whoami 探测是否运营；失败静默降级为 false（不显示入口）
+  checkAdmin() {
+    callCloud('reports', { action: 'whoami' })
+      .then((res) => {
+        this.setData({ isAdmin: !!(res && res.isAdmin) });
+      })
+      .catch(() => {
+        this.setData({ isAdmin: false });
+      });
+  },
+
+  // 进入纠错审核页（仅 admin 可见入口行）
+  goReview() {
+    wx.navigateTo({ url: '/pages/review/index' });
   },
 
   onNameInput(e) {
