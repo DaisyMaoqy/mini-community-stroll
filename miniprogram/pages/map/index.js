@@ -86,6 +86,10 @@ Page({
     points: [],        // include-points：让地图自适应缩放，保证所有 POI 首屏可见
     poiCount: 0,       // 已加载 POI 数（便于确认数据是否到位）
     detail: null,
+    // 纠错上报弹层（report-sheet）受控状态：reportFix() 打开，组件回调关闭
+    reportVisible: false,
+    reportSpotId: '',
+    reportSpotName: '',
     userLoc: null,
     loading: true,
     mapReady: false,   // 地图瓦片渲染就绪（bindupdated 置 true，含兜底超时）
@@ -443,10 +447,46 @@ Page({
   closeDetail() {
     this.setData({ detail: null });
   },
+
+  // 到这里：调起原生地图导航（coord 为 geojson，顺序是 [经度, 纬度]，切勿写反）。
+  // 列表 filtered 含无 coord 的点（如邨巴 POI），无坐标时仅提示、不导航。
+  // 不在此关闭弹层：与接种页 onNav 行为一致，从原生导航返回后详情仍在。
+  onNav() {
+    const d = this.data.detail;
+    const c = d && d.coord && d.coord.coordinates;
+    if (!c || c.length < 2 || !c[0] || !c[1]) {
+      wx.showToast({ title: '暂无坐标', icon: 'none' });
+      return;
+    }
+    wx.openLocation({
+      latitude: c[1],
+      longitude: c[0],
+      name: d.name,
+      address: d.address || '',
+      scale: 15,
+    });
+  },
+
   noop() {},
+
+  // 「信息有误？反馈」：打开 report-sheet（携带当前 POI 的 _id / name）。
+  // ⚠ 不再关闭详情 sheet —— report-sheet z-index 更高，叠在其上；关闭 report-sheet 后详情仍在。
   reportFix() {
-    wx.showToast({ title: '已提交纠错，感谢反馈', icon: 'none' });
-    this.closeDetail();
+    const d = this.data.detail;
+    if (!d) return;
+    this.setData({
+      reportVisible: true,
+      reportSpotId: d._id || '',
+      reportSpotName: d.name || '',
+    });
+  },
+  // report-sheet 关闭 → 隐藏弹层（详情 sheet 保持打开）
+  onReportClose() {
+    this.setData({ reportVisible: false });
+  },
+  // report-sheet 提交成功 → 隐藏弹层（权威表不自动改，无需刷新列表，见架构设计 §6.2）
+  onReportSubmitted() {
+    this.setData({ reportVisible: false });
   },
 
   // 地图渲染完成（瓦片就位）后关闭"地图加载中"提示

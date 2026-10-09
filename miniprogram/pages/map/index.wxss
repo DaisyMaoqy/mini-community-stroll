@@ -222,6 +222,12 @@ page { height: 100%; overflow: hidden; }
   border-radius: var(--r-sm); font-size: var(--fs-md); padding: 10px 0; line-height: 1.2;
 }
 .btn-close::after { border: none; }
+/* 详情弹层「到这里」：与「关闭」同尺寸、同圆角，做主按钮观感（同一行 flex 平分） */
+.btn-nav {
+  flex: 1; background: linear-gradient(135deg, var(--green), var(--green-d)); color: #fff;
+  border-radius: var(--r-sm); font-size: var(--fs-md); padding: 10px 0; line-height: 1.2;
+}
+.btn-nav::after { border: none; }
 
 /* 头部：标题 + 刷新按钮（加载时旋转） */
 .map-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }

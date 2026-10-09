@@ -90,3 +90,8 @@
 .poi__fix { margin-top: 10px; text-align: right; font-size: var(--fs-xs); color: var(--ink3); }
 
 .empty { padding: 24px; text-align: center; color: var(--ink3); font-size: var(--fs-sm); }
+
+/* 加载失败重试卡（区别于空数据；按钮复用全局 .btn-primary，宽度收窄居中） */
+.vac-error { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 28px 18px; }
+.vac-error__ic { color: var(--amber); }
+.vac-error__btn { margin-top: 8px; width: 60%; }

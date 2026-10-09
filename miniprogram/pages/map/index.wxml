@@ -325,8 +325,18 @@
       </view>
 
       <view class="sheet__actions">
+        <button class="btn-nav" bindtap="onNav">到这里</button>
         <button class="btn-close" bindtap="closeDetail">关闭</button>
       </view>
     </view>
   </view>
+
+  <!-- 纠错上报弹层（复用 components/report-sheet）：叠在详情 sheet 之上（更高 z-index） -->
+  <report-sheet
+    visible="{{reportVisible}}"
+    spot-id="{{reportSpotId}}"
+    spot-name="{{reportSpotName}}"
+    bind:close="onReportClose"
+    bind:submitted="onReportSubmitted"
+  ></report-sheet>
 </view>

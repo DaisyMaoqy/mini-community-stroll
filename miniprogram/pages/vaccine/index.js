@@ -50,11 +50,16 @@ Page({
     activeTab: 'all',
     list: [],
     loading: true,
+    loadError: false,   // 云函数加载失败标记（区别于「确实无数据」，用于失败态重试卡）
     weather: null,      // { tempC, icon, text, rain2h, mock, ... }
     weatherAdvice: '',  // 顶部外出建议
     hasLoc: false,      // 是否已定位（决定是否显示距离与「按距离排序」）
     // 儿童疫苗指引点名（成人卡提醒行用）——从种子数据动态取，避免硬编码名称过期
     childVacName: '延康祈福社区卫生服务站',
+    // 纠错上报弹层（report-sheet）受控状态：onReport() 打开，组件回调关闭
+    reportVisible: false,
+    reportSpotId: '',
+    reportSpotName: '',
   },
 
   onLoad() {
@@ -87,16 +92,30 @@ Page({
       }));
       // 社区内、非仅成人的接种点 = 儿童疫苗指引点（名称以种子数据为准，改数据即同步文案）
       const childVac = vacs.find((v) => !v.adultOnly && !v.external);
+      // 先渲染、后补距离：把 enrich() 后的列表立刻写入 _rows 并 applyFilter，
+      // 让卡片立即出现，消除「loading 已置 false 但 _rows 尚未写入」的空窗期
+      // （该空窗期内 data.list 仍为 []，会闪出「暂无符合条件的接种点」）。
+      // 此时尚未补 _meta/_distText（预期为空），随后 decorate() 会再 applyFilter 覆盖为新数据。
+      this._rows = vacs.slice();
+      this.applyFilter(this.data.activeTab);
       this.setData({
         tabs,
         loading: false,
+        loadError: false,
         childVacName: (childVac && childVac.name) || this.data.childVacName,
       });
-      this.decorate();
+      await this.decorate();
     } catch (e) {
       console.error('加载接种点失败', e);
-      this.setData({ loading: false });
+      // 失败态与空数据区分：置 loadError，由 WXML 渲染失败卡 + 重试入口
+      this.setData({ loading: false, loadError: true });
     }
+  },
+
+  // 加载失败重试：重置为加载态后重新拉取
+  onRetry() {
+    this.setData({ loading: true, loadError: false });
+    this.load();
   },
 
   // 天气：云函数 getWeather → 直连 Open-Meteo → 本地估算（三级降级，见 utils/weather.js）
@@ -129,6 +148,11 @@ Page({
   // 给每条接种点补「距离 + 出行方式（步行/邨巴/电动车）+ 天气提示」，有板块/定位时按距离排序
   // 用请求序号防并发乱序：load/loadWeather/locate 都可能触发 decorate，仅最新一次生效。
   async decorate() {
+    // 数据未到不渲染：onLoad 中 load()/loadWeather()/locate() 三路并发，
+    // loadWeather 或 locate 的 decorate 可能先于 load 返回（此时 this._vacs 仍为 undefined），
+    // rows 为空 → applyFilter 会把 list 清空并闪出空态。
+    // 故 _vacs 未就绪时直接返回，改由 load() 成功后再触发 decorate。
+    if (!this._vacs) return;
     const seq = ++this._decorateSeq;
     const w = this._weather;
     const block = (app.globalData && app.globalData.block) || '';
@@ -214,8 +238,23 @@ Page({
     }
   },
 
-  onReport() {
-    wx.showToast({ title: '已提交纠错，感谢反馈', icon: 'none' });
+  // 「信息有误？反馈」：打开 report-sheet（携带该接种点的 _id / name），不再假 toast。
+  onReport(e) {
+    const v = (this.data.list || [])[e.currentTarget.dataset.idx];
+    if (!v) return;
+    this.setData({
+      reportVisible: true,
+      reportSpotId: v.id || '',
+      reportSpotName: v.name || '',
+    });
+  },
+  // report-sheet 关闭 → 隐藏弹层
+  onReportClose() {
+    this.setData({ reportVisible: false });
+  },
+  // report-sheet 提交成功 → 隐藏弹层（权威表不自动改，无需刷新列表）
+  onReportSubmitted() {
+    this.setData({ reportVisible: false });
   },
 
   // 打开「粤苗」小程序（接种预约官方平台）。腾讯系内跳转最稳，但需配置 appId + 后台白名单。

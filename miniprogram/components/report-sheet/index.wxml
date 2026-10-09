@@ -1,0 +1,101 @@
+<!-- components/report-sheet/index.wxml 纠错上报底部弹层（地图 / 接种两页复用）
+     显隐受控：wx:if="visible"；遮罩 catchtouchmove 锁背景滚动；点遮罩 / ✕ 触发 close -->
+<view wx:if="{{visible}}" class="rs-mask" bindtap="onClose" catchtouchmove="noop">
+  <view class="rs-sheet" catchtap="noop">
+
+    <!-- 标题行 -->
+    <view class="rs-hd">
+      <text class="rs-title">信息反馈</text>
+      <view class="rs-close" bindtap="onClose"><text class="rs-close__x">✕</text></view>
+    </view>
+
+    <!-- 只读地点名 -->
+    <view class="rs-loc">
+      <text class="rs-loc__k">地点</text>
+      <text class="rs-loc__v">{{spotName}}</text>
+    </view>
+
+    <!-- 可滚动表单区 -->
+    <scroll-view class="rs-body" scroll-y>
+
+      <!-- 反馈类型 chips（单选必选） -->
+      <view class="rs-sec">
+        <view class="rs-sec__t">反馈类型 <text class="rs-req">*</text></view>
+        <view class="rs-chips">
+          <view
+            wx:for="{{typeMeta}}"
+            wx:key="value"
+            class="rs-chip {{selectedType === item.value ? 'on' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="onSelectType"
+          >{{item.label}}</view>
+        </view>
+      </view>
+
+      <!-- 仅「位置不准」显示定位开关（默认关闭，隐私最小化） -->
+      <view class="rs-sec" wx:if="{{selectedType === '位置不准' && enableSuggestCoord}}">
+        <view class="rs-switch">
+          <view class="rs-switch__l">
+            <text class="rs-switch__t">使用我当前的位置</text>
+            <text class="rs-switch__d">开启后将把你的实时定位作为建议坐标一并提交</text>
+          </view>
+          <switch class="rs-switch__c" checked="{{suggestOn}}" color="#2FB67C" bindchange="onToggleSuggest"></switch>
+        </view>
+      </view>
+
+      <!-- 补充说明 -->
+      <view class="rs-sec">
+        <view class="rs-sec__t">补充说明</view>
+        <textarea
+          class="rs-textarea"
+          value="{{content}}"
+          maxlength="{{contentMax}}"
+          placeholder="可描述具体问题（选填）"
+          placeholder-class="rs-ph"
+          bindinput="onContentInput"
+        ></textarea>
+        <view class="rs-count">{{contentLen}}/{{contentMax}}</view>
+      </view>
+
+      <!-- 现场照片 -->
+      <view class="rs-sec">
+        <view class="rs-sec__t">现场照片（选填，最多 {{maxImages}} 张）</view>
+        <!-- 强制合规提示条 -->
+        <view class="rs-warn">
+          <svg-icon name="warn" size="14" tint="peach"></svg-icon>
+          <text class="rs-warn__t">请勿拍摄人脸或儿童影像；如需拍摄请先征得同意</text>
+        </view>
+        <view class="rs-photos">
+          <view wx:for="{{images}}" wx:key="key" class="rs-photo">
+            <image class="rs-photo__img" src="{{item.fileID || item.tempFilePath}}" mode="aspectFill" data-idx="{{index}}" bindtap="onPreviewImage"></image>
+            <view wx:if="{{item.uploading}}" class="rs-photo__mask">
+              <view class="rs-photo__spin"></view>
+            </view>
+            <view wx:elif="{{item.failed}}" class="rs-photo__mask rs-photo__mask--err">
+              <text class="rs-photo__err-t">失败</text>
+            </view>
+            <view class="rs-photo__del" data-idx="{{index}}" catchtap="onRemoveImage"><text class="rs-photo__del-x">✕</text></view>
+          </view>
+          <view
+            wx:if="{{images.length < maxImages}}"
+            class="rs-photo rs-photo--add {{uploading ? 'is-busy' : ''}}"
+            bindtap="onChooseImage"
+          >
+            <svg-icon name="plus" size="22"></svg-icon>
+            <text class="rs-photo__add-t">添加</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="rs-note">提交内容将用于核实 POI 信息</view>
+      <view wx:if="{{errorTip}}" class="rs-err">{{errorTip}}</view>
+
+    </scroll-view>
+
+    <!-- 底部提交 -->
+    <view class="rs-foot">
+      <button class="rs-btn" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmit">提交反馈</button>
+    </view>
+
+  </view>
+</view>

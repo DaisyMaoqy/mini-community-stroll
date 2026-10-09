@@ -1,0 +1,122 @@
+/* components/report-sheet/index.wxss 纠错上报底部弹层（类名前缀统一 rs-）
+   颜色/圆角/字号一律复用 styles/tokens.wxss 变量（CSS 变量可穿透组件作用域） */
+.rs-mask {
+  position: fixed; left: 0; right: 0; top: 0; bottom: 0;
+  z-index: 60; /* 压过地图页既有 .sheet-mask(z-index:50) 与接种页 .yue-bar(z-index:10) */
+  background: rgba(20, 30, 25, 0.45);
+  display: flex; align-items: flex-end;
+}
+.rs-sheet {
+  width: 100%; box-sizing: border-box;
+  max-height: 84vh;
+  display: flex; flex-direction: column;
+  background: #fff;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  padding: 18px 16px 16px;
+  animation: rsUp .22s ease;
+}
+@keyframes rsUp { from { transform: translateY(24px); opacity: .6; } to { transform: translateY(0); opacity: 1; } }
+
+/* 标题行 */
+.rs-hd { display: flex; align-items: center; justify-content: space-between; }
+.rs-title { font-size: var(--fs-lg); font-weight: 800; color: var(--ink); }
+.rs-close {
+  width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: var(--sand);
+}
+.rs-close__x { font-size: var(--fs-sm); color: var(--ink2); line-height: 1; }
+
+/* 只读地点名 */
+.rs-loc { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+.rs-loc__k { flex: 0 0 auto; font-size: var(--fs-xs); color: var(--ink3); }
+.rs-loc__v { flex: 1; font-size: var(--fs-md); font-weight: 600; color: var(--ink); }
+
+/* 可滚动表单区 */
+.rs-body { flex: 1; max-height: 60vh; margin-top: 10px; }
+
+.rs-sec { margin-bottom: 14px; }
+.rs-sec__t { font-size: var(--fs-sm); font-weight: 600; color: var(--ink2); margin-bottom: 8px; }
+.rs-req { color: var(--red); }
+
+/* 类型 chips */
+.rs-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.rs-chip {
+  padding: 7px 14px; border-radius: 999px; font-size: var(--fs-sm);
+  background: var(--green-l); color: var(--green-d); border: 1px solid var(--green-line);
+}
+.rs-chip.on { background: var(--green); color: #fff; border-color: var(--green); }
+
+/* 定位开关 */
+.rs-switch {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px; background: var(--green-l2); border-radius: var(--r-sm); border: 1px solid var(--green-line);
+}
+.rs-switch__l { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.rs-switch__t { font-size: var(--fs-md); color: var(--ink); }
+.rs-switch__d { font-size: var(--fs-xs); color: var(--ink3); line-height: 1.4; }
+.rs-switch__c { flex: 0 0 auto; }
+
+/* 说明 */
+.rs-textarea {
+  width: 100%; box-sizing: border-box; height: 84px;
+  padding: 10px 12px; font-size: var(--fs-sm); color: var(--ink);
+  background: var(--sand); border-radius: var(--r-sm); line-height: 1.5;
+}
+.rs-ph { color: var(--ink3); }
+.rs-count { text-align: right; font-size: var(--fs-xs); color: var(--ink3); margin-top: 4px; }
+
+/* 强制合规提示条（暖色底） */
+.rs-warn {
+  display: flex; align-items: flex-start; gap: 6px;
+  padding: 8px 10px; margin-bottom: 10px;
+  background: var(--amber-l); border-radius: var(--r-sm);
+}
+.rs-warn__t { flex: 1; font-size: var(--fs-xs); color: var(--amber); line-height: 1.5; }
+
+/* 照片 */
+.rs-photos { display: flex; flex-wrap: wrap; gap: 10px; }
+.rs-photo {
+  position: relative; width: 76px; height: 76px; border-radius: var(--r-sm);
+  overflow: hidden; background: var(--sand);
+}
+.rs-photo__img { width: 100%; height: 100%; display: block; }
+.rs-photo__mask {
+  position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(20, 30, 25, 0.45);
+}
+.rs-photo__mask--err { background: rgba(226, 109, 92, 0.6); }
+.rs-photo__err-t { color: #fff; font-size: var(--fs-xs); }
+.rs-photo__spin {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4); border-top-color: #fff;
+  box-sizing: border-box; animation: rsSpin .8s linear infinite;
+}
+@keyframes rsSpin { to { transform: rotate(360deg); } }
+.rs-photo__del {
+  position: absolute; top: 0; right: 0;
+  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  background: rgba(20, 30, 25, 0.6); border-radius: 0 var(--r-sm) 0 var(--r-sm);
+}
+.rs-photo__del-x { color: #fff; font-size: var(--fs-xs); line-height: 1; }
+.rs-photo--add {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  border: 1px dashed var(--green-line); background: var(--green-l2);
+}
+.rs-photo--add.is-busy { opacity: .5; }
+.rs-photo__add-t { font-size: var(--fs-xs); color: var(--green-d); }
+
+/* 底部说明 + 内联错误提示 */
+.rs-note { font-size: var(--fs-xs); color: var(--ink3); text-align: center; margin: 4px 0 10px; }
+.rs-err { font-size: var(--fs-sm); color: var(--red); text-align: center; margin-bottom: 6px; }
+
+/* 底部提交按钮 */
+.rs-foot { padding-top: 10px; border-top: 1px solid var(--line); }
+.rs-btn {
+  width: 100%; background: linear-gradient(135deg, var(--green), var(--green-d));
+  color: #fff; border-radius: var(--r); font-size: var(--fs-md); font-weight: 600;
+  padding: 12px 0; line-height: 1.2;
+}
+/* 自定义 button 去掉默认边框 */
+.rs-btn::after { border: none; }
+.rs-btn[disabled] { opacity: .6; }

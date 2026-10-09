@@ -1,4 +1,6 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "report-sheet": "/components/report-sheet/index"
+  },
   "disableScroll": true
 }

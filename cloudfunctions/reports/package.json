@@ -1,0 +1,10 @@
+{
+  "name": "reports",
+  "version": "1.0.0",
+  "description": "POI 纠错上报闭环：submit/mine/get + 参数校验 + 24h 限流 + 服务端 openid（local_reports）",
+  "main": "index.js",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.4.0"
+  }
+}
