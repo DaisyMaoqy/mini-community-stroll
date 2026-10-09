@@ -1,6 +1,7 @@
-<!-- pages/review/index.wxml 纠错审核页（T07 默认采纳路径 + T09 直接应用到云端）
+<!-- pages/review/index.wxml 纠错审核页（T11：列表=联动页版式 / 详情=采集页版式 + 地图重新选点）
      类名前缀统一 rv-；四态齐全：身份校验中 / 无权限 / 队列（加载·失败·空·列表）。
-     WXSS 不支持中文类名选择器，中文仅出现在文案中。 -->
+     两层视图：view==='list' 列表；view==='detail' 详情（详情顶部必带「← 返回列表」）。
+     WXSS 不支持中文类名选择器，中文仅出现在文案中。本页严禁引入任何 <map> 标签。 -->
 <view class="container rv-page">
 
   <!-- ============ ① 身份校验中 ============ -->
@@ -20,132 +21,200 @@
   <!-- ============ ③ 审核工作台（仅 admin） ============ -->
   <block wx:else>
 
-    <!-- 状态 tabs（待审 / 已采纳 / 已驳回） -->
-    <view class="rv-tabs">
-      <view
-        wx:for="{{statusTabs}}"
-        wx:key="*this"
-        class="rv-tab {{tab === item ? 'on' : ''}}"
-        data-key="{{item}}"
-        bindtap="onStatusTab"
-      >{{statusLabels[item]}}</view>
-    </view>
+    <!-- ===================== 列表视图（联动页版式） ===================== -->
+    <block wx:if="{{view === 'list'}}">
 
-    <!-- 队列加载中：骨架 -->
-    <view class="rv-list" wx:if="{{loading}}">
-      <view class="card rv-card rv-sk" wx:for="{{[0,1,2]}}" wx:key="*this">
-        <view style="display:flex;align-items:center;justify-content:space-between">
-          <view class="sk sk-line w-50" style="height:16px"></view>
-          <view class="sk sk-tag"></view>
-        </view>
-        <view class="sk sk-line w-100"></view>
-        <view class="sk sk-line w-70"></view>
+      <!-- 状态 tabs（待审 / 已采纳 / 已驳回） -->
+      <view class="rv-tabs">
+        <view
+          wx:for="{{statusTabs}}"
+          wx:key="*this"
+          class="rv-tab {{tab === item ? 'on' : ''}}"
+          data-key="{{item}}"
+          bindtap="onStatusTab"
+        >{{statusLabels[item]}}</view>
       </view>
-    </view>
 
-    <!-- 队列加载失败：失败卡 + 重试 -->
-    <view class="rv-list" wx:elif="{{loadError}}">
-      <view class="card rv-error">
-        <view class="rv-error__ic"><svg-icon name="warn" size="26"></svg-icon></view>
-        <view class="sec">队列加载失败</view>
-        <view class="muted">网络开小差了，请稍后重试</view>
-        <view class="rv-error__btn" bindtap="onRetry">重试</view>
-      </view>
-    </view>
-
-    <!-- 队列列表 -->
-    <view class="rv-list" wx:elif="{{list.length}}">
-      <view class="card rv-card" wx:for="{{list}}" wx:key="_id" wx:for-item="item">
-
-        <!-- 卡片头（点击展开 / 收起） -->
-        <view class="rv-hd" data-id="{{item._id}}" bindtap="onToggleExpand">
-          <view class="rv-hd__thumb" wx:if="{{item._thumb}}">
-            <image class="rv-hd__thumb-img" src="{{item._thumb}}" mode="aspectFill"></image>
+      <!-- 队列加载中：骨架 -->
+      <view class="rv-list" wx:if="{{loading}}">
+        <view class="card rv-card rv-sk" wx:for="{{[0,1,2]}}" wx:key="*this">
+          <view style="display:flex;align-items:center;justify-content:space-between">
+            <view class="sk sk-line w-50" style="height:16px"></view>
+            <view class="sk sk-tag"></view>
           </view>
-          <view class="rv-hd__main">
-            <view class="rv-hd__top">
-              <text class="rv-hd__name">{{item.spotName}}</text>
-              <text class="rv-badge rv-badge--{{item.status}}">{{item._statusLabel}}</text>
+          <view class="sk sk-line w-100"></view>
+          <view class="sk sk-line w-70"></view>
+        </view>
+      </view>
+
+      <!-- 队列加载失败：失败卡 + 重试 -->
+      <view class="rv-list" wx:elif="{{loadError}}">
+        <view class="card rv-error">
+          <view class="rv-error__ic"><svg-icon name="warn" size="26"></svg-icon></view>
+          <view class="sec">队列加载失败</view>
+          <view class="muted">网络开小差了，请稍后重试</view>
+          <view class="rv-error__btn" bindtap="onRetry">重试</view>
+        </view>
+      </view>
+
+      <!-- 队列列表：整行唯一点击目标（行内不再套任何可点元素） -->
+      <view class="rv-list" wx:elif="{{list.length}}">
+        <view class="card rv-rows">
+          <view
+            class="rv-row {{item.status !== 'pending' ? 'rv-row--done' : ''}}"
+            wx:for="{{list}}"
+            wx:key="_id"
+            wx:for-item="item"
+            data-id="{{item._id}}"
+            bindtap="onOpenDetail"
+          >
+            <view class="rv-row__ico"><svg-icon name="pin" size="20"></svg-icon></view>
+            <view class="rv-row__main">
+              <view class="rv-row__n">{{item.spotName}}</view>
+              <view class="rv-row__d">{{item.type}} · {{item._note}}</view>
             </view>
-            <view class="rv-hd__type">{{item.type}}</view>
-            <view class="rv-hd__content">{{item.content}}</view>
-            <view class="rv-hd__meta">
-              <text class="rv-hd__time">{{item._time}}</text>
-              <text class="rv-hd__chev">{{expandId === item._id ? '收起' : '展开'}}</text>
+            <text class="rv-badge rv-badge--{{item.status}}">{{item._statusLabel}}</text>
+            <view class="rv-row__go">
+              <text class="rv-row__go-t">处理</text>
+              <svg-icon name="chev" size="14"></svg-icon>
             </view>
           </view>
         </view>
+      </view>
 
-        <!-- 展开详情 -->
-        <view class="rv-detail" wx:if="{{expandId === item._id}}">
-          <!-- 全文 -->
-          <view class="rv-detail__full" wx:if="{{item.content}}">{{item.content}}</view>
-          <view class="rv-detail__full muted" wx:else>（未填写补充说明）</view>
+      <!-- 空态 -->
+      <view class="rv-empty" wx:else>{{tab === 'pending' ? '暂无待审反馈' : (tab === 'accepted' ? '暂无已采纳反馈' : '暂无已驳回反馈')}}</view>
 
-          <!-- 图片行（点击预览） -->
-          <view class="rv-imgs" wx:if="{{item._hasImages}}">
-            <image
-              wx:for="{{item.images}}"
-              wx:for-item="img"
-              wx:for-index="ii"
-              wx:key="*this"
-              class="rv-img"
-              src="{{img}}"
-              mode="aspectFill"
-              data-id="{{item._id}}"
-              data-idx="{{ii}}"
-              bindtap="previewImage"
-            ></image>
+    </block>
+
+    <!-- ===================== 详情视图（采集页版式） ===================== -->
+    <block wx:else>
+
+      <!-- 顶部：返回列表 + POI 名称（原生导航返回会 pop 整页，必须页内返回） -->
+      <view class="rv-dhead">
+        <view class="rv-back" bindtap="onCloseDetail">
+          <text class="rv-back__a">‹</text>
+          <text>返回列表</text>
+        </view>
+        <view class="rv-dhead__name">{{detail.spotName}}</view>
+      </view>
+
+      <!-- 地图卡片（静态视觉占位；实际选点走 wx.chooseLocation） -->
+      <view class="rv-map">
+        <view class="rv-map__auth" wx:if="{{poiOld && poiOld.coord && poiOld.coord.coordinates}}">
+          权威表现值：{{poiOld.coord.coordinates[0]}}, {{poiOld.coord.coordinates[1]}}
+        </view>
+        <view class="rv-map__pin"><svg-icon name="pin" size="30"></svg-icon></view>
+        <view class="rv-map__tag">{{detail.spotName}}</view>
+        <view class="rv-map__coord">
+          gcj02 · {{geoPick ? (geoPick.lng + ', ' + geoPick.lat) : (detail.suggestCoord ? (detail.suggestCoord.lng + ', ' + detail.suggestCoord.lat) : '无坐标')}}
+        </view>
+        <view class="rv-map__reloc" wx:if="{{detail.type === '位置不准'}}" bindtap="onRelocate">{{repicking ? '选点中…' : '📌 重新选点'}}</view>
+      </view>
+
+      <!-- 现场照（只读，点图预览；严禁添加按钮） -->
+      <view class="rv-sec" wx:if="{{detail.images && detail.images.length}}">
+        <view class="rv-sec__t">现场照（{{detail.images.length}}）</view>
+        <view class="rv-photos">
+          <image
+            wx:for="{{detail.images}}"
+            wx:for-item="img"
+            wx:for-index="ii"
+            wx:key="*this"
+            class="rv-photos__item"
+            src="{{img}}"
+            mode="aspectFill"
+            data-id="{{detailId}}"
+            data-idx="{{ii}}"
+            bindtap="previewImage"
+          ></image>
+        </view>
+        <view class="rv-warn">请勿拍摄人脸或儿童影像；如需拍摄请先征得同意</view>
+      </view>
+
+      <!-- POI 现值（只读行；字段取自 seed 真实键） -->
+      <view class="rv-sec">
+        <view class="rv-sec__t">POI 现值（只读）</view>
+        <view class="rv-loading" wx:if="{{poiLoading}}">载入中…</view>
+        <view class="rv-loading" wx:elif="{{poiLoadError || !poiOld}}">未取到 POI 现值</view>
+        <block wx:else>
+          <view class="rv-field" wx:for="{{poiRows}}" wx:key="k" wx:for-item="f">
+            <text class="rv-field__k">{{f.k}}</text>
+            <text class="rv-field__v">{{f.v}}</text>
           </view>
-          <!-- 照片下方小字合规提示 -->
-          <view class="rv-warn" wx:if="{{item._hasImages}}">请勿拍摄人脸或儿童影像；如需拍摄请先征得同意</view>
+        </block>
+      </view>
 
-          <!-- 备注输入 -->
-          <view class="rv-note">
-            <textarea
-              class="rv-textarea"
-              value="{{noteMap[item._id]}}"
-              placeholder="审核备注 / 驳回理由"
-              placeholder-class="rv-ph"
-              maxlength="200"
-              data-id="{{item._id}}"
-              bindinput="onNoteInput"
-            ></textarea>
-          </view>
+      <!-- 旧值 → 新值 对照（红删除线 → 绿粗体） -->
+      <view class="rv-sec">
+        <view class="rv-sec__t">纠错对照</view>
 
-          <!-- 底部三按钮：采纳（主）/ 直接应用到云端（次）/ 驳回（三） -->
-          <view class="rv-actions">
-            <button
-              class="rv-btn rv-btn--primary"
-              data-id="{{item._id}}"
-              bindtap="onAcceptDefault"
-              disabled="{{submitting}}"
-            >采纳</button>
-            <button
-              class="rv-btn rv-btn--ghost {{item._canApply ? '' : 'is-disabled'}}"
-              data-id="{{item._id}}"
-              bindtap="onApplyToCloud"
-              disabled="{{submitting || !item._canApply}}"
-            >直接应用到云端</button>
-            <button
-              class="rv-btn rv-btn--second"
-              data-id="{{item._id}}"
-              bindtap="onReject"
-              disabled="{{submitting}}"
-            >驳回</button>
-          </view>
-          <view class="rv-actions__hint" wx:if="{{!item._canApply}}">该类型不支持直接应用，请走 seed 片段</view>
+        <view class="rv-diff" wx:if="{{detail.type === '位置不准'}}">
+          <text class="rv-diff__old">{{poiOld && poiOld.coord && poiOld.coord.coordinates ? ('[' + poiOld.coord.coordinates[0] + ', ' + poiOld.coord.coordinates[1] + ']') : '未取到'}}</text>
+          <text class="rv-diff__arrow"> → </text>
+          <text class="rv-diff__new">{{geoPick ? ('[' + geoPick.lng + ', ' + geoPick.lat + ']') : (detail.suggestCoord ? ('[' + detail.suggestCoord.lng + ', ' + detail.suggestCoord.lat + ']') : '无坐标')}}</text>
         </view>
 
-      </view>
-    </view>
+        <view class="rv-diff" wx:elif="{{detail.type === '已关闭或不存在'}}">
+          <text class="rv-diff__old">{{poiOld && poiOld.verifyStatus ? poiOld.verifyStatus : '未取到'}}</text>
+          <text class="rv-diff__arrow"> → </text>
+          <text class="rv-diff__new">rejected</text>
+        </view>
 
-    <!-- 空态 -->
-    <view class="rv-empty" wx:else>{{tab === 'pending' ? '暂无待审反馈' : (tab === 'accepted' ? '暂无已采纳反馈' : '暂无已驳回反馈')}}</view>
+        <view class="rv-diff2" wx:else>
+          <text class="rv-diff2__t">需人工判断</text>
+          <text class="rv-diff2__c">{{detail.content}}</text>
+        </view>
+      </view>
+
+      <!-- 上报说明（全文）+ 上报时间 -->
+      <view class="rv-sec">
+        <view class="rv-sec__t">上报说明</view>
+        <view class="rv-content">{{detail.content || '（未填写补充说明）'}}</view>
+        <view class="rv-time">上报时间：{{detail._time}}</view>
+      </view>
+
+      <!-- 备注输入 -->
+      <view class="rv-note">
+        <textarea
+          class="rv-textarea"
+          value="{{noteMap[detailId]}}"
+          placeholder="审核备注 / 驳回理由"
+          placeholder-class="rv-ph"
+          maxlength="200"
+          data-id="{{detailId}}"
+          bindinput="onNoteInput"
+        ></textarea>
+      </view>
+
+      <!-- 底部三按钮：采纳（主）/ 直接应用到云端（次）/ 驳回（第三） -->
+      <view class="rv-actions">
+        <button
+          class="rv-btn rv-btn--primary"
+          data-id="{{detailId}}"
+          bindtap="onAcceptDefault"
+          disabled="{{submitting}}"
+        >采纳</button>
+        <button
+          class="rv-btn rv-btn--ghost {{detail._canApply ? '' : 'is-disabled'}}"
+          data-id="{{detailId}}"
+          bindtap="onApplyToCloud"
+          disabled="{{submitting || !detail._canApply}}"
+        >直接应用到云端</button>
+        <button
+          class="rv-btn rv-btn--second"
+          data-id="{{detailId}}"
+          bindtap="onReject"
+          disabled="{{submitting}}"
+        >驳回</button>
+      </view>
+      <view class="rv-actions__hint" wx:if="{{!detail._canApply}}">该类型不支持直接应用，请走 seed 片段</view>
+
+    </block>
 
   </block>
 
-  <!-- ============ seed 片段弹层 ============ -->
+  <!-- ============ seed 片段弹层（最高层 z-index:60） ============ -->
   <view wx:if="{{snippetVisible}}" class="rv-mask" bindtap="onCloseSnippet" catchtouchmove="noop">
     <view class="rv-snippet" catchtap="noop">
       <view class="rv-snippet__hd">

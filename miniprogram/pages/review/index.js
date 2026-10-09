@@ -1,10 +1,12 @@
-// pages/review/index.js 纠错审核页（T07 默认采纳路径 + T09 直接应用到云端）
-// 运营审核端：查 local_reports 队列 → 采纳（默认，不写权威表）/ 直接应用到云端（写 local_spots）/ 驳回。
+// pages/review/index.js 纠错审核页（T07 默认采纳 + T09 直接应用 + T11 两层视图/地图重新选点）
+// 运营审核端：查 local_reports 队列 → 列表（联动页式）→ 详情（采集页式）→
+//   采纳（默认，不写权威表）/ 直接应用到云端（写 local_spots）/ 驳回。
 // 契约见「服务端契约（已冻结）」：统一走 callCloud('reports', { action, ... })。
 //   - whoami（不鉴权）→ 判定 isAdmin，仅 admin 才拉队列
 //   - queue（仅 admin）→ 分页拉取，createdAt 倒序，不返回 reporterOpenid
-//   - review（仅 admin）→ status: accepted|rejected，applyToSpots 控制是否直写权威表
-//   - spots.get（取 POI 现值，生成 seed 片段用；失败必须 try/catch 降级）
+//   - review（仅 admin）→ status: accepted|rejected，applyToSpots 控制是否直写权威表；
+//       可选 coordOverride:{lat,lng}（审核员重新选点）→ 优先级高于 suggestCoord
+//   - spots.get（取 POI 现值，生成 seed 片段 + 详情只读字段；失败必须 try/catch 降级）
 const { callCloud } = require('../../utils/cloud.js');
 
 // 状态 tab（值，与 data.statusTabs 一致）+ 中文文案映射（WXML 不能调函数，用映射表渲染）
@@ -58,6 +60,37 @@ function reportNote(content) {
   return text.length > 100 ? text.slice(0, 100) + '…' : text;
 }
 
+// POI 现值只读行（字段名严格取自 initSpots/spots.seed.json 中真实存在的键）
+//   布尔 → 「是 / 否」；数组 → join('、')；空值（undefined/null/''）不渲染该行。
+function buildPoiRows(doc) {
+  if (!doc) return [];
+  const rows = [];
+  function push(k, v) {
+    if (v === undefined || v === null || v === '') return;
+    let text;
+    if (Array.isArray(v)) text = v.join('、');
+    else if (typeof v === 'boolean') text = v ? '是' : '否';
+    else text = String(v);
+    if (text === '') return;
+    rows.push({ k: k, v: text });
+  }
+  push('名称', doc.name);
+  push('类型', doc.type);
+  push('子类型', doc.subType);
+  push('地址', doc.address);
+  push('适龄', doc.ageRange);
+  push('仅成人', doc.adultOnly);
+  push('社区外', doc.external);
+  push('核验状态', doc.verifyStatus);
+  const bus = doc.bus || {};
+  push('公交枢纽', bus.hub);
+  push('公交线路', bus.lines);
+  push('更新于', doc.updatedAt);
+  push('坐标来源', doc.coordSource);
+  push('坐标待复核', doc.coordEstimated);
+  return rows;
+}
+
 Page({
   // 实例级同步闩：setData 之外的极速连点可能在 data.submitting 生效前穿透，用同步布尔兜底
   _busy: false,
@@ -82,11 +115,21 @@ Page({
     hasMore: false,       // 是否还有下一页
     loading: false,       // 队列加载中
     loadError: false,     // 队列加载失败（区别于空数据）
-    expandId: '',         // 当前展开的反馈 _id（'' 表示全收起）
     noteMap: {},          // { [_id]: 审核备注 / 驳回理由 }
     submitting: false,    // 审核请求进行中（防连点 + 按钮禁用）
     snippetVisible: false, // seed 片段弹层显隐
     seedSnippet: '',      // seed 片段文本
+
+    // ---- 两层视图（列表 ↔ 详情）----
+    view: 'list',         // 'list' | 'detail'
+    detailId: '',         // 当前详情对应的反馈 _id（'' 表示未进入详情）
+    detail: {},           // 当前详情承载的反馈（复用行数据，无需二次拉取）
+    poiOld: null,         // spots.get 取到的 POI 权威现值（失败为 null）
+    poiRows: [],          // POI 现值只读行（[{k,v}]，已格式化）
+    poiLoading: false,    // POI 现值加载中
+    poiLoadError: false,  // POI 现值取数失败（降级，不阻断其余内容）
+    geoPick: null,        // 本轮审核员重新选点结果 {lat,lng}（仅内存，提交时才用）
+    repicking: false,     // wx.chooseLocation 进行中（防连点）
   },
 
   onLoad() {
@@ -98,19 +141,24 @@ Page({
     // 刻意留空：回到本页不重拉队列（避免与 onLoad/下拉刷新形成双请求）
   },
 
-  // 下拉刷新：重置到第 0 页重载当前 tab
+  // 下拉刷新：详情视图直接返回（归属列表视图）；列表视图重置到第 0 页重载当前 tab
   async onPullDownRefresh() {
+    if (this.data.view === 'detail') {
+      wx.stopPullDownRefresh();
+      return;
+    }
     if (!this.data.isAdmin) {
       wx.stopPullDownRefresh();
       return;
     }
-    this.setData({ list: [], total: 0, page: 0, hasMore: false, loadError: false, expandId: '' });
+    this.setData({ list: [], total: 0, page: 0, hasMore: false, loadError: false });
     await this.loadQueue(0);
     wx.stopPullDownRefresh();
   },
 
-  // 触底加载下一页
+  // 触底加载下一页：仅列表视图生效
   onReachBottom() {
+    if (this.data.view !== 'list') return;
     if (!this.data.isAdmin) return;
     if (this.data.hasMore && !this.data.loading) {
       this.loadQueue(this.data.page + 1);
@@ -188,6 +236,7 @@ Page({
     report._thumb = images[0] || '';
     report._imageCount = images.length;
     report._canApply = DIRECT_APPLY_TYPES.indexOf(it.type) >= 0;
+    report._note = reportNote(it.content); // 列表行副标题摘要
     return report;
   },
 
@@ -195,14 +244,91 @@ Page({
   onStatusTab(e) {
     const key = e.currentTarget.dataset.key;
     if (!key || key === this.data.tab) return;
-    this.setData({ tab: key, list: [], total: 0, page: 0, hasMore: false, loadError: false, expandId: '' });
+    this.setData({ tab: key, list: [], total: 0, page: 0, hasMore: false, loadError: false });
     this.loadQueue(0);
   },
 
-  // ---- 展开 / 收起某条反馈 ----
-  onToggleExpand(e) {
+  // ---- 列表行 → 进入详情视图 ----
+  onOpenDetail(e) {
     const id = e.currentTarget.dataset.id;
-    this.setData({ expandId: this.data.expandId === id ? '' : id });
+    const detail = this.findReport(id);
+    if (!detail) return;
+    // 进详情前先复位所有详情态，避免残留上一条的坐标/照片/选点
+    this.setData({
+      view: 'detail',
+      detailId: id,
+      detail: detail,
+      geoPick: null,
+      repicking: false,
+      poiOld: null,
+      poiRows: [],
+      poiLoading: false,
+      poiLoadError: false,
+    });
+    this.loadPoi(detail.spotId);
+  },
+
+  // ---- 详情视图 → 返回列表（原生导航返回会 pop 整页，故必须页内返回）----
+  onCloseDetail() {
+    this.setData({
+      view: 'list',
+      detailId: '',
+      detail: {},
+      poiOld: null,
+      poiRows: [],
+      geoPick: null,
+      repicking: false,
+      poiLoading: false,
+      poiLoadError: false,
+    });
+  },
+
+  // ---- 取 POI 权威现值（详情只读字段 + 旧值对照）；失败降级不阻断 ----
+  //   spots 云函数失败返回 errMsg 而非 message，callCloud 会 reject 成「云函数返回失败」，故必须 try/catch。
+  async loadPoi(spotId) {
+    if (!spotId) {
+      this.setData({ poiOld: null, poiRows: [], poiLoading: false, poiLoadError: true });
+      return;
+    }
+    this.setData({ poiLoading: true, poiLoadError: false });
+    try {
+      const res = await callCloud('spots', { action: 'get', id: spotId });
+      const poiOld = (res && res.data) || null;
+      this.setData({ poiOld: poiOld, poiRows: buildPoiRows(poiOld), poiLoading: false, poiLoadError: false });
+    } catch (err) {
+      this.setData({ poiOld: null, poiRows: [], poiLoading: false, poiLoadError: true });
+    }
+  },
+
+  // ---- 地图重新选点（wx.chooseLocation）：结果仅存内存 geoPick，不改 suggestCoord ----
+  onRelocate() {
+    if (this.data.repicking) return; // 防连点
+    this.setData({ repicking: true });
+    wx.chooseLocation({
+      success: (res) => {
+        const lat = res && res.latitude;
+        const lng = res && res.longitude;
+        if (typeof lat !== 'number' || typeof lng !== 'number') {
+          wx.showToast({ title: '选点结果无效', icon: 'none' });
+          return; // 非法结果不写
+        }
+        this.setData({ geoPick: { lat: lat, lng: lng } });
+      },
+      fail: (err) => {
+        const msg = (err && err.errMsg) || '';
+        if (msg.indexOf('cancel') >= 0) {
+          return; // 用户取消：静默，保留原坐标
+        }
+        if (msg.indexOf('auth') >= 0 || msg.indexOf('authorize') >= 0 || msg.indexOf('deny') >= 0) {
+          wx.showToast({ title: '需要位置权限才能选点', icon: 'none' });
+          return; // 权限拒绝：保留原坐标
+        }
+        wx.showToast({ title: '选点失败，请重试', icon: 'none' });
+      },
+      complete: () => {
+        this.setData({ repicking: false });
+      },
+    });
   },
 
   // ---- 预览图片（点击缩略图） ----
@@ -224,6 +350,14 @@ Page({
     this.setData({ noteMap: noteMap });
   },
 
+  // ---- 提交坐标来源（仅「位置不准」+ 本轮已选点 → 传 coordOverride） ----
+  pickOverride(report) {
+    if (report && report.type === '位置不准' && this.data.geoPick) {
+      return this.data.geoPick;
+    }
+    return null;
+  },
+
   // ---- 主按钮：采纳（默认路径，不写权威表） ----
   async onAcceptDefault(e) {
     const id = e.currentTarget.dataset.id;
@@ -234,7 +368,7 @@ Page({
     // 先 await 生成 seed 片段：复制 + 弹层展示，供运营按 SOP 回写 seed 主本
     this.setData({ submitting: true });
     try {
-      const snippet = await this.buildSeedSnippet(report);
+      const snippet = await this.buildSeedSnippet(report, this.data.geoPick);
       this.setData({ seedSnippet: snippet, snippetVisible: true });
       wx.setClipboardData({
         data: snippet,
@@ -249,7 +383,7 @@ Page({
     }
 
     // 再执行采纳（doReview 内部自持 submitting / _busy）
-    await this.doReview(id, 'accepted', false, (this.data.noteMap[id] || '').trim());
+    await this.doReview(id, 'accepted', false, (this.data.noteMap[id] || '').trim(), this.pickOverride(report));
   },
 
   // ---- 次要按钮：直接应用到云端（T09，二次确认） ----
@@ -270,7 +404,7 @@ Page({
       confirmText: '确认应用',
       success: (res) => {
         if (!res.confirm) return; // 取消：不发起任何请求
-        this.doReview(id, 'accepted', true, note);
+        this.doReview(id, 'accepted', true, note, this.pickOverride(report));
       },
     });
   },
@@ -289,19 +423,22 @@ Page({
   },
 
   // ---- 统一审核执行（采纳 / 直接应用 / 驳回） ----
-  async doReview(id, status, applyToSpots, note) {
+  async doReview(id, status, applyToSpots, note, coordOverride) {
     if (this._busy) return { ok: false, reason: 'busy' };
     this._busy = true;
     const reviewNote = (note != null ? note : (this.data.noteMap[id] || '')).trim();
     this.setData({ submitting: true });
     try {
-      const res = await callCloud('reports', {
+      const payload = {
         action: 'review',
         _id: id,
         status: status,
         reviewNote: reviewNote,
         applyToSpots: !!applyToSpots,
-      });
+      };
+      // 仅当确有坐标覆盖时才带上（其余类型传了也会被服务端忽略，但不徒增噪音）
+      if (coordOverride) payload.coordOverride = coordOverride;
+      const res = await callCloud('reports', payload);
 
       // 成功提示
       if (applyToSpots && res && res.appliedToSpots) {
@@ -316,12 +453,20 @@ Page({
         wx.showToast({ title: status === 'accepted' ? '已采纳' : '已驳回', icon: 'none' });
       }
 
-      // 从当前列表移除该条并刷新队列（保证与服务端一致）
+      // 从当前列表移除该条并刷新队列（保证与服务端一致）；同时复位详情态回列表
       const list = (this.data.list || []).filter((x) => x._id !== id);
       this.setData({
         list: list,
         total: Math.max(0, this.data.total - 1),
-        expandId: this.data.expandId === id ? '' : this.data.expandId,
+        view: 'list',
+        detailId: '',
+        detail: {},
+        poiOld: null,
+        poiRows: [],
+        poiLoading: false,
+        poiLoadError: false,
+        geoPick: null,
+        repicking: false,
       });
       this.loadQueue(0);
       return { ok: true, res: res };
@@ -332,7 +477,7 @@ Page({
       else if (code === 'INVALID_PARAM' || code === 'SPOT_NOT_FOUND') msg = (err && err.message) || msg;
       else if (code === 'NOT_FOUND') msg = (err && err.message) || '该反馈不存在或已被处理';
       wx.showToast({ title: msg, icon: 'none' });
-      // 保留当前展开态与已填备注（不清空上下文，便于改完重试）
+      // 保留当前详情/备注（不清空上下文，便于改完重试）
       return { ok: false, err: err };
     } finally {
       this.setData({ submitting: false });
@@ -344,12 +489,14 @@ Page({
   // 三种输出形态：
   //   ② 一般采纳：位置不准 / 已关闭或不存在（doc 取到且坐标齐备）→ 整条 POI JSON（可整条替换）+ 变更对照
   //   ① 需人工处理：信息有误 / 设施变化 / 其他 → 无结构化字段，仅输出当前值对照 JSON + 人工处理指引（未做任何改动）
-  //   ③ 降级：spots.get 失败，或「位置不准」缺 suggestCoord → 只输出被改字段片段
-  async buildSeedSnippet(report) {
+  //   ③ 降级：spots.get 失败，或「位置不准」缺坐标 → 只输出被改字段片段
+  // 坐标「新值」来源优先级（§13.5）：override（审核员重新选点）> report.suggestCoord（家长上报）
+  async buildSeedSnippet(report, override) {
     const type = report.type;
     const spotId = report.spotId || '';
     const reportId = report._id || '';
-    const suggest = report.suggestCoord || null;
+    const overrideCoord = (override && typeof override.lat === 'number' && typeof override.lng === 'number') ? override : null;
+    const suggest = overrideCoord || report.suggestCoord || null;
     const needCoord = type === '位置不准';
 
     // 取 POI 当前权威值（spots.get）；该云函数失败返回 errMsg 而非 message，必须 try/catch 降级

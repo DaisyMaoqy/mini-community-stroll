@@ -80,6 +80,17 @@ function isValidCoord(c) {
   return true;
 }
 
+// coordOverride 形状校验（§13.5）：未提供（undefined/null）视为合法；
+// 提供则必须是数值且落在宽松经纬度范围内（不做项目范围校验，避免误伤跨区/边界点位）。
+function isValidCoordOverride(c) {
+  if (c === undefined || c === null) return true;
+  if (typeof c !== "object") return false;
+  if (typeof c.lat !== "number" || typeof c.lng !== "number") return false;
+  if (!(c.lat >= -90 && c.lat <= 90)) return false;
+  if (!(c.lng >= -180 && c.lng <= 180)) return false;
+  return true;
+}
+
 // submit 参数校验：通过返回 null，否则返回失败体（含对应 code）
 function validateSubmit(event) {
   const ev = event || {};
@@ -283,6 +294,11 @@ exports.main = async (event) => {
       if (!id || typeof id !== "string" || REVIEW_STATUS_ENUM.indexOf(status) < 0) {
         return fail(CODES.INVALID_PARAM, "参数错误");
       }
+      // 2.1) coordOverride 形状校验（§13.5）：未提供视为合法；提供则必须合法——即使 applyToSpots===false
+      //      也需校验，因为要落审计字段 reviewedCoord/coordSource。
+      const coordOverride = ev.coordOverride;
+      if (!isValidCoordOverride(coordOverride)) return fail(CODES.INVALID_PARAM, "参数错误");
+      const hasOverride = !!coordOverride;
       // 3) reviewNote 软校验：非字符串按 ''，超 200 截断（不因缺理由硬失败，§12.7）
       let reviewNote = typeof ev.reviewNote === "string" ? ev.reviewNote : "";
       if (reviewNote.length > MAX_CONTENT) reviewNote = reviewNote.slice(0, MAX_CONTENT);
@@ -311,12 +327,15 @@ exports.main = async (event) => {
         }
         let patch = null;
         if (field === "coord") {
-          const c = rep.suggestCoord;
-          if (!c || typeof c !== "object" || typeof c.lng !== "number" || typeof c.lat !== "number") {
+          // 坐标来源优先级（§13.5）：coordOverride（审核员重新选点）> suggestCoord（家长上报）
+          const coordSrc = hasOverride
+            ? { lat: coordOverride.lat, lng: coordOverride.lng }
+            : rep.suggestCoord;
+          if (!coordSrc || typeof coordSrc !== "object" || typeof coordSrc.lng !== "number" || typeof coordSrc.lat !== "number") {
             return fail(CODES.INVALID_PARAM, "该类型不支持直接应用，请走 seed 片段");
           }
           // 仅写 coord(+updatedAt)；GeoJSON Point 经度在前（§8-6）
-          patch = { coord: { type: "Point", coordinates: [c.lng, c.lat] }, updatedAt: today() };
+          patch = { coord: { type: "Point", coordinates: [coordSrc.lng, coordSrc.lat] }, updatedAt: today() };
         } else if (field === "verifyStatus") {
           // 仅写 verifyStatus(+updatedAt)
           patch = { verifyStatus: "rejected", updatedAt: today() };
@@ -338,7 +357,21 @@ exports.main = async (event) => {
         appliedFields = [field];
       }
 
-      // 6) 更新报告状态与审计字段（服务端写入，前端不可伪造）
+      // 6) 审计留痕（§13.5）：仅「已采纳 + 位置不准」记录坐标来源；不覆盖 suggestCoord。
+      //    override → 审核员重新选点；report → 回落家长上报坐标；其余场景 null / ""。
+      let reviewedCoord = null;
+      let coordSource = "";
+      if (status === "accepted" && rep.type === "位置不准") {
+        if (hasOverride) {
+          reviewedCoord = { lat: coordOverride.lat, lng: coordOverride.lng };
+          coordSource = "override";
+        } else if (rep.suggestCoord && typeof rep.suggestCoord.lat === "number" && typeof rep.suggestCoord.lng === "number") {
+          reviewedCoord = { lat: rep.suggestCoord.lat, lng: rep.suggestCoord.lng };
+          coordSource = "report";
+        }
+      }
+
+      // 7) 更新报告状态与审计字段（服务端写入，前端不可伪造）
       try {
         await db.collection(COLLECTION).doc(id).update({
           data: {
@@ -348,13 +381,15 @@ exports.main = async (event) => {
             reviewedAt: db.serverDate(),
             appliedToSpots: applyToSpots,
             appliedFields: appliedFields,
+            reviewedCoord: reviewedCoord,
+            coordSource: coordSource,
           },
         });
       } catch (e) {
         return fail(CODES.COLLECTION_ERROR, "提交失败，请重试");
       }
 
-      // 7) 返回
+      // 8) 返回（新增审计字段不回传前端）
       if (applyToSpots) {
         return { success: true, appliedToSpots: true, appliedFields: appliedFields };
       }
