@@ -2,5 +2,5 @@
 // 维护方式：改数组 → 重新部署 reports 云函数（不部署不生效）。
 // 取本人 openid：部署后调用 { action: 'whoami' } 的返回即本人 openid。
 module.exports = [
-  // 'oXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+  'o8GNd3f5nxhRvkqYJ8DG7s8or6gE'
 ];
