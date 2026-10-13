@@ -1,10 +1,10 @@
 <!-- pages/setting/index.wxml 设置（本期：审核入口迁移 + 关于占位） -->
 <view class="container setting-page" data-theme="{{theme}}">
-  <!-- 运营：仅开发者/运营（isAdmin）可见；非 admin 完全不渲染入口行 -->
-  <view class="group">
+  <!-- 运营：仅开发者/运营（isAdmin）可见；非 admin 时整个「运营」分组（含分区标题）都不渲染，避免空标题残留 -->
+  <view class="group" wx:if="{{isAdmin}}" >
     <view class="sec">运营</view>
     <view class="list">
-      <view class="list__item card" wx:if="{{isAdmin}}" bindtap="goReview">
+      <view class="list__item card" bindtap="goReview">
         <svg-icon name="edit" size="20"></svg-icon>
         <text class="list__label">纠错审核</text>
         <svg-icon name="chev" size="16"></svg-icon>
