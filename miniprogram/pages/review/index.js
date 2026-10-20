@@ -17,6 +17,18 @@ const STATUS_LABELS = { pending: '待审', accepted: '已采纳', rejected: '已
 //   位置不准 → 写 coord；已关闭或不存在 → 写 verifyStatus='rejected'；其余三类服务端会 reject(INVALID_PARAM)
 const DIRECT_APPLY_TYPES = ['位置不准', '已关闭或不存在'];
 
+// 「直接应用到云端」的运营口径文案（集中一处，便于统一维护）
+// 注意：该链路维持现状（直写 local_spots 不持久），此处仅优化提示，不改任何判断逻辑/按钮行为。
+//   ① 二次确认弹窗正文：说明「临时生效 + 会被静默回滚」，并给出正确 SOP
+const APPLY_CONFIRM_TEXT = [
+  '⚠️ 这是临时生效：本次只改写云端权威表 local_spots，不会写入 seed 主本。下次部署并调用 initSpots 时会按 seed 全量重建，未回写 seed 的改动会被静默回滚。',
+  '正确做法：先用「复制 seed 片段」→ 粘回 data/local_spots.seed.json → cp 到 cloudfunctions/initSpots/spots.seed.json → 部署并调用一次 initSpots。',
+].join('\n');
+//   ② 应用成功弹窗正文模板：入参为实际变更字段名（服务端 appliedFields 拼好的串），保持拼接不写死
+const APPLY_DONE_TEXT_TMPL = function (fields) {
+  return '已临时应用到云端（变更字段：' + fields + '）。这只是临时生效，请立刻复制 seed 片段回写主本并部署 initSpots，否则下次部署会被回滚。';
+};
+
 function pad2(n) {
   return (n < 10 ? '0' : '') + n;
 }
@@ -399,7 +411,7 @@ Page({
     const note = (this.data.noteMap[id] || '').trim();
     wx.showModal({
       title: '确认直接应用到云端？',
-      content: '将直接改写云端权威表 local_spots。请记得回写 seed 主本，否则下次部署 initSpots 会被覆盖回滚！',
+      content: APPLY_CONFIRM_TEXT,
       cancelText: '取消',
       confirmText: '确认应用',
       success: (res) => {
@@ -445,7 +457,7 @@ Page({
         const fields = (res.appliedFields || []).join('、') || 'coord';
         wx.showModal({
           title: '已应用到云端',
-          content: '已应用到云端（变更字段：' + fields + '）。务必回写 seed 主本并部署 initSpots，否则会被回滚。',
+          content: APPLY_DONE_TEXT_TMPL(fields),
           showCancel: false,
           confirmText: '我知道了',
         });
