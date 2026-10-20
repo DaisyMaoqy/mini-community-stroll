@@ -3,6 +3,7 @@ const app = getApp();
 const { palette } = require('../../utils/theme.js');
 const { getWeather } = require('../../utils/weather.js');
 const t6 = require('../../utils/t6.js');
+const userSync = require('../../utils/userSync.js');
 
 // 月龄/岁数文案：<36 月显示「N月龄」，≥36 显示「N岁M个月」/「N岁」
 function ageText(birth) {
@@ -71,6 +72,12 @@ Page({
     this.syncTopbar();
     this.syncOutdoor();
     this.refreshWeather();
+    // 云端数据覆盖本地后刷新本页（冷启动先渲染本地数据，pull 回来再补一次刷新，不卡首屏）
+    app.onUserSync(() => {
+      this.syncTopbar();
+      this.syncOutdoor();
+      this.setData({ theme: app.resolveTheme() });
+    });
   },
 
   onReady() {
@@ -93,6 +100,8 @@ Page({
     // 既锁住滚动，又让 canvas 保持 0 尺寸 → onShow 的 syncOutdoor 重绘会崩）。
     // 关闭后重绘：此时页面通常已不可见，canvas 尺寸为 0，绘制被守卫跳过，无害。
     this.setData({ blockSheetOpen: false, babySheetOpen: false }, () => this._redrawRings());
+    // 立即推一次（不走 3s 节流）：切 tab / 退后台后可能被杀进程，避免本次计时丢失
+    userSync.push('outdoor');
   },
 
   onUnload() {
@@ -285,6 +294,8 @@ Page({
     this.setData({ timerRunning: false, sessionText: '00:00' });
     this.syncOutdoor();
     wx.showToast({ title: '已暂停，本次户外已记入', icon: 'none' });
+    // 立即推一次（不走 3s 节流）：暂停是明确的时间点，立刻落库最稳
+    userSync.push('outdoor');
   },
   _dayKey() {
     const d = new Date();

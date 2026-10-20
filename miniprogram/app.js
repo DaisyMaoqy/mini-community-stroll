@@ -1,11 +1,19 @@
 // app.js
+const userSync = require('./utils/userSync.js');
+
+// 生成宝宝稳定 id（b_<ts36>_<rand5>）：跨端同步以 id 为权威引用，解决下标错位改错人的问题
+function genBabyId() {
+  return 'b_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+}
+
 App({
   onLaunch: function () {
     this.globalData = {
       env: "cloud1-d1gxzmgkie0e81cac",
       // 宝宝档案（v15 活数据：多宝宝切换/添加/删除；babyProfile 恒指向当前宝宝，兼容旧页面）
-      babies: [],        // [{ name, birth, gender?, lat?, lng? }]
-      babyIdx: 0,        // 当前宝宝下标
+      babies: [],        // [{ id, name, birth, gender?, lat?, lng? }] —— 每项含稳定 id（跨端同步的权威引用）
+      babyIdx: 0,        // 当前宝宝下标（派生值：由 curBabyId 解析，字段名与语义不变）
+      curBabyId: '',     // 当前宝宝稳定 id（持久化与跨端同步的唯一权威引用）
       babyProfile: null, // 派生字段 = babies[babyIdx]（我的页等旧代码仍读写它）
       // 所在板块（v9 定位栏：首页顶部左侧，点击底部 sheet 切换）
       block: "",
@@ -15,6 +23,10 @@ App({
       themeMode: 'auto',
       // 户外陪伴计时（M2 首页环：有效户外累计秒 + 每日目标；day 用于跨天重置）
       outdoor: { outdoor: 0, goal: 60, day: '' },
+      // 本地缓存的「上次已知云端 rev」，push 时作 baseRev（0 = 本机从未与云端对过账）
+      userRev: 0,
+      // 云端数据覆盖本地后的页面刷新回调表（内部用，见 onUserSync / _emitUserSync）
+      _syncListeners: [],
     };
     this.loadPersisted();
     if (!wx.cloud) {
@@ -24,6 +36,8 @@ App({
         env: this.globalData.env,
         traceUser: true,
       });
+      // 云同步必须在 cloud.init 之后启动（内部会 pull → 云端胜出则覆盖本地并通知页面刷新）
+      userSync.start(this);
     }
   },
 
@@ -39,6 +53,18 @@ App({
         const legacy = wx.getStorageSync('babyProfile');
         babies = legacy && legacy.name ? [legacy] : [];
       }
+      // 老数据没有稳定 id → 补齐（同一批次内用 seen 去重，保证不撞值）
+      const seen = {};
+      babies = babies.map(function (b) {
+        const item = (b && typeof b === 'object') ? b : {};
+        if (!item.id) {
+          let id = genBabyId();
+          while (seen[id]) id = genBabyId();
+          item.id = id;
+        }
+        seen[item.id] = 1;
+        return item;
+      });
       const babyIdx = Math.min(
         Math.max(0, +wx.getStorageSync('babyIdx') || 0),
         Math.max(0, babies.length - 1)
@@ -48,12 +74,28 @@ App({
       if (savedOutdoor && typeof savedOutdoor === 'object') {
         this.globalData.outdoor = Object.assign(this.globalData.outdoor, savedOutdoor);
       }
+      // curBabyId 迁移：优先读新 storage key → babies[babyIdx].id → babies[0].id
+      let curBabyId = '';
+      try {
+        const savedId = wx.getStorageSync('curBabyId');
+        if (typeof savedId === 'string') curBabyId = savedId;
+      } catch (e) { /* 读不到按未迁移处理 */ }
+      if (!curBabyId && babies[babyIdx]) curBabyId = babies[babyIdx].id || '';
+      if (!curBabyId && babies[0]) curBabyId = babies[0].id || '';
+      // userRev：本机上次已知云端 rev
+      let userRev = 0;
+      try { userRev = +wx.getStorageSync('userRev') || 0; } catch (e) { userRev = 0; }
+
       this.globalData.themeMode = themeMode;
       this.globalData.elderMode = elderMode;
       this.globalData.block = block;
       this.globalData.babies = babies;
       this.globalData.babyIdx = babyIdx;
-      this.globalData.babyProfile = babies[babyIdx] || null;
+      this.globalData.curBabyId = curBabyId;
+      this.globalData.userRev = userRev;
+      // 末尾统一派生 + 回写：迁移结果（补的 id / curBabyId）立即落盘，下次冷启动不必再迁
+      this._refreshDerived();
+      this.saveLocal();
     } catch (e) {
       console.error('读取本地设置失败', e);
     }
@@ -65,33 +107,65 @@ App({
     return g.babies[g.babyIdx] || null;
   },
 
+  // 由 curBabyId 解析「当前宝宝下标 + babyProfile」：所有会改动 babies / 当前宝宝的出口末尾统一调用，
+  // 保证 babyProfile 恒等于 babies[babyIdx]（vaccine / mine / resolveTheme 的读取语义完全不变）
+  _refreshDerived() {
+    const g = this.globalData;
+    if (!Array.isArray(g.babies)) g.babies = [];
+    let i = -1;
+    if (g.curBabyId) {
+      i = g.babies.findIndex(function (b) { return b && b.id && b.id === g.curBabyId; });
+    }
+    if (i < 0) i = 0;  // id 找不到（被删 / 数据异常）→ 回落首位
+    g.babyIdx = Math.min(Math.max(0, i), Math.max(0, g.babies.length - 1));
+    g.curBabyId = (g.babies[g.babyIdx] && g.babies[g.babyIdx].id) || '';
+    g.babyProfile = g.babies[g.babyIdx] || null;
+  },
+
+  // 只写本地 storage，不触发云同步（云端覆盖本地后必须用它，否则会立刻回推、白涨 rev）
+  saveLocal() {
+    try {
+      wx.setStorageSync('babies', this.globalData.babies);
+      wx.setStorageSync('babyIdx', this.globalData.babyIdx);
+      wx.setStorageSync('curBabyId', this.globalData.curBabyId || '');
+      wx.setStorageSync('userRev', this.globalData.userRev || 0);
+    } catch (e) { console.error(e); }
+  },
+
   // 持久化宝宝列表 + 当前下标
   persistBabies() {
     try {
       wx.setStorageSync('babies', this.globalData.babies);
       wx.setStorageSync('babyIdx', this.globalData.babyIdx);
+      wx.setStorageSync('curBabyId', this.globalData.curBabyId || '');
     } catch (e) { console.error(e); }
+    userSync.pushThrottled('profile', 600);
   },
 
   // 持久化今日户外计时（index 页每次 syncOutdoor 调用）
   persistOutdoor() {
     try { wx.setStorageSync('outdoor', this.globalData.outdoor); } catch (e) { console.error(e); }
+    // syncOutdoor() 每秒跑一次 → 必须 3s 节流，否则每秒打一次云函数
+    userSync.pushThrottled('outdoor', 3000);
   },
 
   // 切换当前宝宝（首页顶部胶囊 / 宝宝 sheet 调用）
   setBabyIdx(i) {
     const g = this.globalData;
-    g.babyIdx = Math.min(Math.max(0, i), Math.max(0, g.babies.length - 1));
-    g.babyProfile = g.babies[g.babyIdx] || null;
+    const idx = Math.min(Math.max(0, i), Math.max(0, g.babies.length - 1));
+    g.curBabyId = (g.babies[idx] && g.babies[idx].id) || '';
+    this._refreshDerived();
     this.persistBabies();
   },
 
   // 添加宝宝并设为当前（返回新下标）
   addBaby(profile) {
     const g = this.globalData;
-    g.babies.push(profile);
-    g.babyIdx = g.babies.length - 1;
-    g.babyProfile = profile;
+    const p = profile || {};
+    if (!p.id) p.id = genBabyId();
+    g.babies.push(p);
+    g.curBabyId = p.id;
+    this._refreshDerived();
     this.persistBabies();
     return g.babyIdx;
   },
@@ -100,11 +174,14 @@ App({
   removeBaby(i) {
     const g = this.globalData;
     if (g.babies.length <= 1) return false;
+    // 先记下被删的 id：只有删掉的正是当前宝宝时才需要改选，否则保持原当前宝宝不动
+    const removedId = g.babies[i] && g.babies[i].id;
     g.babies.splice(i, 1);
-    if (g.babyIdx >= g.babies.length) g.babyIdx = g.babies.length - 1;
-    if (g.babyIdx > i && i < g.babyIdx) g.babyIdx -= 1;
-    else if (g.babyIdx === i) g.babyIdx = Math.min(i, g.babies.length - 1);
-    g.babyProfile = g.babies[g.babyIdx] || null;
+    if (removedId && g.curBabyId === removedId) {
+      const next = Math.min(i, g.babies.length - 1);
+      g.curBabyId = (g.babies[next] && g.babies[next].id) || '';
+    }
+    this._refreshDerived();
     this.persistBabies();
     return true;
   },
@@ -113,6 +190,7 @@ App({
   setBlock(block) {
     this.globalData.block = block || '';
     try { wx.setStorageSync('block', this.globalData.block); } catch (e) { console.error(e); }
+    userSync.pushThrottled('profile', 600);
   },
 
   // 由生日(YYYY-MM-DD)推算整月月龄；解析失败或为空返回 null
@@ -146,14 +224,63 @@ App({
   // 保存当前宝宝资料（我的页兼容入口：写入 babies 当前位并持久化）
   saveBabyProfile(profile) {
     const g = this.globalData;
+    const p = profile || {};
+    // 必须保住 id：profile 通常是 babyProfile 的引用改写（id 天然在）；
+    // 但 babyProfile 为 null 时我的页会传 {}，此时补「当前宝宝 id」，再没有就新生成一个
+    if (!p.id) {
+      p.id = g.curBabyId || (g.babies[g.babyIdx] && g.babies[g.babyIdx].id) || genBabyId();
+    }
     if (g.babies.length) {
-      g.babies[g.babyIdx] = profile;
+      g.babies[g.babyIdx] = p;
     } else {
-      g.babies.push(profile);
+      g.babies.push(p);
       g.babyIdx = 0;
     }
-    g.babyProfile = profile;
+    g.curBabyId = p.id;
+    this._refreshDerived();
     this.persistBabies();
+  },
+
+  // 云端档案覆盖本地（云端为主）：只写本地 + 通知页面刷新，绝不回推（否则 rev 空涨 + 请求风暴）
+  applyCloudProfile(data) {
+    try {
+      const g = this.globalData;
+      const d = data || {};
+      const babies = Array.isArray(d.babies) ? d.babies : [];
+      babies.forEach(function (b) {
+        if (b && typeof b === 'object' && !b.id) b.id = genBabyId();
+      });
+      g.babies = babies;
+      g.curBabyId = typeof d.curBabyId === 'string' ? d.curBabyId : '';
+      if (typeof d.block === 'string') g.block = d.block;
+      // 原地合并保留对象引用：计时中若被云端覆盖，页面持引用继续累加不会写到已失效的旧对象
+      g.outdoor = Object.assign(g.outdoor || {}, { outdoor: 0, goal: 60, day: '' }, d.outdoor || {});
+      g.userRev = d.rev || 0;
+      try {
+        wx.setStorageSync('block', g.block);
+        wx.setStorageSync('outdoor', g.outdoor);
+      } catch (e) { console.error(e); }
+      this._refreshDerived();
+      this.saveLocal();
+      this._emitUserSync();
+    } catch (e) {
+      console.error('应用云端资料失败', e);
+    }
+  },
+
+  // 注册「云端数据已覆盖本地」回调（页面级刷新入口）
+  onUserSync(fn) {
+    if (typeof fn !== 'function') return;
+    if (!Array.isArray(this.globalData._syncListeners)) this.globalData._syncListeners = [];
+    this.globalData._syncListeners.push(fn);
+  },
+
+  // 通知所有监听方：单个回调报错不影响其它
+  _emitUserSync() {
+    const list = this.globalData._syncListeners || [];
+    for (let i = 0; i < list.length; i++) {
+      try { list[i](); } catch (e) { console.error('onUserSync 回调异常', e); }
+    }
   },
 
   setThemeMode(mode) {
