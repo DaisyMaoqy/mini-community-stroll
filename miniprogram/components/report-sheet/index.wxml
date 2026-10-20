@@ -94,7 +94,7 @@
 
     <!-- 底部提交 -->
     <view class="rs-foot">
-      <button class="rs-btn" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmit">提交反馈</button>
+      <button class="rs-btn {{submitting ? 'rs-btn--dim' : ''}}" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmit">提交反馈</button>
     </view>
 
   </view>

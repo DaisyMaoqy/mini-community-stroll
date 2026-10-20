@@ -119,4 +119,6 @@
 }
 /* 自定义 button 去掉默认边框 */
 .rs-btn::after { border: none; }
-.rs-btn[disabled] { opacity: .6; }
+/* 提交中变淡：组件 wxss 不允许属性选择器（[disabled] 会被编译期静默丢弃），
+   故改用类选择器，由 wxml 按 submitting 条件拼接 */
+.rs-btn--dim { opacity: .6; }
