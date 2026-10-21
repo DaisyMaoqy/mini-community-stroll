@@ -213,6 +213,10 @@ page { height: 100%; overflow: hidden; }
 .sheet__title { font-size: var(--fs-xl); font-weight: 800; color: var(--ink); flex: 1; }
 .sheet__row { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: var(--fs-sm); }
 .sheet__k { width: 52px; flex: 0 0 52px; }
+/* 推车友好路线（bus.stroller）：概要行 + 路径行组成一组，仅末行保留分隔线 */
+.sheet__row--stroller { border-bottom: none; padding-bottom: 2px; }
+.sheet__row--stroller-walk { padding-top: 0; }
+.sheet__v { flex: 1; line-height: 1.5; }
 .sheet__tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
 .sheet__actions { display: flex; gap: 10px; margin-top: 6px; }
 /* 纠错入口：标题行右侧小字（用户 2026-09-30 指定位置）；nowrap 防被长标题挤压换行 */

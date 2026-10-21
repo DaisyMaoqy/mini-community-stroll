@@ -280,6 +280,7 @@
             <text wx:if="{{item.adultOnly}}" class="tag tag-red">仅成人</text>
             <text wx:if="{{item.external}}" class="tag tag-amber">需换乘</text>
             <text wx:if="{{item.verifyStatus === 'verified'}}" class="tag tag-green">已核实</text>
+            <text wx:if="{{item._stroller}}" class="tag tag-green">推车可达</text>
           </view>
         </view>
       </view>
@@ -307,6 +308,18 @@
         <text class="sheet__k muted">邨巴</text>
         <text style="color:{{detail.busColor}};font-weight:600">{{detail.bus.hub}}{{!detail.bus.lines ? '': ' · ' + detail.bus.lines + ' 路' }}{{detail.bus.walk ? ' · ' + detail.bus.walk : ''}}</text>
       </view>
+
+      <!-- 推车友好路线：入邨/出邨站点不同（与上方步行者路线不是同一条路）；无 stroller 字段的 POI 整块不渲染 -->
+      <block wx:if="{{detail.bus && detail.bus.stroller}}">
+        <view class="sheet__row sheet__row--stroller">
+          <text class="sheet__k muted">推车</text>
+          <text class="sheet__v" style="color:{{detail.strollerColor}};font-weight:600">推车友好 · {{detail.bus.stroller.line}}号线：入邨 {{detail.bus.stroller.inStop}}／出邨 {{detail.bus.stroller.outStop}}</text>
+        </view>
+        <view class="sheet__row sheet__row--stroller-walk">
+          <text class="sheet__k muted"></text>
+          <text class="sheet__v muted">{{detail.bus.stroller.walk}}</text>
+        </view>
+      </block>
 
       <view class="sheet__row" wx:if="{{detail._distText}}">
         <text class="sheet__k muted">出行</text>

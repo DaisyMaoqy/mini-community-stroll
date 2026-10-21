@@ -260,6 +260,8 @@ Page({
     if (tab === '邨巴' && route !== 'all') {
       list = list.filter((s) => s.bus && s.bus.lines && s.bus.lines.split('/').indexOf(route) >= 0);
     }
+    // 推车可达标记（派生字段，供列表项渲染「推车可达」小标签；bus 已在 list 项上，无需额外查询）
+    list.forEach((s) => { s._stroller = !!(s.bus && s.bus.stroller); });
     // ⚠ 邨巴 POI 一律不上真实地图（任何 tab）。
     //   坐标可靠性是数据属性、与 tab 无关：这些点由「小区级」geocoding 生成（±300~900m），
     //   站点级需要 ±20~50m，画上去必然"位置不贴合、散乱"，会误导用户。
@@ -441,6 +443,13 @@ Page({
     const d = Object.assign({}, s);
     if (s.type === '邨巴' && s.bus) {
       d.busColor = s.isHub ? BUS_ROUTE_COLORS.hub : (BUS_ROUTE_COLORS[s.route] || '#FF9E6D');
+    }
+    // 推车友好路线着色：按 bus.stroller.line 取线路色（唯一真源 busRoutes.js 的 ROUTE_COLORS）。
+    // 不复用 d.busColor —— 后者取的是 POI 自身的 route 字段（且仅 type==='邨巴' 才赋值，
+    // 鳄鱼湖公园 type='遛娃' 时 busColor 为 undefined），与推车实际所乘线路无关。
+    const st = s.bus && s.bus.stroller;
+    if (st && st.line) {
+      d.strollerColor = BUS_ROUTE_COLORS[st.line] || '#FF9E6D';
     }
     this.setData({ detail: d });
   },
