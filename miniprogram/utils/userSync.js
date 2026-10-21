@@ -17,6 +17,7 @@ let _ready = false;   // pull 是否成功过（守卫①：pull 成功前不允
 let _pushable = false; // 是否允许 push（守卫① + 守卫②）
 let _lastFailAt = 0;  // 最近一次失败时间戳（isDirty 用；成功 push 后清零）
 let _timers = {};     // 节流定时器 { key: timerId }
+let _lastPushSig = ''; // 上次成功推送的数据指纹（去重用，见 push）
 
 function _warn(msg, err) {
   // 云同步失败一律静默：只 warn，不做任何用户可见提示（离线是常态）
@@ -47,6 +48,39 @@ function buildPayload() {
   };
 }
 
+/**
+ * 稳定序列化：对象按 key 升序输出，保证同一份数据永远得到同一个字符串。
+ * 不能直接 JSON.stringify —— 对象 key 顺序随赋值先后变化会产生假差异。
+ * @param {*} v
+ * @returns {string}
+ */
+function _stable(v) {
+  if (v === undefined) return 'null';
+  if (v === null) return 'null';
+  if (Array.isArray(v)) return '[' + v.map(_stable).join(',') + ']';
+  if (typeof v === 'object') {
+    const keys = Object.keys(v).sort();
+    return '{' + keys.map(function (k) { return JSON.stringify(k) + ':' + _stable(v[k]); }).join(',') + '}';
+  }
+  return JSON.stringify(v);
+}
+
+/**
+ * 数据指纹：只对「会被写进云端的业务字段」取签名。
+ * ⚠️ 必须排除 baseRev —— 它每次成功推送都会自增，算进去会让去重永远失效。
+ * @returns {string}
+ */
+function _sig() {
+  const g = _app.globalData;
+  return _stable({
+    babies: g.babies || [],
+    curBabyId: g.curBabyId || '',
+    babyIdx: g.babyIdx || 0,
+    block: g.block || '',
+    outdoor: g.outdoor || { outdoor: 0, goal: 60, day: '' },
+  });
+}
+
 // 记录本地已知云端 rev（写 globalData + storage，避免杀进程后 baseRev 回退引发无谓 CONFLICT）
 function _setRev(rev) {
   if (_app && _app.globalData) _app.globalData.userRev = rev;
@@ -74,15 +108,23 @@ async function pull() {
 }
 
 /**
- * 立即推一次云端（内部仍走守卫）
+ * 立即推一次云端（内部仍走守卫 + 指纹去重）
  * @param {string} reason 仅用于日志排查（'init' / 'profile' / 'outdoor' ...）
- * @returns {Promise<{ok:boolean, rev?:number, code?:string}>} 永不 reject
+ * @returns {Promise<{ok:boolean, rev?:number, code?:string, skipped?:boolean, dedup?:boolean}>} 永不 reject
  */
 async function push(reason) {
   try {
     if (!canPush()) return { ok: false, skipped: true, reason: reason };
+    const sig = _sig();
+    // 去重：内容与上次成功推送完全一致 → 不发请求。
+    // 典型收益两处：① pauseTimer 已立即推过，3s 尾部节流到期的那次是纯重复；
+    // ② 切 tab / 切后台触发的 onHide push，数据其实一个字节都没变。
+    if (sig && sig === _lastPushSig) {
+      return { ok: true, skipped: true, dedup: true, reason: reason };
+    }
     const res = await callCloud('userdata', buildPayload());
     if (res && typeof res.rev === 'number') _setRev(res.rev);
+    _lastPushSig = sig; // 仅在成功后落指纹，失败不落 → 下次原样重试
     _lastFailAt = 0;
     return { ok: true, rev: res && res.rev };
   } catch (e) {
@@ -101,7 +143,7 @@ async function push(reason) {
 }
 
 /**
- * 节流推：同 key 合并、尾部触发
+ * 节流推：同 key 合并、尾部触发（注意是「尾部触发 + 每次清 int 重排」，不是「每 N 秒推一次」）
  * @param {string} key 'profile'（600ms） / 'outdoor'（3000ms，syncOutdoor 每秒跑一次，必须节流）
  * @param {number} waitMs 等待毫秒
  */
