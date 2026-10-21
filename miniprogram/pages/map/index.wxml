@@ -8,7 +8,7 @@
     <view class="map-head">
       <view>
         <view class="sec">遛娃地图</view>
-        <view class="muted">附近的接种点、公园、母婴室<text wx:if="{{locating}}" class="loc-chip">· 定位中…</text></view>
+        <view class="muted">附近的接种点、遛娃地<text wx:if="{{locating}}" class="loc-chip">· 定位中…</text></view>
       </view>
       <view class="map-refresh {{loading ? 'is-loading' : ''}}" bindtap="reload" hover-class="map-refresh--hover">
         <svg-icon name="refresh" size="18"></svg-icon>
