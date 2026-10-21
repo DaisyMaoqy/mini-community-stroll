@@ -450,7 +450,13 @@
         ],
         "walk": "下车站走\"桃花源秘境\"密道约 8 分钟",
         "walkNote": null,
-        "busText": "1、8 号线 · 约 10–20 分钟一班（06:00–23:45）"
+        "busText": "1、8 号线 · 约 10–20 分钟一班（06:00–23:45）",
+        "stroller": {
+          "line": "5",
+          "inStop": "蝶舞9街对面",
+          "outStop": "蝶舞8街",
+          "walk": "沿海晴居与康怡雅园之间的小路一直走到尽头，公园位于左手边"
+        }
       },
       "external": false,
       "desc": "半山楼下天然遛娃点（雅园\"桃花源秘境\"密道尽头），计入护眼时长。",
@@ -460,7 +466,7 @@
       "verifyDueAt": "2026-12-13",
       "source": "原型 v12 POIS（坐标estimate·半山(北2/北4门)参照估算，待 #17 geocoding + 官方核验）",
       "createdAt": "2026-09-14",
-      "updatedAt": "2026-09-29",
+      "updatedAt": "2026-10-20",
       "coordSource": "用户人工拾取（暂用点，待采集端界面纠正）",
       "coordEstimated": true
     },
