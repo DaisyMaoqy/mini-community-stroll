@@ -30,7 +30,7 @@
   <!-- 成长主题 -->
   <view class="card theme-card">
     <view class="sec">成长主题</view>
-    <view class="muted theme-tip">随宝宝月龄自动切换：≥18 月龄活力户外（墨绿），&lt;18 月龄低刺激休养（柔和）。</view>
+    <view class="muted theme-tip">随宝宝月龄自动切换：≥18 月龄活力户外（墨绿），{{ '<' }}18 月龄低刺激休养（柔和）。</view>
     <view class="seg">
       <view class="seg__item {{themeMode === 'auto' ? 'on' : ''}}" data-mode="auto" bindtap="onThemeTap">自动</view>
       <view class="seg__item {{themeMode === 'infant' ? 'on' : ''}}" data-mode="infant" bindtap="onThemeTap">婴儿期</view>
