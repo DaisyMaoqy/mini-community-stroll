@@ -25,6 +25,17 @@
 
     <!-- 遛娃指数卡（对齐 v15：环中心档位大字+分数 · 右侧大标题+灯泡建议 · 底部整行四分项；天气获取中显示卡内骨架） -->
     <view class="card index-card">
+      <!-- 加载失败重试态：整块替换卡片内容（版式口径对齐接种页 .vac-error / 地图页 .map-error）。
+           只撤骨架不给提示会停在空内容（分数「—」、标题空、四分项全空），用户会以为这卡本来就是空的。 -->
+      <view class="index-error" wx:if="{{weatherError}}">
+        <view class="index-error__ic"><svg-icon name="warn" size="26"></svg-icon></view>
+        <view class="sec">遛娃指数加载失败</view>
+        <view class="muted">网络开小差了，请稍后重试</view>
+        <view class="index-error__btn" bindtap="onRetryWeather">重新加载</view>
+      </view>
+      <!-- ⚠️ 真实内容用 hidden 隐藏，不能用 wx:if 卸载：#indexRing 这个 canvas 必须常驻节点树，
+           drawRing() 依赖它，卸载后重试成功时环会画不出来（静默失败，很难排查）。 -->
+      <view hidden="{{weatherError}}">
       <!-- <view class="row between">
         <view class="sec">遛娃指数</view>
         <view class="muted rmuted">{{idxLoading ? '获取中…' : updatedAt + (weatherMock ? ' · 估算' : '')}}</view>
@@ -65,6 +76,7 @@
       </view>
       <view class="metrics" wx:else>
         <view class="sk sk-block idx-sk-cell" wx:for="{{[0,1,2,3]}}" wx:key="*this"></view>
+      </view>
       </view>
     </view>
 

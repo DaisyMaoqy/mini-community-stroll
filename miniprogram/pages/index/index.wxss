@@ -184,6 +184,19 @@
 .btn-primary:active { opacity: .85; }
 .btn-primary.running { background: var(--red); }
 
+/* 遛娃指数加载失败重试态（版式口径对齐接种页 .vac-error / 地图页 .map-error）
+   ⚠️ 重试按钮**不复用** .btn-primary：首页的 .btn-primary 被本页覆盖成了「主计时大钮」
+   （width:100% / padding:13px / fs-lg / border-radius:18px），套上去会变成满宽大号按钮，
+   与接种页/地图页那种 width:60% 的小按钮完全不是一个东西。故此处独立写死按钮样式。 */
+.index-error { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 28px 18px; }
+.index-error__ic { color: var(--amber); }
+.index-error__btn {
+  margin-top: 8px; width: 60%; padding: 10px 0; box-sizing: border-box;
+  background: linear-gradient(135deg, var(--green), var(--green-d)); color: #fff;
+  border-radius: var(--r-sm); font-size: var(--fs-md); font-weight: 600; line-height: 1.2;
+}
+.index-error__btn:active { opacity: .85; }
+
 /* 推荐出门时段 */
 .win-list { margin-top: 8px; }
 .win-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }

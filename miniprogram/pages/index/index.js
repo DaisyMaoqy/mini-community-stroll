@@ -38,6 +38,7 @@ Page({
     // M6+ 遛娃指数（环中心 + 四分项）
     idxScore: null,         // 0~100；未取到天气前为 null
     idxLoading: true,       // 天气获取中：指数卡显示卡内骨架
+    weatherError: false,    // 天气拉取失败：指数卡显示加载失败重试态（而非空白内容）
     idxLevel: '—',
     indexH2: '',            // v15 一句话大标题（如「现在出门很合适」）
     idxColor: '#2FB67C',    // 档位语义色（优绿/良黄绿/一般橙/不宜灰红）
@@ -112,6 +113,8 @@ Page({
   // M6+：拉天气 → 遛娃指数评分 + 出门时段推算
   // 缓存由 utils/weather.js 模块级统一管理（30 分钟 TTL + 并发去重，与接种页共享同一次请求）
   async refreshWeather() {
+    // 重试 / 重入先清错误态，否则点了「重新加载」错误卡仍挂在页面上
+    this.setData({ weatherError: false });
     try {
       const bp = app.globalData.babyProfile || {};
       // 祈福新邨社区中心（站点级定位无必要，天气网格 ~1km 足够）
@@ -129,16 +132,27 @@ Page({
         weatherMock: !!w.mock,
         slots: slots,
         idxLoading: false,
+        weatherError: false,
       }, () => {
         // 渲染完成回调里画环：避免节点未就位导致绘制静默失败
         this.drawRing();
         this.drawOutRing();
       });
     } catch (e) {
-      // 三级降级内部已兜底，这里防御：失败也要撤掉加载骨架
+      // 三级降级内部已兜底，这里防御：失败也要撤掉加载骨架。
+      // 只撤骨架不给提示会让卡片停在空内容（分数 —、标题空、四分项全空），用户会以为「这卡就是空的」，
+      // 且无从重试 —— 故改为明确的失败态，由指数卡渲染「加载失败 + 重新加载」（口径对齐接种页/地图页）。
+      // 不再置 weatherMock：现在是明确的失败，不该再暗示「这是估算数据」。
       console.error('refreshWeather failed', e);
-      this.setData({ idxLoading: false, weatherMock: true });
+      this.setData({ idxLoading: false, weatherError: true });
     }
+  },
+
+  // 天气拉取失败后手动重试：先回骨架态再重拉（否则点了重试错误卡不会消失）
+  onRetryWeather() {
+    if (this.data.idxLoading) return; // 正在拉取中，忽略重复点击
+    this.setData({ idxLoading: true, weatherError: false });
+    this.refreshWeather();
   },
 
   // ============ 顶部定位栏（v9 板块 + v15 宝宝档案） ============
