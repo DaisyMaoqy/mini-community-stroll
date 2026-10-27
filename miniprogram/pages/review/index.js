@@ -22,11 +22,13 @@ const DIRECT_APPLY_TYPES = ['位置不准', '已关闭或不存在'];
 //   ① 二次确认弹窗正文：说明「临时生效 + 会被静默回滚」，并给出正确 SOP
 const APPLY_CONFIRM_TEXT = [
   '⚠️ 这是临时生效：本次只改写云端权威表 local_spots，不会写入 seed 主本。下次部署并调用 initSpots 时会按 seed 全量重建，未回写 seed 的改动会被静默回滚。',
-  '正确做法：先用「复制 seed 片段」→ 粘回 data/local_spots.seed.json → cp 到 cloudfunctions/initSpots/spots.seed.json → 部署并调用一次 initSpots。',
+  '应用成功后会自动生成 seed 片段（含旧值 → 新值对照），粘回 data/local_spots.seed.json → cp 到 cloudfunctions/initSpots/spots.seed.json → 部署并调用一次 initSpots。',
 ].join('\n');
 //   ② 应用成功弹窗正文模板：入参为实际变更字段名（服务端 appliedFields 拼好的串），保持拼接不写死
+//      片段在「改云端之前」就已生成（否则权威值会被自己顶掉，对照退化成 X → X），成功后随弹窗一并给出
+//      注意：wx.showModal 的 confirmText 上限 4 个字符 → 按钮文案只能用「查看片段」，正文引用必须与之逐字一致
 const APPLY_DONE_TEXT_TMPL = function (fields) {
-  return '已临时应用到云端（变更字段：' + fields + '）。这只是临时生效，请立刻复制 seed 片段回写主本并部署 initSpots，否则下次部署会被回滚。';
+  return '已临时应用到云端（变更字段：' + fields + '）。这只是临时生效，点「查看片段」后粘回主本并部署 initSpots，否则下次部署会被回滚。';
 };
 
 function pad2(n) {
@@ -414,9 +416,21 @@ Page({
       content: APPLY_CONFIRM_TEXT,
       cancelText: '取消',
       confirmText: '确认应用',
-      success: (res) => {
+      success: async (res) => {
         if (!res.confirm) return; // 取消：不发起任何请求
-        this.doReview(id, 'accepted', true, note, this.pickOverride(report));
+        // 片段必须在 doReview 改云端「之前」生成：片段里要留「旧值 → 新值」对照，
+        // 改完再取权威值拿到的就是新值，对照会退化成 X → X，运营会白改一版 updatedAt。
+        let snippet = '';
+        this.setData({ submitting: true });
+        try {
+          snippet = (await this.buildSeedSnippet(report, this.pickOverride(report))) || '';
+        } catch (err) {
+          // buildSeedSnippet 内部已降级，这里仅防御：生成失败不阻断应用
+          console.error('生成 seed 片段失败', err);
+        } finally {
+          this.setData({ submitting: false });
+        }
+        await this.doReview(id, 'accepted', true, note, this.pickOverride(report), snippet);
       },
     });
   },
@@ -435,7 +449,7 @@ Page({
   },
 
   // ---- 统一审核执行（采纳 / 直接应用 / 驳回） ----
-  async doReview(id, status, applyToSpots, note, coordOverride) {
+  async doReview(id, status, applyToSpots, note, coordOverride, snippet) {
     if (this._busy) return { ok: false, reason: 'busy' };
     this._busy = true;
     const reviewNote = (note != null ? note : (this.data.noteMap[id] || '')).trim();
@@ -455,11 +469,21 @@ Page({
       // 成功提示
       if (applyToSpots && res && res.appliedToSpots) {
         const fields = (res.appliedFields || []).join('、') || 'coord';
+        const snip = snippet || '';
         wx.showModal({
           title: '已应用到云端',
           content: APPLY_DONE_TEXT_TMPL(fields),
           showCancel: false,
-          confirmText: '我知道了',
+          confirmText: snip ? '查看片段' : '我知道了',
+          success: () => {
+            if (!snip) return;
+            this.setData({ seedSnippet: snip, snippetVisible: true });
+            wx.setClipboardData({
+              data: snip,
+              success() { wx.showToast({ title: '已复制，请按 SOP 粘进 seed 主本', icon: 'none' }); },
+              fail() { wx.showToast({ title: '复制失败，请手动长按复制', icon: 'none' }); },
+            });
+          },
         });
       } else {
         wx.showToast({ title: status === 'accepted' ? '已采纳' : '已驳回', icon: 'none' });
