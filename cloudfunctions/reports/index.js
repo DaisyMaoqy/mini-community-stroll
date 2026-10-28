@@ -15,6 +15,9 @@ const ADMINS = require("./admins");
 
 const COLLECTION = "local_reports";
 const SPOT_COLLECTION = "local_spots";
+// 补丁层集合：运营「直接应用到云端」的改动同步写这里，供 initSpots 重跑时叠回，
+// 使改动永久生效（seed 文件的 git 版本管理保持不变）。
+const PATCH_COLLECTION = "local_spot_patches";
 
 // 纠错类型枚举（存储值；chip 显示文案的映射见组件层 report-sheet，§3.4/§8-4）
 const TYPE_ENUM = ["位置不准", "已关闭或不存在", "信息有误", "设施变化", "其他"];
@@ -68,6 +71,16 @@ async function ensureCollection() {
     await db.createCollection(COLLECTION);
   } catch (e) {
     // ignore：集合已存在属正常情况；其它异常会在后续 add()/count() 处暴露为 COLLECTION_ERROR
+  }
+}
+
+// 补丁集合同样必须显式创建：doc(id).set() 不会自动建集合，缺失时报 -502005。
+// 由各补丁相关 action（review / patches / dropPatch）在入口处统一调用一次。
+async function ensurePatchCollection() {
+  try {
+    await db.createCollection(PATCH_COLLECTION);
+  } catch (e) {
+    // ignore：集合已存在属正常情况
   }
 }
 
@@ -287,6 +300,8 @@ exports.main = async (event) => {
 
     case "review": {
       if (!isAdmin(openid)) return fail(CODES.FORBIDDEN, "无审核权限");
+      // 铁律 R1：补丁集合的存在性在 action 入口统一兜底，不在各个写入点重复 try/catch
+      await ensurePatchCollection();
       const ev = event || {};
       const id = ev._id;
       const status = ev.status;
@@ -354,6 +369,47 @@ exports.main = async (event) => {
         } catch (e) {
           return fail(CODES.COLLECTION_ERROR, "提交失败，请重试");
         }
+        // 补丁层：让本次改动永久生效（否则下次跑 initSpots 会被 seed 整条盖回去）
+        // 不变式：local_spots 与 patch 要么都写成功、要么整体中止，不能只成功一半
+        try {
+          try {
+            await db.collection(PATCH_COLLECTION).count();
+          } catch (e) {
+            // 触发早期异常：集合缺失等交由下方 set() 统一收敛为 COLLECTION_ERROR
+          }
+          // 同一 POI 先补 coord、后补 verifyStatus 时须累加，不能互相覆盖：
+          // 先取旧补丁文档，把已有 patch 与本次 patch 浅合并后再整文档写回。
+          // 显式 try/catch 而非 .catch() 链：不依赖 SDK 是否返回原生 Promise，
+          // 失败语义（「当作没有旧补丁」）也更直白
+          let oldPatch = null;
+          try {
+            oldPatch = await db.collection(PATCH_COLLECTION).doc(rep.spotId).get();
+          } catch (e) {
+            oldPatch = null;
+          }
+          const prev = (oldPatch && oldPatch.data && oldPatch.data.patch) || {};
+          const prevFields = Object.keys(prev).filter((k) => k !== "updatedAt");
+          await db
+            .collection(PATCH_COLLECTION)
+            .doc(rep.spotId)
+            .set({
+              data: {
+                spotId: rep.spotId,
+                spotName: rep.spotName || "",
+                patch: Object.assign({}, prev, patch),
+                appliedFields: prevFields.concat(field).filter((v, i, a) => a.indexOf(v) === i),
+                reportId: rep._id || id,
+                updatedBy: openid,
+                // set() 是整文档覆盖：同一 POI 第二次补另一个字段时必须把首次时间带回来，
+                // 否则 createdAt 会被刷成当次时间、首次偏离时间永久丢失（审计留痕用途）。
+                createdAt:
+                  (oldPatch && oldPatch.data && oldPatch.data.createdAt) || db.serverDate(),
+                updatedAtServer: db.serverDate(),
+              },
+            });
+        } catch (e) {
+          return fail(CODES.COLLECTION_ERROR, "提交失败，请重试");
+        }
         appliedFields = [field];
       }
 
@@ -394,6 +450,74 @@ exports.main = async (event) => {
         return { success: true, appliedToSpots: true, appliedFields: appliedFields };
       }
       return { success: true };
+    }
+
+    // ---- 补丁层管理（运营专用）----
+    // 用途：把手机上「直接应用到云端」的改动列出来，供工程侧手工折回 seed 主本。
+    case "patches": {
+      if (!isAdmin(openid)) return fail(CODES.FORBIDDEN, "无审核权限");
+      await ensurePatchCollection();
+      try {
+        const res = await db.collection(PATCH_COLLECTION).limit(100).get();
+        // 不用 orderBy：微信云数据库对 updatedAtServer 默认无索引，一上线就会 COLLECTION_ERROR；
+        // 列表上限只有 100 条，JS 端排序即可，不值得为它专门建索引。
+        const rows = (res.data || []).slice().sort(function (a, b) {
+          const ta = new Date(toIso(a && a.updatedAtServer)).getTime() || 0;
+          const tb = new Date(toIso(b && b.updatedAtServer)).getTime() || 0;
+          return tb - ta;
+        });
+        // 显式字段白名单：不透出 patch 之外的整文档
+        const list = rows.map(function (d) {
+          return {
+            spotId: d.spotId || "",
+            spotName: d.spotName || "",
+            patch: d.patch || {},
+            appliedFields: Array.isArray(d.appliedFields) ? d.appliedFields : [],
+            reportId: d.reportId || "",
+            updatedBy: d.updatedBy || "",
+            updatedAtServer: toIso(d.updatedAtServer),
+          };
+        });
+        return { success: true, list: list };
+      } catch (e) {
+        const msg = (e && (e.errMsg || e.message)) || String(e);
+        if (/502005|collection not exists|ResourceNotFound/i.test(msg)) {
+          return { success: true, list: [] };
+        }
+        return fail(CODES.COLLECTION_ERROR, "查询失败，请重试");
+      }
+    }
+
+    // 补丁已折回 seed 主本后调用：只删补丁文档，**不动 local_spots**
+    // （线上现值要保持到下次 initSpots 才被 seed 接管）。
+    case "dropPatch": {
+      if (!isAdmin(openid)) return fail(CODES.FORBIDDEN, "无审核权限");
+      await ensurePatchCollection();
+      const patchId = event && event._id;
+      if (!patchId || typeof patchId !== "string") {
+        return fail(CODES.INVALID_PARAM, "参数有误");
+      }
+      // 幂等：删除前先确认存在，不依赖 remove() 对不存在文档是否抛错
+      // （错误串若命中不了 502005 分支会退化成 COLLECTION_ERROR，而「反复点删除」是运营常态）
+      let exist = null;
+      try {
+        exist = await db.collection(PATCH_COLLECTION).doc(patchId).get();
+      } catch (e) {
+        // 文档不存在时 get() 会抛错 —— 与「已删除」等价，视为幂等成功
+        return { success: true };
+      }
+      if (!exist || !exist.data) return { success: true }; // 已经没有了，幂等成功
+      try {
+        await db.collection(PATCH_COLLECTION).doc(patchId).remove();
+        return { success: true };
+      } catch (e) {
+        const msg = (e && (e.errMsg || e.message)) || String(e);
+        if (/502005|collection not exists|ResourceNotFound/i.test(msg)) {
+          // 补丁集合尚不存在 === 没有补丁可删，视为成功，保持幂等
+          return { success: true };
+        }
+        return fail(CODES.COLLECTION_ERROR, "删除失败，请重试");
+      }
     }
 
     default:

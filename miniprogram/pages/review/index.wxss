@@ -181,6 +181,47 @@
   border-radius: var(--r-sm); font-size: var(--fs-md); font-weight: 600; text-align: center;
 }
 
+/* ============ POI 补丁管理区（列表视图内，仅 admin） ============
+   辅助信息块：视觉弱于上方审核队列，按钮不抢主按钮（采纳/直接应用）的注意力。 */
+.rv-patch { padding: var(--pad-card); }
+.rv-patch__hd { display: flex; align-items: center; justify-content: space-between; }
+.rv-patch__t { font-size: var(--fs-sm); font-weight: 700; color: var(--ink2); }
+.rv-patch__refresh {
+  flex: 0 0 auto; padding: 4px 12px; box-sizing: border-box;
+  background: var(--sand); color: var(--ink2); border: 1px solid var(--line);
+  border-radius: 999px; font-size: var(--fs-xs); font-weight: 600;
+}
+.rv-patch__tip {
+  margin-top: 8px; padding: 8px 10px; box-sizing: border-box;
+  background: var(--amber-l); color: var(--amber);
+  border-radius: var(--r-sm); font-size: var(--fs-xs); line-height: 1.5;
+}
+.rv-patch__fail {
+  margin-top: 8px; font-size: var(--fs-xs); color: var(--red); line-height: 1.5;
+}
+.rv-patch__row { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.rv-patch__row:last-child { border-bottom: 0; }
+.rv-patch__l1 { display: flex; align-items: baseline; gap: var(--gap-xs); }
+.rv-patch__n {
+  flex: 1; min-width: 0; font-size: var(--fs-md); font-weight: 700; color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rv-patch__f {
+  flex: 0 0 auto; padding: 2px 8px; border-radius: 8px;
+  background: var(--green-l); color: var(--green-d);
+  font-size: var(--fs-meta); font-weight: 600;
+}
+.rv-patch__meta { margin-top: 3px; font-size: var(--fs-xs); color: var(--ink3); word-break: break-all; }
+.rv-patch__ops { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.rv-patch__btn {
+  flex: 0 0 auto; padding: 5px 12px; box-sizing: border-box;
+  background: #fff; color: var(--ink2); border: 1px solid var(--line);
+  border-radius: var(--r-sm); font-size: var(--fs-xs); font-weight: 600; text-align: center;
+}
+/* 删除是不可逆操作，用低饱和红提示，但仍是次要按钮量级 */
+.rv-patch__btn--danger { background: var(--red-l); color: var(--red); border-color: var(--red-l); }
+.rv-patch__empty { padding: 14px 0 2px; font-size: var(--fs-sm); color: var(--ink3); text-align: center; }
+
 /* ============ seed 片段弹层（最高层 z-index:60） ============ */
 .rv-mask {
   position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 60;

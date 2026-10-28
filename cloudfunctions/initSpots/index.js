@@ -14,6 +14,9 @@ const db = cloud.database();
 const seed = require("./spots.seed.json");
 
 const COLLECTION = "local_spots";
+// 补丁层集合：运营在审核端「直接应用到云端」产生的白名单改动存这里，
+// 每次跑本函数时在 seed upsert + prune 之后重新叠回，使手机上的改动永久生效。
+const PATCH_COLLECTION = "local_spot_patches";
 
 // 并发池：以固定并发度跑任务，避免 N 次串行 await 撑爆云函数超时（默认 3s）
 async function runPool(items, limit, worker) {
@@ -46,6 +49,12 @@ exports.main = async () => {
   // 若因其他原因失败，下方写入会给出明确错误）
   try {
     await db.createCollection(COLLECTION);
+  } catch (e) {
+    // ignore：集合已存在属正常情况
+  }
+  // 补丁集合同样必须显式建：否则第 3 步首次读取会 -502005 并被 catch 吞掉，静默不生效
+  try {
+    await db.createCollection(PATCH_COLLECTION);
   } catch (e) {
     // ignore：集合已存在属正常情况
   }
@@ -100,11 +109,65 @@ exports.main = async () => {
     errors.push("prune-scan: " + (e && (e.errMsg || e.message) ? (e.errMsg || e.message) : e));
   }
 
+  // 3) applyPatches：把运营在手机上做过的白名单改动重新叠回（必须放在 upsert + prune 之后，
+  //    否则第 1 步 seed 的 set() 整文档覆盖会把之前所有「直接应用」抹掉）。
+  //    这里用 update() 做字段级合并，且补丁文档本身不删除 —— 下次重跑依旧幂等。
+  let patched = 0;
+  let skipped = 0;
+  const skippedIds = [];
+  try {
+    const all = [];
+    const PAGE = 100;
+    let page = 0;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const res = await db
+        .collection(PATCH_COLLECTION)
+        .skip(page * PAGE)
+        .limit(PAGE)
+        .get();
+      const rows = (res && res.data) || [];
+      if (!rows.length) break;
+      rows.forEach((d) => all.push(d));
+      if (rows.length < PAGE) break;
+      page++;
+    }
+    await runPool(all, 20, async (p) => {
+      const id = p && p._id;
+      const patch = (p && p.patch) || {};
+      if (!id || !Object.keys(patch).length) return;
+      // 孤儿补丁：POI 已不在 seed 里（第 2 步刚被 prune 掉）→ 跳过并上报。
+      // 用 seedIds 显式判定而不是依赖 update() 对不存在文档是否抛错：
+      // 若某天 update() 改为只回 stats.updated:0 而不抛错，靠异常计数的写法会让
+      // patched 虚高、skipped 恒为 0，孤儿补丁就永远不会被发现。
+      if (!seedIds.has(id)) {
+        skipped++;
+        skippedIds.push(id);
+        return;
+      }
+      try {
+        // 字段级合并，不是整文档覆盖：只改 coord / verifyStatus 等补丁字段
+        await db.collection(COLLECTION).doc(id).update({ data: patch });
+        patched++;
+      } catch (e) {
+        // 走到这里说明 id 确实在 seed 里：孤儿分支已由上面的 seedIds 判定接管，
+        // 此处只兜住网络 / 权限等真实异常，同样计为 skipped 并上报，不要整函数失败
+        skipped++;
+        skippedIds.push(id);
+      }
+    });
+  } catch (e) {
+    errors.push("applyPatches: " + (e && (e.errMsg || e.message) ? (e.errMsg || e.message) : e));
+  }
+
   return {
     success: failed === 0,
     total: spots.length,
     done,
     pruned,
+    patched,
+    skipped,
+    skippedIds,
     failed,
     errors,
     elapsedMs: Date.now() - t0,

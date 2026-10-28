@@ -18,17 +18,35 @@ const STATUS_LABELS = { pending: '待审', accepted: '已采纳', rejected: '已
 const DIRECT_APPLY_TYPES = ['位置不准', '已关闭或不存在'];
 
 // 「直接应用到云端」的运营口径文案（集中一处，便于统一维护）
-// 注意：该链路维持现状（直写 local_spots 不持久），此处仅优化提示，不改任何判断逻辑/按钮行为。
-//   ① 二次确认弹窗正文：说明「临时生效 + 会被静默回滚」，并给出正确 SOP
+// 补丁层上线后语义已变：直写 local_spots 的同时会写入 POI 补丁层（local_spot_patches），
+//   initSpots 会在 seed 原文之上叠加补丁 → 改动**立即生效且长期有效**，不再是「只改云端、下次按 seed 重建即失效」的旧口径。
+//   但补丁属于「待清理」状态而非长期状态，仍建议择机把改动折回 seed 主本，再用下方「POI 补丁」区删掉补丁。
+//   ① 二次确认弹窗正文
 const APPLY_CONFIRM_TEXT = [
-  '⚠️ 这是临时生效：本次只改写云端权威表 local_spots，不会写入 seed 主本。下次部署并调用 initSpots 时会按 seed 全量重建，未回写 seed 的改动会被静默回滚。',
-  '应用成功后会自动生成 seed 片段（含旧值 → 新值对照），粘回 data/local_spots.seed.json → cp 到 cloudfunctions/initSpots/spots.seed.json → 部署并调用一次 initSpots。',
+  '✅ 本次改动立即生效且长期有效：系统会同时写入「POI 补丁」层，之后即使部署并调用 initSpots 也会自动叠加，不会按 seed 主本盖回去。',
+  '但补丁应当是待清理状态：仍建议在合适时机把改动折回 seed 主本（data/local_spots.seed.json → cp 到 cloudfunctions/initSpots/spots.seed.json → 部署并调用一次 initSpots），再到底部「POI 补丁」区复制 JSON 并「已折回，删补丁」。',
 ].join('\n');
 //   ② 应用成功弹窗正文模板：入参为实际变更字段名（服务端 appliedFields 拼好的串），保持拼接不写死
 //      片段在「改云端之前」就已生成（否则权威值会被自己顶掉，对照退化成 X → X），成功后随弹窗一并给出
 //      注意：wx.showModal 的 confirmText 上限 4 个字符 → 按钮文案只能用「查看片段」，正文引用必须与之逐字一致
 const APPLY_DONE_TEXT_TMPL = function (fields) {
-  return '已临时应用到云端（变更字段：' + fields + '）。这只是临时生效，点「查看片段」后粘回主本并部署 initSpots，否则下次部署会被回滚。';
+  return '已永久生效（变更字段：' + fields + '）。改动已写入 POI 补丁层，后续部署并调用 initSpots 也会自动叠加，不会丢失；点「查看片段」可取得整条 POI JSON，便于择机折回 seed 主本。';
+};
+
+// 「POI 补丁」区：服务端 appliedFields 是英文技术字段名，界面必须翻成运营能读的中文
+//   未知字段原样显示（服务端新增字段时不至于显示空白）
+const PATCH_FIELD_LABELS = {
+  coord: '坐标',
+  verifyStatus: '状态标记',
+  name: '名称',
+  type: '类型',
+  subType: '子类型',
+  address: '地址',
+  ageRange: '适龄',
+  adultOnly: '仅成人',
+  external: '社区外',
+  bus: '公交信息',
+  updatedAt: '更新日期',
 };
 
 function pad2(n) {
@@ -105,6 +123,51 @@ function buildPoiRows(doc) {
   return rows;
 }
 
+// ---- 「POI 补丁」区：把服务端补丁文档收敛成本页一行所需字段 ----
+//   服务端契约：每条含 spotId / spotName / patch / appliedFields / reportId / updatedBy / updatedAtServer
+//   appliedFields（英文数组）→ 界面中文；updatedAtServer 取前 10 位（YYYY-MM-DD），取不到显示 —。
+function decoratePatch(it) {
+  const src = it || {};
+  const patch = src.patch || {};
+  const spotId = src.spotId || patch._id || '';
+  const fields = Array.isArray(src.appliedFields) ? src.appliedFields : [];
+  const fieldText = fields.map(function (k) { return PATCH_FIELD_LABELS[k] || k; }).join('、') || '—';
+
+  // ISO 字符串前 10 位即 YYYY-MM-DD（服务端为 UTC ISO，运营只需粗粒度日期）
+  const iso = src.updatedAtServer || '';
+  const dateText = (typeof iso === 'string' && iso.length >= 10) ? iso.slice(0, 10) : '—';
+
+  // 第二行元信息：日期 · 来源反馈（无 reportId 时只显示日期，不留孤立分隔符）
+  const reportId = src.reportId || '';
+  const metaText = reportId ? (dateText + ' · 来自 local_reports/' + reportId) : dateText;
+
+  return {
+    spotId: spotId,
+    spotName: src.spotName || spotId || '（未知 POI）',
+    patch: patch,
+    reportId: reportId,
+    fieldText: fieldText,
+    dateText: dateText,
+    metaText: metaText,
+  };
+}
+
+// ---- 「复制 JSON」：输出可直接合并回 data/local_spots.seed.json 的扁平对象 ----
+//   形态固定为 { _id: spotId, ...patch }；patch 里已有的 updatedAt 原样保留，不再补。
+//   patch 内若残留 _id，以 spotId 为准（避免补丁文档里的旧 _id 顶掉权威 _id）。
+function buildPatchJson(item) {
+  const src = item || {};
+  const patch = src.patch || {};
+  const out = {};
+  const spotId = src.spotId || patch._id || '';
+  if (spotId) out._id = spotId;
+  Object.keys(patch).forEach(function (k) {
+    if (k === '_id') return;
+    out[k] = patch[k];
+  });
+  return JSON.stringify(out, null, 2);
+}
+
 Page({
   // 实例级同步闩：setData 之外的极速连点可能在 data.submitting 生效前穿透，用同步布尔兜底
   _busy: false,
@@ -114,6 +177,10 @@ Page({
   // 请求序号（抢占式）：每次 loadQueue 进入即 ++；await 回来后只有「当前序号」的响应可落库/复位，
   // 过期响应一律静默丢弃，避免「旧 tab 数据写进新 tab」与「收尾清掉新请求 in-flight 标记」。
   _reqSeq: 0,
+  // 补丁列表请求序号（抢占式，与 _reqSeq 同手法）：刷新按钮/自动刷新可能重叠，只允许最新响应落库
+  _patchSeq: 0,
+  // 补丁删除同步闩：setData 是异步的，极速连点会穿透 loading/disabled，必须用同步布尔兜底
+  _patchBusy: false,
 
   data: {
     authChecked: false,   // 是否已完成 whoami 身份校验
@@ -133,6 +200,11 @@ Page({
     submitting: false,    // 审核请求进行中（防连点 + 按钮禁用）
     snippetVisible: false, // seed 片段弹层显隐
     seedSnippet: '',      // seed 片段文本
+
+    // ---- 「POI 补丁」管理区（仅 admin，列表视图内；辅助信息，失败不影响审核主流程）----
+    patches: [],          // 当前生效的补丁（已 decorate：spotId/spotName/fieldText/metaText/patch…）
+    patchLoading: false,  // 补丁列表加载中
+    patchLoadError: false, // 补丁列表加载失败（不清空已有 patches，仅提示一行）
 
     // ---- 两层视图（列表 ↔ 详情）----
     view: 'list',         // 'list' | 'detail'
@@ -229,6 +301,15 @@ Page({
         loading: false,
         loadError: false,
       });
+      // 列表视图「出现/刷新」时顺带刷新补丁区（重置请求才拉，分页追加不重复拉）
+      //   loadPatches 内部自持 try/catch，且此处置于防御 try 内：补丁区任何异常都不得影响审核主流程
+      if (fresh) {
+        try {
+          this.loadPatches();
+        } catch (e) {
+          console.error('触发补丁列表加载失败', e);
+        }
+      }
     } catch (e) {
       if (reqId !== this._reqSeq) return; // 过期请求的失败同样丢弃，避免覆盖新请求的 loading 态
       console.error('加载审核队列失败', e);
@@ -521,6 +602,99 @@ Page({
     }
   },
 
+  // ==================== 「POI 补丁」管理区（仅 admin） ====================
+  //  补丁层是「直接应用到云端」永久生效的载体：initSpots 会在 seed 原文之上叠加补丁。
+  //  这块区域是防止补丁沦为「暗配置」的闭环：能看见、能复制成可折回 seed 的 JSON、能确认折回后删除。
+  //  三条铁律：
+  //   ① 纯辅助信息 —— 任何失败只降级为一行提示，绝不影响队列/审核主流程；
+  //   ② _patchSeq 丢弃过期响应（刷新按钮 + 自动刷新可能重叠）；
+  //   ③ 删除用同步闩 _patchBusy 防极速连点（setData 异步，disabled 挡不住），finally 必释放。
+
+  // 拉取当前生效补丁列表（admin 专属；非 admin 服务端返回 FORBIDDEN → 走失败分支只提示）
+  async loadPatches() {
+    const seq = ++this._patchSeq;
+    this.setData({ patchLoading: true, patchLoadError: false });
+    try {
+      const res = await callCloud('reports', { action: 'patches' });
+      if (seq !== this._patchSeq) return; // 已被更新的请求取代 → 丢弃，不 setData
+      const raw = (res && res.list) || [];
+      this.setData({
+        patches: raw.map(decoratePatch),
+        patchLoading: false,
+        patchLoadError: false,
+      });
+    } catch (err) {
+      if (seq !== this._patchSeq) return; // 过期请求的失败同样丢弃
+      console.error('加载 POI 补丁失败', err);
+      // 失败不清空既有列表（保留上一次可用数据），仅置失败标记让区域显示一行可重试提示
+      this.setData({ patchLoading: false, patchLoadError: true });
+    }
+  },
+
+  // 「刷新」按钮：强制重拉（loadPatches 自带序号抢占，重复点击不会写脏数据）
+  onReloadPatches() {
+    this.loadPatches();
+  },
+
+  // 「复制 JSON」：复制成可直接合并回 data/local_spots.seed.json 的扁平对象
+  onCopyPatchJson(e) {
+    const spotId = e.currentTarget.dataset.id || '';
+    const item = (this.data.patches || []).find((x) => x.spotId === spotId) || null;
+    if (!item) {
+      wx.showToast({ title: '未找到该补丁，请刷新后重试', icon: 'none' });
+      return;
+    }
+    const text = buildPatchJson(item);
+    wx.setClipboardData({
+      data: text,
+      success() { wx.showToast({ title: '已复制，请合并回 seed 主本', icon: 'none' }); },
+      fail() { wx.showToast({ title: '复制失败，请手动长按复制', icon: 'none' }); },
+    });
+  },
+
+  // 「已折回，删补丁」：二次确认（防误删）→ dropPatch
+  //   同步闩 _patchBusy 在「弹窗之前」上锁，取消/失败/成功三条路径都必须解锁
+  onDropPatch(e) {
+    const spotId = e.currentTarget.dataset.id || '';
+    if (!spotId) return;
+    if (this._patchBusy) return; // 极速连点穿透兜底
+    this._patchBusy = true;
+    wx.showModal({
+      title: '删除补丁？',
+      content: '确认你已经把这条改动折回 seed 主本了吗？删除后线上现值会保留到下次调用 initSpots；在此之前不要删除。',
+      cancelText: '取消',
+      confirmText: '删除',
+      success: (res) => {
+        if (!res.confirm) {
+          this._patchBusy = false; // 取消：立即解锁
+          return;
+        }
+        this.dropPatch(spotId); // 内部 finally 解锁
+      },
+      fail: () => {
+        this._patchBusy = false; // 弹窗本身失败：必须解锁，否则永久卡死
+      },
+    });
+  },
+
+  // 实际删除：只删补丁文档，不动 local_spots（线上现值保留到下次 initSpots）
+  async dropPatch(spotId) {
+    try {
+      await callCloud('reports', { action: 'dropPatch', _id: spotId });
+      const patches = (this.data.patches || []).filter((x) => x.spotId !== spotId);
+      this.setData({ patches: patches });
+      wx.showToast({ title: '已删除', icon: 'none' });
+    } catch (err) {
+      const code = err && err.code;
+      let msg = (err && err.message) || '删除失败，请重试';
+      if (code === 'FORBIDDEN') msg = '无审核权限';
+      console.error('删除 POI 补丁失败', err);
+      wx.showToast({ title: msg, icon: 'none' });
+    } finally {
+      this._patchBusy = false; // 无论成功失败必须解锁
+    }
+  },
+
   // ---- 生成 seed 采纳片段（供运营粘进 data/local_spots.seed.json） ----
   // 三种输出形态：
   //   ② 一般采纳：位置不准 / 已关闭或不存在（doc 取到且坐标齐备）→ 整条 POI JSON（可整条替换）+ 变更对照
@@ -544,7 +718,8 @@ Page({
       doc = null;
     }
 
-    const chainWarn = '⚠️ 改完必须走完整链：归档主本 data/local_spots.seed.json → cp 到 cloudfunctions/initSpots/spots.seed.json → 部署 initSpots → 调用一次（否则下次部署会被回滚）';
+    // 补丁层上线后：直写云端已永久生效（initSpots 会叠加补丁），此处仅回收「折回主本」的正规链路
+    const chainWarn = '⚠️ 折回主本请走完整链：归档主本 data/local_spots.seed.json → cp 到 cloudfunctions/initSpots/spots.seed.json → 部署 initSpots → 调用一次；折回并确认后，到审核列表「POI 补丁」区点「已折回，删补丁」清掉对应补丁（本次改动已永久生效，不折回也不会丢）';
     const genTime = nowStr();
     const noteLine = '上报说明：' + reportNote(report.content);
 

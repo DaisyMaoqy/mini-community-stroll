@@ -85,6 +85,39 @@
       <!-- 空态 -->
       <view class="rv-empty" wx:else>{{tab === 'pending' ? '暂无待审反馈' : (tab === 'accepted' ? '暂无已采纳反馈' : '暂无已驳回反馈')}}</view>
 
+      <!-- ===================== POI 补丁管理区（仅 admin） =====================
+           「直接应用到云端」的永久化载体：补丁会在 initSpots 时叠加到 seed 原文之上。
+           这一区是防止补丁沦为暗配置的闭环：可看见 / 可复制成可折回 seed 的 JSON / 确认折回后删除。
+           纯辅助信息：加载失败只在区内提示一行，不影响上方审核队列。 -->
+      <view class="rv-sec rv-patch" wx:if="{{isAdmin}}">
+        <view class="rv-patch__hd">
+          <text class="rv-patch__t">POI 补丁（{{patches.length}}）</text>
+          <view class="rv-patch__refresh" bindtap="onReloadPatches">{{patchLoading ? '刷新中…' : '刷新'}}</view>
+        </view>
+        <view class="rv-patch__tip">⚠️ 补丁会让某个 POI 的实际数据偏离 seed 主本。折回 seed 主本后再删掉对应补丁，避免长期偏离。</view>
+
+        <!-- 失败降级：保留上一次列表，仅加一行可重试提示 -->
+        <view class="rv-patch__fail" wx:if="{{patchLoadError}}">补丁列表加载失败，点刷新重试</view>
+
+        <!-- 补丁行：名称 + 字段中文标签 / 日期 + 来源反馈 / 两个次要操作 -->
+        <view class="rv-patch__list" wx:if="{{patches.length}}">
+          <view class="rv-patch__row" wx:for="{{patches}}" wx:for-item="p" wx:key="spotId">
+            <view class="rv-patch__l1">
+              <text class="rv-patch__n">{{p.spotName}}</text>
+              <text class="rv-patch__f">{{p.fieldText}}</text>
+            </view>
+            <view class="rv-patch__meta">{{p.metaText}}</view>
+            <view class="rv-patch__ops">
+              <view class="rv-patch__btn" data-id="{{p.spotId}}" bindtap="onCopyPatchJson">复制 JSON</view>
+              <view class="rv-patch__btn rv-patch__btn--danger" data-id="{{p.spotId}}" bindtap="onDropPatch">已折回，删补丁</view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 空态：加载中不显示，避免闪一下「没有补丁」 -->
+        <view class="rv-patch__empty" wx:if="{{!patchLoading && !patchLoadError && !patches.length}}">当前没有补丁，POI 数据与 seed 主本一致。</view>
+      </view>
+
     </block>
 
     <!-- ===================== 详情视图（采集页版式） ===================== -->
@@ -221,7 +254,7 @@
         <text class="rv-snippet__t">POI 纠错采纳片段</text>
         <view class="rv-snippet__x" bindtap="onCloseSnippet"><text>✕</text></view>
       </view>
-      <view class="rv-snippet__tip">⚠️ 粘贴前请确认旧值；改完务必走完整链回写 seed 主本并部署 initSpots，否则会被回滚</view>
+      <view class="rv-snippet__tip">⚠️ 粘贴前请确认旧值；本改动已永久生效，此片段用于折回 seed 主本 —— 折回并部署 initSpots 后，请到审核列表「POI 补丁」区删除对应补丁</view>
       <scroll-view class="rv-snippet__body" scroll-y>
         <text class="rv-snippet__code">{{seedSnippet}}</text>
       </scroll-view>
