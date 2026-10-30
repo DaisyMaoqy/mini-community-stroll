@@ -1,0 +1,70 @@
+<!-- 严禁引入 <map> 组件：本页不需要地图 -->
+<view class="elder-page" data-theme="elder" data-font="{{efont}}" data-contrast="{{econtrast}}">
+
+  <view class="ep__locbar">
+    <text class="ep__pin">👤</text>
+    <text>我的</text>
+  </view>
+
+  <view class="ep__card">
+    <view class="ep__setrow">
+      <text class="ic">🔠</text>
+      <view class="tx">
+        <view class="nm">界面字号</view>
+        <view class="ds">字太小看不清？调大一点</view>
+      </view>
+      <view class="ep__seg">
+        <button class="s {{efont === 'std' ? 'on' : ''}}" data-f="std" bindtap="setFont">标准</button>
+        <button class="s {{efont === 'lg' ? 'on' : ''}}" data-f="lg" bindtap="setFont">大</button>
+        <button class="s {{efont === 'xl' ? 'on' : ''}}" data-f="xl" bindtap="setFont">特大</button>
+      </view>
+    </view>
+
+    <view class="ep__setrow">
+      <text class="ic">🌗</text>
+      <view class="tx">
+        <view class="nm">高对比模式</view>
+        <view class="ds">深绿大字、界线清楚，长辈看得清</view>
+      </view>
+      <view class="ep__switch {{econtrast === 'high' ? 'on' : ''}}" bindtap="toggleContrast"></view>
+    </view>
+
+    <view class="ep__setrow">
+      <text class="ic">🔊</text>
+      <view class="tx">
+        <view class="nm">语音播报</view>
+        <view class="ds">即将支持 · 功能还没开放</view>
+      </view>
+      <!-- 占位：恒为关且置灰，点击提示「即将支持」（小程序无原生 TTS） -->
+      <view class="ep__switch dim" bindtap="onSpeak"></view>
+    </view>
+  </view>
+
+  <view class="ep__card">
+    <view class="ep__setrow">
+      <text class="ic">📍</text>
+      <view class="tx">
+        <view class="nm">所在板块</view>
+        <view class="ds">{{block || '还没设置'}} · 搬家或带娃去别处，随时改</view>
+      </view>
+      <button class="ep__btn ep__btn--soft em__mini" bindtap="goBlock">去首页切换</button>
+    </view>
+  </view>
+
+  <view class="ep__card">
+    <view class="ep__sec">👪 家人帮忙（亲友代办）</view>
+    <view class="em__para">
+      可邀请子女成为「亲友」，远程帮您：<br />
+      · 查看今天能不能带娃出门<br />
+      · 设置每日提醒，到时间自动告诉您<br />
+      · 代预约疫苗接种、代看路线
+    </view>
+    <button class="ep__btn ep__btn--soft" bindtap="onInvite">＋ 邀请子女帮忙</button>
+  </view>
+
+  <button class="ep__btn em__exit" bindtap="onExit">↩️ 退出关怀版</button>
+
+  <view class="ep__note">本页为「关怀版」· 可由子女在设置里为长辈一键开启</view>
+
+  <elder-tabbar current="me"></elder-tabbar>
+</view>

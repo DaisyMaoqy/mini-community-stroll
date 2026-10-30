@@ -35,14 +35,8 @@
   --r-sm: 16px;
 }
 
-/* 关怀版根容器：继承放大后的字号与背景 */
-.elder-page {
-  min-height: 100vh;
-  background: var(--page);
-  font-size: var(--fs-body);
-  color: var(--ink);
-  box-sizing: border-box;
-}
+/* 关怀版根容器的布局类在文件末尾的「关怀版共用布局类（.ep*）」段，
+   这里不再重复定义 .elder-page（背景/字号/墨色由 app.wxss 的 page{} 提供并可继承）。 */
 
 /* 月龄主题 —— 婴儿期（<18 月龄·低刺激休养），配色对齐 v15 婴儿期覆盖（#7FB39E 雾绿 + #E0A98C 暖杏）
    幼儿期（≥18 月龄·活力户外）即 tokens.wxss 默认亮绿，无需覆盖。
@@ -56,4 +50,283 @@
   --green-l2: #F2F8F5;
   --green-line: #D7E8DE; /* 浅绿描边 */
   --peach: #E0A98C;   /* 暖杏（v15 婴儿期） */
+}
+
+/* ===== 关怀版字号三档（给 pages/elder-home|elder-vac|elder-map|elder-me 四页使用；
+       三块均为完整覆盖，不依赖上一块的残留值） ===== */
+[data-theme="elder"][data-font="std"] {
+  --fs-display: 26px; --fs-xl: 22px; --fs-lg: 19px; --fs-md: 18px;
+  --fs-body: 18px; --fs-sm: 16px; --fs-xs: 15px; --fs-meta: 14px;
+  --h-btn: 56px; --h-row: 56px;
+}
+[data-theme="elder"][data-font="lg"] {
+  --fs-display: 30px; --fs-xl: 25px; --fs-lg: 21px; --fs-md: 20px;
+  --fs-body: 20px; --fs-sm: 17px; --fs-xs: 16px; --fs-meta: 15px;
+  --h-btn: 60px; --h-row: 60px;
+  --pad-card: 20px;
+}
+[data-theme="elder"][data-font="xl"] {
+  --fs-display: 36px; --fs-xl: 30px; --fs-lg: 25px; --fs-md: 23px;
+  --fs-body: 23px; --fs-sm: 19px; --fs-xs: 18px; --fs-meta: 16px;
+  --h-btn: 64px; --h-row: 64px;
+  --pad-card: 24px; --gap-sm: 16px; --gap-md: 20px; --gap-lg: 24px;
+}
+
+/* ===== 关怀版对比度（默认 high；与字号三档正交，6 种组合都要正确渲染） ===== */
+[data-theme="elder"][data-contrast="high"] {
+  --green: #1F7A4D;      /* 深绿主色 */
+  --green-d: #0B3D22;
+  --green-m: #2E8B5F;
+  --green-l: #E3F1E9;
+  --green-l2: #EDF6F1;
+  --green-line: #9CC7AE;
+  --ink: #1A1A1A;        /* 近黑文字 */
+  --ink2: #333333;
+  --ink3: #4A4A4A;
+  --page: #F2F2F0;
+  --card: #FFFFFF;
+  --line: #1F7A4D;       /* 清晰边框 */
+  --sand: #EFEDE6;
+}
+[data-theme="elder"][data-contrast="normal"] {
+  /* 柔化回现有关怀版墨绿（不改动，仅显式声明，便于对照演示） */
+  --green: #2C7C50; --green-d: #14502C; --green-m: #488C64;
+  --green-l: #E6F2EA; --green-l2: #EFF7F1; --green-line: #CDE7D8;
+  --ink: #14301F; --ink2: #3F5A4B;
+  --page: #EDEBE3; --card: #FFFFFF; --line: #ECEAE2; --sand: #F4F2EC;
+}
+
+page { --h-btn: 56px; --h-row: 56px; }
+
+/* ===================== 关怀版共用布局类（.ep*） =====================
+   给 pages/elder-home | elder-vac | elder-map | elder-me 四页复用，避免四份重复样式。
+   全部取 var()，由页面根节点的 data-theme="elder" + data-font + data-contrast 驱动；
+   本文件是全局样式（由 app.wxss @import），属性选择器可正常使用。
+   版式对齐 UI原型_v11_关怀版：2px 强边框、大留白、按钮 ≥56px。 */
+.elder-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: var(--gap-md) var(--gap-md) 0;
+  /* 底部给自建 elder-tabbar（78px + 安全区）让位，否则最后一块会被压住 */
+  padding-bottom: calc(94px + env(safe-area-inset-bottom));
+}
+
+/* 关怀版顶栏标识 */
+.ep__carebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--green);
+  color: #fff;
+  border-radius: var(--r-sm);
+  padding: 11px 14px;
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  line-height: 1.4;
+}
+.ep__carebar .badge {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  padding: 3px 8px;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* 板块 / 标题条 */
+.ep__locbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  margin: 2px;
+}
+.ep__pin { color: var(--green); }
+.ep__blk {
+  background: var(--green-l);
+  color: var(--green-d);
+  font-size: var(--fs-md);
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+
+/* 分区标题 */
+.ep__sec {
+  font-size: var(--fs-md);
+  font-weight: 800;
+  color: var(--ink2);
+  margin: 2px;
+}
+
+/* 卡片：2px 强边框（关怀版要界线清楚） */
+.ep__card {
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--r);
+  padding: var(--pad-card);
+  box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
+}
+
+/* 大按钮：高度随字号档变大（56 / 60 / 64） */
+.ep__btn {
+  width: 100%;
+  min-height: var(--h-btn);
+  border: 0;
+  border-radius: var(--r-sm);
+  padding: 12px 16px;
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  color: #fff;
+  background: var(--green);
+  box-shadow: 0 8px 18px rgba(38, 53, 46, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  line-height: 1.3;
+  box-sizing: border-box;
+}
+.ep__btn::after { border: none; }
+.ep__btn--accent { background: var(--amber); }
+.ep__btn--soft { background: var(--sand); color: var(--green-d); box-shadow: none; }
+.ep__btn-row { display: flex; gap: 12px; }
+.ep__btn-row .ep__btn { flex: 1; }
+
+/* 大判断卡（首页核心）：good / mid / bad 三态 */
+.ep__verdict {
+  border-radius: var(--r);
+  padding: var(--pad-card);
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+.ep__verdict.good { background: linear-gradient(135deg, var(--green), var(--green-d)); }
+.ep__verdict.mid { background: linear-gradient(135deg, var(--amber), var(--peach-d)); }
+.ep__verdict.bad { background: linear-gradient(135deg, var(--red), #9b2d22); }
+.ep__verdict .big {
+  font-size: var(--fs-display);
+  font-weight: 900;
+  line-height: 1.25;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ep__verdict .sub {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin-top: 10px;
+  line-height: 1.55;
+}
+
+/* 四宫格数据 */
+.ep__stat-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.ep__stat {
+  flex: 1 1 45%;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 14px 12px;
+  text-align: center;
+  box-sizing: border-box;
+}
+.ep__stat .k { font-size: var(--fs-sm); color: var(--ink2); font-weight: 700; }
+.ep__stat .v { font-size: var(--fs-lg); font-weight: 900; margin-top: 6px; color: var(--ink); }
+
+/* 两枚超大快捷 */
+.ep__quick { display: flex; gap: 12px; }
+.ep__quick .q {
+  flex: 1;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--r);
+  padding: 18px 10px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
+}
+.ep__quick .q .e { font-size: var(--fs-display); line-height: 1.2; }
+.ep__quick .q .t { font-size: var(--fs-md); font-weight: 800; margin-top: 8px; }
+
+/* 语音播报条（本轮为占位，点击提示「即将支持」） */
+.ep__speak {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--amber-l);
+  border: 2px solid var(--amber);
+  border-radius: var(--r-sm);
+  padding: 14px 16px;
+}
+.ep__speak .ic { font-size: var(--fs-xl); }
+.ep__speak .tx { flex: 1; font-size: var(--fs-md); font-weight: 800; color: var(--ink); }
+
+/* 设置行 / 三档分段 / 开关（关怀版我的页） */
+.ep__setrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 2px solid var(--line);
+}
+.ep__setrow:last-child { border-bottom: 0; }
+.ep__setrow .ic { font-size: var(--fs-xl); width: 34px; text-align: center; }
+.ep__setrow .tx { flex: 1; }
+.ep__setrow .tx .nm { font-size: var(--fs-md); font-weight: 800; }
+.ep__setrow .tx .ds { font-size: var(--fs-sm); color: var(--ink2); margin-top: 4px; font-weight: 600; }
+
+.ep__seg { display: inline-flex; background: var(--sand); border-radius: var(--r-sm); padding: 4px; gap: 4px; }
+.ep__seg .s {
+  border: 0;
+  background: transparent;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  color: var(--ink2);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ep__seg .s::after { border: none; }
+.ep__seg .s.on { background: var(--card); color: var(--green-d); box-shadow: var(--shadow-sm); }
+
+.ep__switch {
+  flex: none;
+  width: 64px;
+  height: 38px;
+  border-radius: 999px;
+  background: var(--line);
+  position: relative;
+  transition: 0.25s;
+}
+.ep__switch::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  transition: 0.25s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.ep__switch.on { background: var(--green); }
+.ep__switch.on::after { left: 30px; }
+.ep__switch.dim { opacity: 0.45; }
+
+/* 底部小注 */
+.ep__note {
+  font-size: var(--fs-sm);
+  color: var(--ink2);
+  text-align: center;
+  line-height: 1.6;
+  font-weight: 600;
+  margin: 2px;
 }

@@ -1,0 +1,12 @@
+/* pages/elder-map —— 关怀版「遛娃」占位页私有样式
+   共用布局类（.ep*）在 styles/theme.wxss，本文件只写本页独有的三块。 */
+.em__box { text-align: center; }
+.em__title { font-size: var(--fs-xl); font-weight: 900; color: var(--ink); }
+.em__sub {
+  margin-top: 12px;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--ink2);
+  line-height: 1.6;
+}
+.em__btn { margin-top: 18px; }

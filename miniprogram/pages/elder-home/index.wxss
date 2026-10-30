@@ -1,0 +1,23 @@
+/* pages/elder-home —— 关怀版首页私有样式
+   共用布局类（.ep*）在 styles/theme.wxss，本文件只写本页独有的几块。 */
+
+/* 大判断卡里的状态图标（✅/⚠️/⛔），比正文再大一档 */
+.ep__verdict .em { font-size: var(--fs-display); }
+
+/* 天气加载失败态 */
+.eh__err { text-align: center; }
+.eh__err-t { font-size: var(--fs-lg); font-weight: 900; color: var(--ink); }
+.eh__err-s {
+  margin-top: 8px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink2);
+  line-height: 1.6;
+}
+.eh__btn { margin-top: 16px; }
+
+/* 出门时段卡（原型里是浅绿实底 + 绿描边） */
+.eh__slot { background: var(--green-l); border-color: var(--green); }
+.eh__slot-hd { font-size: var(--fs-md); font-weight: 800; color: var(--green-d); }
+.eh__slot-win { font-size: var(--fs-xl); font-weight: 900; margin: 10px 0 6px; color: var(--ink); }
+.eh__slot-sub { font-size: var(--fs-sm); color: var(--ink2); line-height: 1.55; }

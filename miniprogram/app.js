@@ -19,6 +19,10 @@ App({
       block: "",
       // 关怀大字模式开关（M5/M6 切换并写入 storage）
       elderMode: false,
+      // 关怀版字号档：'std' | 'lg' | 'xl'（默认「大」）
+      elderFont: 'lg',
+      // 关怀版高对比：默认开（PRD §4.8「默认深绿 + 近黑文字」）
+      elderContrast: true,
       // 成长主题模式：'auto' 按月龄自动切换；'infant' / 'toddler' 为手动覆盖
       themeMode: 'auto',
       // 户外陪伴计时（M2 首页环：有效户外累计秒 + 每日目标；day 用于跨天重置）
@@ -46,6 +50,11 @@ App({
     try {
       const themeMode = wx.getStorageSync('themeMode') || 'auto';
       const elderMode = wx.getStorageSync('elderMode') || false;
+      const rawFont = wx.getStorageSync('elderFont');
+      const elderFont = (rawFont === 'std' || rawFont === 'xl') ? rawFont : 'lg';
+      const rawContrast = wx.getStorageSync('elderContrast');
+      // 从未设置过时 getStorageSync 返回 ''；此时取默认「开」
+      const elderContrast = (rawContrast === '' || rawContrast === null || rawContrast === undefined) ? true : !!rawContrast;
       const block = wx.getStorageSync('block') || '';
       // babies：优先新结构；否则迁移旧的单 babyProfile
       let babies = wx.getStorageSync('babies');
@@ -88,6 +97,10 @@ App({
 
       this.globalData.themeMode = themeMode;
       this.globalData.elderMode = elderMode;
+      // ⚠️ 这两行不能漏：setter 只写了 storage，冷启动要靠这里把 storage 读回 globalData。
+      // 漏了的话「调成特大 → 杀进程 → 重进」字号会静默掉回「大」，而关怀版唯一核心诉求就是字大。
+      this.globalData.elderFont = elderFont;
+      this.globalData.elderContrast = elderContrast;
       this.globalData.block = block;
       this.globalData.babies = babies;
       this.globalData.babyIdx = babyIdx;
@@ -286,5 +299,38 @@ App({
   setThemeMode(mode) {
     this.globalData.themeMode = mode;
     try { wx.setStorageSync('themeMode', mode); } catch (e) { console.error(e); }
+  },
+
+  // ===== 关怀版偏好（M5）=====
+  // 四个出口统一走这里，保证 globalData 与 storage 同步，且与 loadPersisted() 的读回口径对称。
+  // elderMode 记录「用户当前是否在关怀版」：进关怀版置 true、退出置 false。
+  // 它不参与任何样式决策（样式由页面根节点的 data-theme="elder" 决定），
+  // 只给标准版「我的」页展示上次状态用。
+  setElderMode(on) {
+    this.globalData.elderMode = !!on;
+    try { wx.setStorageSync('elderMode', this.globalData.elderMode); } catch (e) { console.error(e); }
+  },
+
+  setElderFont(font) {
+    // 白名单三档，其余一律回落「大」——与 loadPersisted() 的读回逻辑保持一致，
+    // 避免写进去一个非法值、读出来被纠正，两边口径漂移。
+    const f = (font === 'std' || font === 'xl') ? font : 'lg';
+    this.globalData.elderFont = f;
+    try { wx.setStorageSync('elderFont', f); } catch (e) { console.error(e); }
+  },
+
+  setElderContrast(on) {
+    this.globalData.elderContrast = !!on;
+    try { wx.setStorageSync('elderContrast', this.globalData.elderContrast); } catch (e) { console.error(e); }
+  },
+
+  // 供四个关怀版页面一次性读取偏好，避免每页各自拼装、口径漂移
+  elderPrefs() {
+    const g = this.globalData || {};
+    return {
+      elderMode: !!g.elderMode,
+      elderFont: (g.elderFont === 'std' || g.elderFont === 'xl') ? g.elderFont : 'lg',
+      elderContrast: g.elderContrast !== false, // 未设置过时取默认「开」
+    };
   },
 });

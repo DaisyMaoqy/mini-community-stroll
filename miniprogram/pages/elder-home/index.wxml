@@ -1,0 +1,67 @@
+<!-- 严禁引入 <map> 组件：本页不需要地图 -->
+<view class="elder-page" data-theme="elder" data-font="{{efont}}" data-contrast="{{econtrast}}">
+
+  <view class="ep__carebar">👴👵 关怀版<text class="badge">字大·按钮大</text></view>
+
+  <view class="ep__locbar">
+    <text class="ep__pin">📍</text>
+    <text class="ep__blk" bindtap="onBlockTap">{{block || '未设置'}}</text>
+  </view>
+
+  <!-- 大判断卡：加载中 / 失败 / 正常 三态互斥 -->
+  <view wx:if="{{loading}}" class="ep__verdict good">
+    <view class="big">⏳ 正在看天气…</view>
+    <view class="sub">马上告诉您今天能不能带娃出门</view>
+  </view>
+  <view wx:elif="{{errMsg}}" class="ep__card eh__err">
+    <view class="eh__err-t">🌥️ 天气暂时看不了</view>
+    <view class="eh__err-s">不影响使用，点下面按钮再看一次</view>
+    <button class="ep__btn eh__btn" bindtap="load">重新看天气</button>
+  </view>
+  <view wx:else class="ep__verdict {{vclass}}">
+    <view class="big"><text class="em">{{vicon}}</text><text>{{headline}}</text></view>
+    <view class="sub">{{tip}}</view>
+  </view>
+
+  <!-- 四宫格：温度 / 空气 / 紫外线 / 降水 -->
+  <view wx:if="{{!loading && !errMsg && items.length}}" class="ep__stat-row">
+    <view wx:for="{{items}}" wx:key="icon" class="ep__stat">
+      <view class="k">{{item.k}}</view>
+      <view class="v">{{item.v}}</view>
+    </view>
+  </view>
+
+  <!-- 出门时段卡：slots 为空（无 hourly 数据）时整块隐藏，不留空标题 -->
+  <view wx:if="{{slot}}" class="ep__card eh__slot">
+    <view class="eh__slot-hd">🌤️ 今天最好什么时候出门</view>
+    <view class="eh__slot-win">{{slot.v}}</view>
+    <view class="eh__slot-sub">{{slot.n}}，带娃晒太阳、护眼睛正合适</view>
+  </view>
+
+  <!-- 语音播报条（本轮占位，见 index.js 的 onSpeak 注释） -->
+  <view class="ep__speak" bindtap="onSpeak">
+    <text class="ic">🔊</text>
+    <text class="tx">播报今天天气和出门建议</text>
+  </view>
+
+  <view class="ep__sec">常用</view>
+  <view class="ep__quick">
+    <view class="q" bindtap="goMap">
+      <view class="e">🛝</view>
+      <view class="t">去哪遛娃</view>
+    </view>
+    <view class="q" bindtap="goVac">
+      <view class="e">💉</view>
+      <view class="t">去哪打疫苗</view>
+    </view>
+  </view>
+
+  <view class="ep__btn-row">
+    <button class="ep__btn" bindtap="goMap">🗺️ 看遛娃点</button>
+    <button class="ep__btn ep__btn--soft" bindtap="goVac">💉 看接种点</button>
+  </view>
+
+  <view class="ep__note">数据为雷达估算 · 仅供参考</view>
+
+  <elder-tabbar current="home"></elder-tabbar>
+</view>

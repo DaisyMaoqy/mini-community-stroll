@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "接种-关怀版",
+  "usingComponents": {
+    "elder-tabbar": "/components/elder-tabbar/elder-tabbar"
+  }
+}

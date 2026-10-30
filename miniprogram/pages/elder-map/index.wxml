@@ -1,0 +1,16 @@
+<!-- 严禁引入 <map> 组件：本页不需要地图 -->
+<!-- 关怀版「遛娃」页 —— 本轮为占位页（M5 分两批：本批先做首页 + 我的，下一批填列表） -->
+<view class="elder-page" data-theme="elder" data-font="{{efont}}" data-contrast="{{econtrast}}">
+  <view class="ep__locbar">
+    <text class="ep__pin">🗺️</text>
+    <text>遛娃点</text>
+  </view>
+
+  <view class="ep__card em__box">
+    <view class="em__title">🔧 正在准备中</view>
+    <view class="em__sub">关怀版的遛娃点列表正在做。现在先回首页，看看今天什么时候出门最合适。</view>
+    <button class="ep__btn em__btn" bindtap="goHome">回关怀版首页</button>
+  </view>
+
+  <elder-tabbar current="map"></elder-tabbar>
+</view>

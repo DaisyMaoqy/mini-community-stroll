@@ -4,7 +4,10 @@
     "pages/vaccine/index",
     "pages/map/index",
     "pages/mine/index",
-    "pages/elder/index",
+    "pages/elder-home/index",
+    "pages/elder-vac/index",
+    "pages/elder-map/index",
+    "pages/elder-me/index",
     "pages/review/index",
     "pages/setting/index"
   ],

@@ -68,7 +68,10 @@ Page({
   },
 
   goElder() {
-    wx.navigateTo({ url: '/pages/elder/index' });
+    // 标记进入关怀版（只记录状态，不参与样式决策；样式由关怀版页面根节点的 data-theme 决定）
+    if (app.setElderMode) app.setElderMode(true);
+    // 用 navigateTo 保留返回栈：我的页是 tab 页，这样从关怀版返回能直接回到标准版「我的」
+    wx.navigateTo({ url: '/pages/elder-home/index' });
   },
   goSetting() {
     wx.navigateTo({ url: '/pages/setting/index' });

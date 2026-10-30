@@ -1,0 +1,14 @@
+<!-- 严禁引入 <map> 组件：本组件不需要地图 -->
+<!-- 选中态用类选择器而不是属性选择器：自定义组件的 wxss 不支持属性选择器，会被编译期静默丢弃 -->
+<view class="etb">
+  <view
+    wx:for="{{tabs}}"
+    wx:key="key"
+    class="etb__item {{item.key === current ? 'etb__item--on' : ''}}"
+    data-key="{{item.key}}"
+    bindtap="onTap"
+  >
+    <svg-icon name="{{item.icon}}" size="26" tint="{{item.key === current ? '' : 'ink'}}"></svg-icon>
+    <text class="etb__label">{{item.label}}</text>
+  </view>
+</view>

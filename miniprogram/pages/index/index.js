@@ -379,5 +379,9 @@ Page({
     this._paintRing('#outRing', (this.data.indexPercent || 0) / 100, pal.green, '#F4F2EC', 8);
   },
 
-  goElder() { wx.navigateTo({ url: '/pages/elder/index' }); },
+  // 关怀版入口（与「我的」页 goElder 同口径：标进入状态 + navigateTo 保留返回栈）
+  goElder() {
+    if (app.setElderMode) app.setElderMode(true);
+    wx.navigateTo({ url: '/pages/elder-home/index' });
+  },
 });

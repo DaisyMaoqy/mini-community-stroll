@@ -1,0 +1,17 @@
+/* pages/elder-me —— 关怀版「我的」私有样式
+   共用布局类（.ep*）在 styles/theme.wxss，本文件只写本页独有的几块。 */
+.em__mini {
+  flex: none;
+  width: auto;
+  min-height: 44px;
+  padding: 8px 14px;
+  font-size: var(--fs-sm);
+}
+.em__para {
+  font-size: var(--fs-md);
+  line-height: 1.7;
+  color: var(--ink);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.em__exit { margin-top: 4px; }
