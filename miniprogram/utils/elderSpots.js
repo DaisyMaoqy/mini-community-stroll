@@ -11,19 +11,31 @@ const { fmtDist } = require('./geo.js');
 function howText(plan) {
   if (!plan) return '';
   const min = plan.min != null ? plan.min : null;
+  // d 必须提到分支外声明：邨巴分支也要用它（「约 800 米 · 建议坐车」）。
+  // 曾经写在 walk 分支内部，导致邨巴分支 ReferenceError（node --check 查不出来）。
+  const d = plan.distM != null ? fmtDist(plan.distM) : '';
 
   if (plan.mode === 'walk') {
-    const d = plan.distM != null ? fmtDist(plan.distM) : '';
     if (d && min != null) return '走路约 ' + d + ' · 约 ' + min + ' 分钟';
     if (d) return '走路约 ' + d;
     return '走路可达';
   }
 
-  // 邨巴：优先用种子里的 busText（含线路名与班次时间，信息最全）
-  const busText = plan.bus && plan.bus.text ? plan.bus.text : '';
-  if (busText) return '坐邨巴 · ' + busText;
-  if (min != null) return '坐邨巴 · 约 ' + min + ' 分钟';
-  return '建议坐邨巴';
+  // 邨巴：**距离在前 + 结论**。
+  // 2026-11-03 修正：原来这里只返回线路名与班次（busText），把「有多远」整条挤掉了。
+  // 因为 travel.js 的 WALK_MAX=600，超过 600 米就判 mode='bus'，
+  // 结果 12 个遛娃点里 11 个卡片上只剩「坐邨巴 · 1、3、5、6、8 号线 · 约 10–20 分钟一班」，
+  // 老人看不出近不近 —— 而「带娃走走、有多远」正是遛娃页的第一信息。
+  // 线路细节改由 busHint() 作为第二个小标签展示，不再挤占主文案。
+  if (d) return '约 ' + d + ' · 建议坐车';
+  return '建议坐车';
+}
+
+// 线路补充信息（第二个小标签）。仅「建议坐车」时给，
+// 避免本来就走路可达的点也堆一堆线路名，稀释掉主信息。
+function busHint(plan) {
+  if (!plan || plan.mode !== 'bus') return '';
+  return (plan.bus && plan.bus.text) ? plan.bus.text : '';
 }
 
 // 从原始 POI 抽出关怀版卡片要用的字段。
@@ -50,4 +62,4 @@ function baseRow(s, nameKey) {
   };
 }
 
-module.exports = { howText, baseRow };
+module.exports = { howText, busHint, baseRow };

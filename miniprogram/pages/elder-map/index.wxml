@@ -38,6 +38,7 @@
 
       <view class="em__tags">
         <text class="em__tag em__tag--how">{{item.how || '正在算怎么走…'}}</text>
+        <text wx:if="{{item.busHint}}" class="em__tag">{{item.busHint}}</text>
         <text wx:if="{{item.subType}}" class="em__tag">{{item.subType}}</text>
         <!-- 室内不算户外护眼时间，这点对带娃家长是关键信息 -->
         <text wx:if="{{item.subType === '室内'}}" class="em__tag em__tag--warn">不算护眼时间</text>

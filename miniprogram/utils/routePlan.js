@@ -17,12 +17,18 @@ function haversine(lat1, lng1, lat2, lng2) {
 }
 
 // 邨巴可达性：由 POI 的 bus 字段推断
-//   bus.lines 非空 且 不含「交通中心换乘对外」类描述 → 邨巴直达可达
-//   bus.lines 为空（如钟村，需换乘对外公交）→ 邨巴不可直达
+//   判定依据是 bus.lines **是否存在**（不是「是否非空」）：
+//   - lines 缺省 / null / '' → 没有邨巴信息 → 不可达
+//   - lines 是数组（**包括空数组 []**）→ 视为可达，怎么坐由 bus.busText 说明
+//
+// ⚠️ 陷阱：`!bus.lines` 对 `[]` 是 false（空数组在 JS 里是真值）。
+// 钟村街正是 `lines: []` + busText 写明「换乘对外公交」，当前因此被判为可达 ——
+// 这是**期望行为**：它确实要坐邨巴再换乘，只是没有直达线路号。
+// 千万不要"照注释修 bug"改成 `!bus.lines.length`：那会让钟村街退化成
+// 「建议步行 53 分钟去社区外的接种点」，是有害建议。
 function busReachable(spot) {
   const bus = spot && spot.bus;
   if (!bus) return false;
-  // lines 为空 = 无邨巴直达（需换乘对外公交）
   if (!bus.lines) return false;
   return true;
 }

@@ -42,6 +42,7 @@
 
       <view class="ev__tags">
         <text class="ev__tag">{{item.how || '正在算怎么走…'}}</text>
+        <text wx:if="{{item.busHint}}" class="ev__tag">{{item.busHint}}</text>
         <text wx:if="{{item.external}}" class="ev__tag ev__tag--warn">社区外</text>
       </view>
 

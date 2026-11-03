@@ -14,7 +14,7 @@
 const app = getApp();
 const { callCloud } = require('../../utils/cloud.js');
 const { planRoute, planRouteBlockless } = require('../../utils/routePlan.js');
-const { howText, baseRow } = require('../../utils/elderSpots.js');
+const { howText, busHint, baseRow } = require('../../utils/elderSpots.js');
 
 Page({
   data: {
@@ -91,6 +91,7 @@ Page({
       if (!plan) continue;
       const patch = {};
       patch['list[' + i + '].how'] = howText(plan);
+      patch['list[' + i + '].busHint'] = busHint(plan);
       this.setData(patch);
     }
   },

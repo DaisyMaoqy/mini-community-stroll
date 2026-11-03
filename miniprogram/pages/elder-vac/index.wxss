@@ -47,6 +47,11 @@
   background: var(--sand);
   color: var(--green-d);
   line-height: 1.4;
+  /* 钟村街的 busText 长达 45 字（含换乘公交线路），大字号下必须允许换行，
+     否则会顶破卡片。max-width 让它最多占满一行宽度再折行。 */
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-all;
 }
 .ev__tag--warn { background: var(--amber-l); color: var(--ink); }
 

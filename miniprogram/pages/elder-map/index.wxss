@@ -37,6 +37,10 @@
   background: var(--sand);
   color: var(--green-d);
   line-height: 1.4;
+  /* 线路文案可能很长（5 条线路 + 班次时间），大字号下必须允许换行 */
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-all;
 }
 /* 「怎么去」是主信息，用绿底抬高视觉权重 */
 .em__tag--how { background: var(--green-l); color: var(--green-d); }
