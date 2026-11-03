@@ -6,6 +6,22 @@ function genBabyId() {
   return 'b_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
 }
 
+// 每日提醒的形状 / 默认值：三处（app.js / utils/userSync.js / cloudfunctions/userdata）口径必须一致
+//   on   —— 布尔，是否开启提醒（本期仅记录设定，不接真实推送）
+//   time —— 'HH:mm' 24 小时制，不匹配正则一律回落 '09:00'
+const REMINDER_DEFAULT = { on: false, time: '09:00' };
+const RE_REMINDER_TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+// 每日提醒白名单校验：storage 可能被手改、云端数据可能来自旧版本，所有入口统一走这里，
+// 保证 setter / loadPersisted() / applyCloudProfile() 三处口径完全一致（返回全新对象，不共享引用）
+function sanitizeReminder(raw) {
+  const src = (raw && typeof raw === 'object') ? raw : {};
+  return {
+    on: !!src.on,
+    time: (typeof src.time === 'string' && RE_REMINDER_TIME.test(src.time)) ? src.time : REMINDER_DEFAULT.time,
+  };
+}
+
 App({
   onLaunch: function () {
     this.globalData = {
@@ -27,6 +43,9 @@ App({
       themeMode: 'auto',
       // 户外陪伴计时（M2 首页环：有效户外累计秒 + 每日目标；day 用于跨天重置）
       outdoor: { outdoor: 0, goal: 60, day: '' },
+      // 每日提醒设定：on = 是否开启（布尔），time = 'HH:mm' 24 小时制提醒时间（非法回落 '09:00'）。
+      // 本期只做「设置 + 落库 + 跨端同步」，不接真实推送，见文件末尾 setReminder()。
+      reminder: { on: false, time: '09:00' },
       // 本地缓存的「上次已知云端 rev」，push 时作 baseRev（0 = 本机从未与云端对过账）
       userRev: 0,
       // 云端数据覆盖本地后的页面刷新回调表（内部用，见 onUserSync / _emitUserSync）
@@ -49,6 +68,7 @@ App({
   loadPersisted() {
     try {
       const themeMode = wx.getStorageSync('themeMode') || 'auto';
+      // elderMode = 「是否启用关怀模式」的持久偏好（由「我的」页开关写），不是会话标记
       const elderMode = wx.getStorageSync('elderMode') || false;
       const rawFont = wx.getStorageSync('elderFont');
       const elderFont = (rawFont === 'std' || rawFont === 'xl') ? rawFont : 'lg';
@@ -56,6 +76,9 @@ App({
       // 从未设置过时 getStorageSync 返回 ''；此时取默认「开」
       const elderContrast = (rawContrast === '' || rawContrast === null || rawContrast === undefined) ? true : !!rawContrast;
       const block = wx.getStorageSync('block') || '';
+      // reminder：storage 可能被手改或来自旧版本 → 统一走白名单校验（on 取布尔、time 必须 HH:mm，非法回落默认）
+      const rawReminder = wx.getStorageSync('reminder');
+      const reminder = sanitizeReminder(rawReminder);
       // babies：优先新结构；否则迁移旧的单 babyProfile
       let babies = wx.getStorageSync('babies');
       if (!Array.isArray(babies)) {
@@ -101,6 +124,9 @@ App({
       // 漏了的话「调成特大 → 杀进程 → 重进」字号会静默掉回「大」，而关怀版唯一核心诉求就是字大。
       this.globalData.elderFont = elderFont;
       this.globalData.elderContrast = elderContrast;
+      // ⚠️ 与 setReminder() 成对：setter 只写 storage + 内存，冷启动必须靠这里把 'reminder' 读回 globalData。
+      // 字段名一字不差、校验同走 sanitizeReminder，否则「改设置 → 杀进程 → 重进」会静默复位。
+      this.globalData.reminder = reminder;
       this.globalData.block = block;
       this.globalData.babies = babies;
       this.globalData.babyIdx = babyIdx;
@@ -266,12 +292,20 @@ App({
       g.babies = babies;
       g.curBabyId = typeof d.curBabyId === 'string' ? d.curBabyId : '';
       if (typeof d.block === 'string') g.block = d.block;
+      // reminder：照 block 的写法，云端返回了才覆盖本地（旧版本云端/未部署时无此字段，不能冲掉本地设定）；
+      // 云端数据也可能来自旧版本，同样过 sanitizeReminder 白名单校验后再写入
+      if (d.reminder && typeof d.reminder === 'object') {
+        g.reminder = sanitizeReminder(d.reminder);
+      }
       // 原地合并保留对象引用：计时中若被云端覆盖，页面持引用继续累加不会写到已失效的旧对象
       g.outdoor = Object.assign(g.outdoor || {}, { outdoor: 0, goal: 60, day: '' }, d.outdoor || {});
       g.userRev = d.rev || 0;
       try {
         wx.setStorageSync('block', g.block);
         wx.setStorageSync('outdoor', g.outdoor);
+        // 与 block/outdoor 同口径：云端覆盖后的 reminder 必须落盘，否则冷启动 loadPersisted()
+        // 读回的是旧 storage，本次云端覆盖会被静默丢掉（saveLocal() 不写 reminder）
+        wx.setStorageSync('reminder', g.reminder);
       } catch (e) { console.error(e); }
       this._refreshDerived();
       this.saveLocal();
@@ -301,11 +335,39 @@ App({
     try { wx.setStorageSync('themeMode', mode); } catch (e) { console.error(e); }
   },
 
+  // ===== 每日提醒设定（本期仅「设置 + 落库」，不接真实推送）=====
+  // 唯一数据源 = globalData.reminder；三处出口（loadPersisted / applyCloudProfile / 本 setter）
+  // 全部走 sanitizeReminder 白名单校验，保证 on 布尔、time 为 24 小时制 HH:mm，口径不漂移。
+  // @param {Object} patch 可只传 { on } 或只传 { time }；未给出的字段沿用当前值
+  // @returns {{on: boolean, time: string}} 当前 globalData.reminder 对象（供页面直接 setData 回显）
+  setReminder(patch) {
+    const g = this.globalData;
+    const cur = g.reminder || REMINDER_DEFAULT;
+    const p = (patch && typeof patch === 'object') ? patch : {};
+    // 合并：只覆盖 patch 里显式给出的字段（undefined 视为「未给出」）
+    const merged = {
+      on: (typeof p.on === 'undefined') ? cur.on : p.on,
+      time: (typeof p.time === 'undefined') ? cur.time : p.time,
+    };
+    const next = sanitizeReminder(merged);
+    g.reminder = next;
+    try { wx.setStorageSync('reminder', next); } catch (e) { console.error(e); }
+    // reminder 是云端同步字段（见 utils/userSync.js 的 buildPayload）：与 setBlock 同风格，
+    // 改完立即排一次 push，否则本次改动要等下一次无关操作才顺带上云，跨端同步不可靠。
+    userSync.pushThrottled('profile', 600);
+    return next;
+  },
+
   // ===== 关怀版偏好（M5）=====
   // 四个出口统一走这里，保证 globalData 与 storage 同步，且与 loadPersisted() 的读回口径对称。
-  // elderMode 记录「用户当前是否在关怀版」：进关怀版置 true、退出置 false。
-  // 它不参与任何样式决策（样式由页面根节点的 data-theme="elder" 决定），
-  // 只给标准版「我的」页展示上次状态用。
+  //
+  // ⚠️ elderMode 的语义 = 「用户是否启用关怀模式」这个【持久偏好】，由标准版「我的」页的开关
+  //    唯一写入。它【不是】「当前是否在关怀版」的会话状态。
+  //    历史坑：进入关怀版置 true、退出置 false 的写法会让「我的」页开关跟着跳 —— 用户从关怀版
+  //    退出回来，开关被自动关掉、字号/对比度设置区整块收起，看起来像设置被吞了；反过来用户
+  //    手动关掉开关，一从首页进关怀版又被自动打开。所以进出关怀版的三个入口
+  //    （pages/index goElder / pages/mine goElder / pages/elder-me onExit）一律【不写】elderMode。
+  //    页面样式与「现在是不是关怀版」无关，只由关怀版页面根节点的 data-theme="elder" 决定。
   setElderMode(on) {
     this.globalData.elderMode = !!on;
     try { wx.setStorageSync('elderMode', this.globalData.elderMode); } catch (e) { console.error(e); }
@@ -325,12 +387,21 @@ App({
   },
 
   // 供四个关怀版页面一次性读取偏好，避免每页各自拼装、口径漂移
+  // 短名 mode/font/contrast 供标准版「我的」页设置区使用；长名 elderMode/elderFont/elderContrast
+  // 供关怀版页面沿用。两组并存，纯追加，任一侧改动都不需要对方跟着改字段名。
   elderPrefs() {
     const g = this.globalData || {};
+    const mode = !!g.elderMode;
+    const font = (g.elderFont === 'std' || g.elderFont === 'xl') ? g.elderFont : 'lg';
+    const contrast = g.elderContrast === undefined ? true : !!g.elderContrast;
+    // 任何入口都不必判空：非法值一律回落到「关 / 大 / 高对比」
     return {
-      elderMode: !!g.elderMode,
-      elderFont: (g.elderFont === 'std' || g.elderFont === 'xl') ? g.elderFont : 'lg',
-      elderContrast: g.elderContrast !== false, // 未设置过时取默认「开」
+      mode,
+      font,
+      contrast,
+      elderMode: mode,
+      elderFont: font,
+      elderContrast: contrast,
     };
   },
 });

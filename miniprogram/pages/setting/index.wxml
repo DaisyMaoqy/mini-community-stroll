@@ -1,4 +1,4 @@
-<!-- pages/setting/index.wxml 设置（本期：审核入口迁移 + 关于占位） -->
+<!-- pages/setting/index.wxml 设置（本期：每日提醒设置 + 审核入口迁移 + 关于占位） -->
 <view class="container setting-page" data-theme="{{theme}}">
   <!-- 运营：仅开发者/运营（isAdmin）可见；非 admin 时整个「运营」分组（含分区标题）都不渲染，避免空标题残留 -->
   <view class="group" wx:if="{{isAdmin}}" >
@@ -10,6 +10,33 @@
         <svg-icon name="chev" size="16"></svg-icon>
       </view>
     </view>
+  </view>
+
+  <!-- 提醒：本期只做「设置 + 落库」，未接真实推送。文案保持诚实，不宣称「每天都会收到提醒」。 -->
+  <view class="group">
+    <view class="sec">提醒</view>
+    <view class="list">
+      <view class="list__item card remind__row">
+        <svg-icon name="clock" size="20"></svg-icon>
+        <view class="remind__body">
+          <text class="list__label">每日提醒</text>
+          <!-- 用 wx:if/wx:else 而非模板内字符串拼接，避免 WXML 表达式解析差异 -->
+          <text wx:if="{{reminder.on}}" class="remind__desc muted">每天 {{reminder.time}} 提醒你带娃出门晒太阳</text>
+          <text wx:else class="remind__desc muted">已关闭</text>
+        </view>
+        <switch class="remind__switch" checked="{{reminder.on}}" color="#2FB67C" bindchange="onToggle"></switch>
+      </view>
+      <!-- 关闭时整行收起，不留空行 -->
+      <picker wx:if="{{reminder.on}}" mode="time" value="{{reminder.time}}" bindchange="onTimeChange">
+        <view class="list__item card remind__row">
+          <svg-icon name="clock" size="20"></svg-icon>
+          <text class="list__label">提醒时间</text>
+          <text class="remind__value muted">{{reminder.time}}</text>
+          <svg-icon name="chev" size="16"></svg-icon>
+        </view>
+      </picker>
+    </view>
+    <text class="remind__note muted">微信服务通知开通后会按此时间提醒，当前仅保存设置、暂未推送</text>
   </view>
 
   <!-- 关于：占位展示，本期不实现真实功能 -->

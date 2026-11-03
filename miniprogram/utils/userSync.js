@@ -1,5 +1,5 @@
 /**
- * userSync —— 用户数据（宝宝资料 / 当前宝宝 / 板块 / 户外时长）云端同步
+ * userSync —— 用户数据（宝宝资料 / 当前宝宝 / 板块 / 户外时长 / 每日提醒设定）云端同步
  * 对应架构设计《架构设计_用户数据云端化_2026-10-20.md》§3 / §5.2。
  *
  * 职责边界（写死，防止蔓延）：
@@ -45,6 +45,8 @@ function buildPayload() {
     babyIdx: g.babyIdx || 0,
     block: g.block || '',
     outdoor: g.outdoor || { outdoor: 0, goal: 60, day: '' },
+    // 每日提醒设定：形状 { on: boolean, time: 'HH:mm' }，服务端 sanitizeReminder 会再校验一次
+    reminder: g.reminder || { on: false, time: '09:00' },
   };
 }
 
@@ -78,6 +80,9 @@ function _sig() {
     babyIdx: g.babyIdx || 0,
     block: g.block || '',
     outdoor: g.outdoor || { outdoor: 0, goal: 60, day: '' },
+    // ⚠️ 必须与 buildPayload() 的字段一一对应：漏了 reminder 会出现「改了提醒时间但本地指纹
+    // 没变 → 被判定为重复 → 不推送云端」的静默 bug（去重见 push() 里的 sig === _lastPushSig）
+    reminder: g.reminder || { on: false, time: '09:00' },
   });
 }
 

@@ -9,3 +9,16 @@
 .list { display: flex; flex-direction: column; gap: var(--gap-md); }
 .list__item { display: flex; align-items: center; gap: 10px; }
 .list__label { flex: 1; font-size: var(--fs-md); color: var(--ink); }
+
+/* 提醒分组：沿用上面的 .group/.sec/.list/.list__item.card 骨架，仅补两行文案与右侧控件的排布 */
+/* 开关行与时间选择行共用 min-height，保证两行高度对齐 */
+.remind__row { min-height: 64px; }
+/* 图标右侧的「主标题 + 副文案」两行文本块，撑满剩余宽度把开关顶到最右 */
+.remind__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+/* .list__label 自带 flex:1（用于横向顶开右侧）；在纵向文本块里需还原成不拉伸 */
+.remind__body .list__label { flex: none; line-height: 1.3; }
+.remind__desc { line-height: 1.3; }
+.remind__value { flex: none; }
+.remind__switch { flex: none; }
+/* 诚实说明：本期只保存设置，不宣称已推送 */
+.remind__note { padding-left: 4px; line-height: 1.5; }

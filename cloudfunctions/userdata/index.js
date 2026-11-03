@@ -1,6 +1,7 @@
 // userdata —— 用户数据云端化服务端（pull / push）
 // 对应架构设计《架构设计_用户数据云端化_2026-10-20.md》§4。
 // 集合：user_profiles，_id = openid（一人一档），整文档覆盖 + rev 乐观锁。
+// 同步业务字段：babies / curBabyId / babyIdx / block / outdoor / reminder（每日提醒设定，本期新增，仅落库不推送）
 // 前端调用：wx.cloud.callFunction({ name: 'userdata', data: { action, ... } })
 //   - 返回统一为 { success:true, ... } 或 { success:false, code, message }
 //   - message 为「用户可读文案」供前端 toast（utils/cloud.js 读的是 message 字段，不是 errMsg）
@@ -12,7 +13,7 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 
 const COLLECTION = "user_profiles";
-const SCHEMA = 1; // 文档结构版本，预留未来升级
+const SCHEMA = 1; // 文档结构版本，预留未来升级；新增 reminder 字段，向后兼容（缺字段：push 按默认值补齐，pull 返回 null 保留本地）
 const MAX_BABIES = 10; // 宝宝数量上限
 const MAX_NAME = 20; // 宝宝昵称上限
 const MAX_BLOCK = 20; // 板块名上限（不做枚举校验，板块会随数据扩充）
@@ -20,6 +21,9 @@ const GOAL_MIN = 1; // 每日目标分钟下限
 const GOAL_MAX = 1440; // 每日目标分钟上限（24h）
 const GOAL_DEFAULT = 60; // 每日目标缺省值
 const OUTDOOR_DEFAULT = { outdoor: 0, goal: GOAL_DEFAULT, day: "" };
+// 每日提醒设定：形状与小程序端一致 { on: boolean, time: 'HH:mm' }；time 为 24 小时制
+const REMINDER_DEFAULT = { on: false, time: "09:00" };
+const RE_REMINDER_TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 // 错误码全集（架构设计 §4.3）；前端以字面量比较（小程序与云函数不共享模块）
 const CODES = {
@@ -134,6 +138,24 @@ function sanitizeOutdoor(o) {
   };
 }
 
+// 每日提醒设定白名单（照 sanitizeOutdoor 的写法）：
+//   - on 取布尔；time 必须匹配 24 小时制 'HH:mm'，非法一律回落 '09:00'
+//   - 非对象 / 取到对象但字段缺失或脏 → 按字段回落 REMINDER_DEFAULT（不因此拒绝本次 push）
+//   - ⚠️ 注意：本函数只负责「取到的东西怎么洗」，不负责「没取到怎么办」。
+//     pull 分支里 document 整个没有 reminder 字段时【不调本函数】，而是返回 null
+//     （语义 = 本字段本机与云端尚未对齐，前端 applyCloudProfile 会跳过、保留本地值）。
+//     两者不能混：一律回落 REMINDER_DEFAULT 会把用户已设的提醒冲成默认值。
+// 形状与小程序端 app.js / utils/userSync.js 三处保持一致
+function sanitizeReminder(src) {
+  const s = src && typeof src === "object" ? src : {};
+  return {
+    on: !!s.on,
+    time: typeof s.time === "string" && RE_REMINDER_TIME.test(s.time)
+      ? s.time
+      : REMINDER_DEFAULT.time,
+  };
+}
+
 // outdoor 字段级合并（架构设计 §3.3，服务端唯一的字段级例外）：
 //   - incoming.day 为空 → 本次不写 outdoor（返回 null，视为未初始化，不冲掉云端）
 //   - 两边 day 都非空：同一天取 Math.max；不同天取日期更新的那份（按日期语义比，不字典序）
@@ -180,6 +202,17 @@ exports.main = async (event) => {
           babyIdx: typeof doc.babyIdx === "number" ? doc.babyIdx : 0,
           block: typeof doc.block === "string" ? doc.block : "",
           outdoor: doc.outdoor && typeof doc.outdoor === "object" ? doc.outdoor : null,
+          // reminder 分两档，不能一律回落默认值：
+          //   ① 文档里【没有】该字段（旧云函数写过的老文档 / 用户从没设过）→ 返回 null
+          //      → 前端 applyCloudProfile 的 `if (d.reminder && typeof d.reminder === "object")`
+          //        自动跳过，保留本机已有的设定（否则「本地设过 07:30 + 云端老文档」会被冲回 09:00）
+          //   ② 文档里【有】字段但值脏 → 仍走 sanitizeReminder 白名单兜底，返回合法对象
+          // 新用户（云端无文档）走的是 exists:false 分支，根本不进这里。
+          // ⚠️ null = 本字段本机与云端尚未对齐，前端应保留本地值；这是刻意设计、不是漏改，
+          //    后人不要为了「给个默认形状」把它补回 REMINDER_DEFAULT（那会静默冲掉用户设定）。
+          reminder: (doc.reminder && typeof doc.reminder === "object")
+            ? sanitizeReminder(doc.reminder)
+            : null,
           updatedAt: toIso(doc.updatedAt),
         },
       };
@@ -197,15 +230,19 @@ exports.main = async (event) => {
       const babyIdx = resolveIdx(babies, curBabyId, event.babyIdx);
       const block = sanitizeBlock(event.block);
       const outdoor = sanitizeOutdoor(event.outdoor);
+      const reminder = sanitizeReminder(event.reminder);
       let baseRev = parseInt(event.baseRev, 10);
       if (isNaN(baseRev)) baseRev = 0;
 
+      // full 同时用于「③ 首写」和「⑤ 覆盖写」两条路径，reminder 加在这里即可覆盖两者。
+      // 注意：reminder 走整文档覆盖，不参与 outdoor 的字段级合并（mergeOutdoor 保持原样不动）。
       const full = {
         schema: SCHEMA,
         babies: babies,
         curBabyId: curBabyId,
         babyIdx: babyIdx,
         block: block,
+        reminder: reminder,
       };
 
       // ② 先 get 判存在，再 set / update（铁律 R2：不依赖 stats.updated === 0 判 NOT_FOUND）
