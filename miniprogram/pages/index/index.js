@@ -106,8 +106,18 @@ Page({
   },
 
   onUnload() {
-    // 离开页面：结算本次计时（不 reset 全局，时长已按时间戳实时落账）
-    this.pauseTimer();
+    // 离开页面：仅当「确实有一段计时在跑」时才需要收尾（不 reset 全局，时长已按时间戳实时落账）。
+    //
+    // 为什么必须判断：本页并非只能由用户主动离开 —— 关怀版「我的」退出用的是
+    // wx.reLaunch('/pages/index/index')（pages/elder-me/index.js:71），它会整栈销毁，
+    // 连带销毁此前被 navigateTo 压进栈里的这个旧 index 实例。若这里无条件结算，
+    // 用户「从未点过开始计时」也会被弹一句「已暂停，本次户外已记入」，且白发一次云端 push。
+    //
+    // 反过来也不能一律跳过：计时中点返回 / 被 reLaunch 销毁时，interval 必须清掉，否则定时器泄漏。
+    const running = this.data.timerRunning === true || this._segStart != null;
+    if (!running) return;
+    // silent：页面正在销毁 → 不弹 toast、不 setData，只清理定时器并落一次云端
+    this.pauseTimer({ silent: true });
   },
 
   // M6+：拉天气 → 遛娃指数评分 + 出门时段推算
@@ -278,7 +288,8 @@ Page({
 
   // 户外计时：单模式，基于时间戳累计真实时长（跨后台/切页不丢，跨天自动重置）
   toggleTimer() {
-    if (this.data.timerRunning) this.pauseTimer();
+    // 用户主动点暂停：必须走非 silent —— toast / setData / 云端落库都是这次操作的反馈
+    if (this.data.timerRunning) this.pauseTimer({ silent: false });
     else this.startTimer();
   },
   // 开始/继续：记下起点时间戳，每秒把「已累计 + 本次已进行」写入 globalData.outdoor
@@ -300,16 +311,36 @@ Page({
     tick();
     this._timer = setInterval(tick, 1000);
   },
-  pauseTimer() {
-    // 结束本次计时：把当前秒数落账，停表，文案回到建议
+  /**
+   * 结束本次计时（把当前秒数落账、停表、文案回到建议）。
+   *
+   * 两种语义必须分开，否则「页面销毁」会被误当成「用户主动暂停」：
+   *  - 用户主动暂停（toggleTimer）：走非 silent，toast + setData + 推云端，一个都不能少；
+   *  - 页面销毁（onUnload）：走 silent，页面正在销毁，setData 会对已卸载实例调用并报警告，
+   *    toast 用户也基本看不到。只清定时器、把分段状态置空，防定时器泄漏。
+   *
+   * @param {Object} [opts] 选项
+   * @param {boolean} [opts.silent] 为 true 表示静默收尾（页面销毁场景）：不弹 toast、不 setData。
+   * @returns {void}
+   */
+  pauseTimer(opts) {
+    const silent = !!(opts && opts.silent === true);
+    // 「本次是否真的结算了一段计时」——决定要不要推云端。计时从未开始时不该产生任何 push。
+    const wasRunning = this.data.timerRunning === true || this._segStart != null;
     if (this._timer) { clearInterval(this._timer); this._timer = null; }
     this._segStart = null;
     this._segBase = null;
+    if (silent) {
+      // 静默收尾：⛔ 不要 setData（页面已销毁）、⛔ 不要 toast（用户看不到且非用户动作）。
+      // o.outdoor 的值由 tick 每秒按时间戳写入 globalData，此处不动它，累计值天然保留。
+      if (wasRunning) userSync.push('outdoor');
+      return;
+    }
     this.setData({ timerRunning: false, sessionText: '00:00' });
     this.syncOutdoor();
     wx.showToast({ title: '已暂停，本次户外已记入', icon: 'none' });
     // 立即推一次（不走 3s 节流）：暂停是明确的时间点，立刻落库最稳
-    userSync.push('outdoor');
+    if (wasRunning) userSync.push('outdoor');
   },
   _dayKey() {
     const d = new Date();
