@@ -69,7 +69,11 @@ Page({
 
   // 串行补「怎么去」：route 是云函数，并发多了会限流（照标准版 pages/map 的惯例）
   async fillRoutes(seq) {
-    const block = this.data.block;
+    // 直接读 globalData，不读 this.data.block：syncPrefs 是 setData（异步桥调用），
+    // onLoad 里 syncPrefs() 紧接 load()，fillRoutes 执行时 this.data.block 未必已刷新。
+    // 读成空串会退化成「用宝宝坐标而非板块坐标」算距离，且没有任何报错。
+    const g = (app && app.globalData) || {};
+    const block = g.block || this.data.block || '';
     const bp = (app && app.curBaby && app.curBaby()) || null;
     const raw = this._raw || [];
     for (let i = 0; i < raw.length; i++) {
