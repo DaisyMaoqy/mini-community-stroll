@@ -1,0 +1,10 @@
+{
+  "name": "ask",
+  "version": "1.0.0",
+  "description": "育儿问答 RAG：月龄前置过滤 + 内存余弦召回 + 置信度拒答（DashScope embedding + qwen-plus）",
+  "main": "index.js",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.4.0"
+  }
+}
