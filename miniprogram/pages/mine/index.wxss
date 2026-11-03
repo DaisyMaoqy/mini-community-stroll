@@ -39,7 +39,9 @@
 }
 .seg__item.on { background: var(--green); color: #fff; }
 
-/* 关怀模式卡（M5） */
+/* 关怀模式卡（M5）
+   switch 的 color 不支持 CSS 变量，此值须与 tokens.wxss 的 --green 手动保持一致。
+   两处硬编码（总开关 / 高对比开关）在 index.wxml，改主色时务必同步，详见该文件 L42 注释。 */
 .elder-card__hd { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .elder-card__txt { flex: 1; min-width: 0; }
 .elder-card__sub { margin-top: 4px; line-height: 1.5; }
