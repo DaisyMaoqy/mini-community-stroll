@@ -47,13 +47,23 @@
   background: var(--sand);
   color: var(--green-d);
   line-height: 1.4;
-  /* 钟村街的 busText 长达 45 字（含换乘公交线路），大字号下必须允许换行，
-     否则会顶破卡片。max-width 让它最多占满一行宽度再折行。 */
+  /* 大字号下标签可能超一行，允许折行不要顶破卡片。
+     用 overflow-wrap 而不是 word-break:break-all —— 后者会把「301」断成「30/1」，
+     老人对着半截线路号去等车是真会坐错。 */
   max-width: 100%;
   box-sizing: border-box;
-  word-break: break-all;
+  overflow-wrap: break-word;
 }
 .ev__tag--warn { background: var(--amber-l); color: var(--ink); }
+
+/* 换乘细节：整行说明文字，刻意不用标签底色 —— 它是二级信息，
+   一旦做成 chip 就会比「约 X · 建议坐车」还抢眼（钟村街那条 50 字，xl 档 4 行）。 */
+.ev__hint {
+  font-size: var(--fs-sm);
+  color: var(--ink3);
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
 
 /* 卡片内第二个及以后的按钮往上收一点间距 */
 .ev__btn-2 { margin-top: -2px; }

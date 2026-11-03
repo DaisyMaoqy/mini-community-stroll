@@ -42,9 +42,12 @@
 
       <view class="ev__tags">
         <text class="ev__tag">{{item.how || '正在算怎么走…'}}</text>
-        <text wx:if="{{item.busHint}}" class="ev__tag">{{item.busHint}}</text>
         <text wx:if="{{item.external}}" class="ev__tag ev__tag--warn">社区外</text>
       </view>
+
+      <!-- 换乘细节单独一行作说明，不做彩色标签：钟村街那条 50 字（xl 档 4 行）做成 chip
+           会比「约 X · 建议坐车」还抢眼，主次颠倒 -->
+      <view wx:if="{{item.busHint}}" class="ev__hint">{{item.busHint}}</view>
 
       <button class="ep__btn" bindtap="onNav" data-idx="{{index}}">🧭 带我去</button>
       <!-- 电话：仅当 POI 有真实 phone 字段才出现（当前种子数据全部无 phone，故不会渲染） -->

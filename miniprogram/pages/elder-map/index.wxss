@@ -37,12 +37,23 @@
   background: var(--sand);
   color: var(--green-d);
   line-height: 1.4;
-  /* 线路文案可能很长（5 条线路 + 班次时间），大字号下必须允许换行 */
+  /* 大字号下标签可能超一行，允许折行不要顶破卡片。
+     用 overflow-wrap 而不是 word-break:break-all —— 后者会把「301」断成「30/1」，
+     老人对着半截线路号去等车是真会坐错。 */
   max-width: 100%;
   box-sizing: border-box;
-  word-break: break-all;
+  overflow-wrap: break-word;
 }
 /* 「怎么去」是主信息，用绿底抬高视觉权重 */
 .em__tag--how { background: var(--green-l); color: var(--green-d); }
 /* 警示类标签（室内不算护眼时间） */
 .em__tag--warn { background: var(--amber-l); color: var(--ink); }
+
+/* 换乘细节：整行说明文字，刻意不用标签底色 —— 它是二级信息，
+   一旦做成 chip 就会比「约 X · 建议坐车」还抢眼（文案可达 50 字，xl 档 4 行）。 */
+.em__hint {
+  font-size: var(--fs-sm);
+  color: var(--ink3);
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}

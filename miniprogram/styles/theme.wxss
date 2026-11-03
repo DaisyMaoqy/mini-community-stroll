@@ -12,6 +12,10 @@
   --green-line: #CDE7D8; /* 浅绿描边（关怀版） */
   --ink: #14301F;
   --ink2: #3F5A4B;
+  /* --ink3 是三级说明文字。必须在这里给一个深值：tokens.wxss 的默认 #9AA89F 是给标准版
+     用的浅灰，落到关怀版上对比度只有 ~2.6:1，老人看不清。只在基础块声明一次，
+     contrast="high" 块会自己覆盖；contrast="normal" 不声明则继承这里。 */
+  --ink3: #4A4A4A;
 
   /* 字号放大 */
   --fs-display: 30px;
