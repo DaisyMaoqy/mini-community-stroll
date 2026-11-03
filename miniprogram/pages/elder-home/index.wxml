@@ -56,11 +56,6 @@
     </view>
   </view>
 
-  <view class="ep__btn-row">
-    <button class="ep__btn" bindtap="goMap">🗺️ 看遛娃点</button>
-    <button class="ep__btn ep__btn--soft" bindtap="goVac">💉 看接种点</button>
-  </view>
-
   <view class="ep__note">数据为雷达估算 · 仅供参考</view>
 
   <elder-tabbar current="home"></elder-tabbar>

@@ -199,8 +199,6 @@ page { --h-btn: 56px; --h-row: 56px; }
 .ep__btn::after { border: none; }
 .ep__btn--accent { background: var(--amber); }
 .ep__btn--soft { background: var(--sand); color: var(--green-d); box-shadow: none; }
-.ep__btn-row { display: flex; gap: 12px; }
-.ep__btn-row .ep__btn { flex: 1; }
 
 /* 大判断卡（首页核心）：good / mid / bad 三态 */
 .ep__verdict {
