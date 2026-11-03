@@ -410,9 +410,10 @@ Page({
     this._paintRing('#outRing', (this.data.indexPercent || 0) / 100, pal.green, '#F4F2EC', 8);
   },
 
-  // 关怀版入口（与「我的」页 goElder 同口径：标进入状态 + navigateTo 保留返回栈）
+  // 关怀版入口：只跳转，不写 elderMode —— elderMode 是「我的」页那个「启用关怀模式」开关的
+  // 持久偏好，进出关怀版不改它（否则用户关掉开关后一进关怀版就被自动打开）。
+  // 详见 app.js setElderMode 上方注释。
   goElder() {
-    if (app.setElderMode) app.setElderMode(true);
     wx.navigateTo({ url: '/pages/elder-home/index' });
   },
 });

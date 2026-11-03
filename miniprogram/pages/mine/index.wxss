@@ -38,3 +38,11 @@
   border: 1px solid transparent;
 }
 .seg__item.on { background: var(--green); color: #fff; }
+
+/* 关怀模式卡（M5） */
+.elder-card__hd { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.elder-card__txt { flex: 1; min-width: 0; }
+.elder-card__sub { margin-top: 4px; line-height: 1.5; }
+.elder-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+.elder-enter { margin-top: 14px; }
+.elder-card__last { margin-top: 10px; }

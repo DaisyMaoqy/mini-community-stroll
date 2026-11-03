@@ -38,12 +38,36 @@
     </view>
   </view>
 
-  <view class="list">
-    <view class="list__item card" bindtap="goElder">
-      <svg-icon name="heart" size="20"></svg-icon>
-      <text class="list__label">关怀大字版</text>
-      <svg-icon name="chev" size="16"></svg-icon>
+  <!-- 关怀模式（M5）：总开关 + 字号三档 + 高对比；只影响 pages/elder，标准版页面不变 -->
+  <!-- 下方两个 switch 的 color 属性不支持 CSS 变量，只能硬编码；此值须与 tokens.wxss 的 green 主色变量（#2FB67C）手动保持一致，改主色时务必同步 -->
+  <view class="card elder-card">
+    <view class="elder-card__hd">
+      <view class="elder-card__txt">
+        <view class="sec">关怀模式</view>
+        <view class="muted elder-card__sub">大字大按钮，看得清、点得准。只影响关怀版，其他页面不变。</view>
+      </view>
+      <switch checked="{{elderMode}}" color="#2FB67C" bindchange="onElderModeChange" />
     </view>
+
+    <block wx:if="{{elderMode}}">
+      <view class="field">
+        <text class="field__label">字号</text>
+        <view class="seg">
+          <view class="seg__item {{elderFont === 'std' ? 'on' : ''}}" data-font="std" bindtap="onElderFontTap">标准</view>
+          <view class="seg__item {{elderFont === 'lg' ? 'on' : ''}}" data-font="lg" bindtap="onElderFontTap">大</view>
+          <view class="seg__item {{elderFont === 'xl' ? 'on' : ''}}" data-font="xl" bindtap="onElderFontTap">特大</view>
+        </view>
+      </view>
+      <view class="elder-row">
+        <text class="field__label">高对比配色</text>
+        <switch checked="{{elderContrast}}" color="#2FB67C" bindchange="onElderContrastChange" />
+      </view>
+      <button class="btn-primary elder-enter" bindtap="goElder">进入关怀版</button>
+    </block>
+    <view wx:else class="muted elder-card__last">上次设置：{{elderFontLabel}}字号 · {{elderContrastLabel}}</view>
+  </view>
+
+  <view class="list">
     <view class="list__item card" bindtap="goSetting">
       <svg-icon name="gear" size="20"></svg-icon>
       <text class="list__label">设置</text>
