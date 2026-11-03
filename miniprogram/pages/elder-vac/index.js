@@ -16,6 +16,11 @@ const { callCloud } = require('../../utils/cloud.js');
 const { planRoute, planRouteBlockless } = require('../../utils/routePlan.js');
 const { howText, busHint, baseRow } = require('../../utils/elderSpots.js');
 
+// 「粤苗」小程序 appId —— 与标准版 pages/vaccine/index.js 同源（appid 已就位，
+// 2026-09-19 实测可半屏打开）。跳转需在小程序后台「设置 - 第三方设置 -
+// 跳转其他小程序」加入白名单，否则 navigateToMiniProgram 会走 fail 分支。
+const YUEMIAO_APPID = 'wx6af1989a3ae918a0';
+
 Page({
   data: {
     efont: 'lg',       // 'std' | 'lg' | 'xl'
@@ -123,8 +128,19 @@ Page({
     wx.makePhoneCall({ phoneNumber: String(v.phone), fail: function () {} });
   },
 
-  // 粤苗：跳外部小程序需要粤苗官方 appid + 用户授权，本轮未接
+  // 打开「粤苗」小程序（接种预约官方平台）。appid 已就位、与标准版 pages/vaccine 同源，
+  // 口径完全一致：由本页按钮点击触发（wxml bindtap="onYueMiao"），不自动调用；
+  // 不传 extraData / envVersion。
   onYueMiao() {
-    wx.showToast({ title: '即将支持', icon: 'none' });
+    if (!YUEMIAO_APPID) {
+      wx.showToast({ title: '请微信搜索「粤苗」小程序', icon: 'none' });
+      return;
+    }
+    wx.navigateToMiniProgram({
+      appId: YUEMIAO_APPID,
+      fail() {
+        wx.showToast({ title: '跳转失败，请微信搜索「粤苗」', icon: 'none' });
+      },
+    });
   },
 });

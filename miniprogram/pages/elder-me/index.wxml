@@ -33,10 +33,11 @@
       <text class="ic">🔊</text>
       <view class="tx">
         <view class="nm">语音播报</view>
-        <view class="ds">即将支持 · 功能还没开放</view>
+        <view class="ds">{{speechAvailable ? '点一下听一段示例' : '暂未开通 · 功能还没开放'}}</view>
       </view>
-      <!-- 占位：恒为关且置灰，点击提示「即将支持」（小程序无原生 TTS） -->
-      <view class="ep__switch dim" bindtap="onSpeak"></view>
+      <!-- 试听：插件未开通时保持置灰；开通后去掉 dim，点击朗读一句示例。
+           这里不是「自动播报」的持久化开关，不写 storage、不调全局偏好 setter。 -->
+      <view class="ep__switch {{speechAvailable ? '' : 'dim'}}" bindtap="onSpeak"></view>
     </view>
   </view>
 

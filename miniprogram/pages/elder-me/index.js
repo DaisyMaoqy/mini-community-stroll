@@ -6,16 +6,21 @@
 // 字号与对比度写全局偏好（app.setElderFont / setElderContrast），改完立刻 setData，
 // 本页与其余三个关怀版页面都会在 onShow 里 syncPrefs 重新读一遍，所以返回即生效。
 const app = getApp();
+const speech = require('../../utils/speech.js');
 
 Page({
   data: {
     efont: 'lg',      // 'std' | 'lg' | 'xl'
     econtrast: 'high', // 'high' | 'normal'
     block: '',
+    speechAvailable: false, // 插件未添加时为 false：开关保持置灰、不承诺能播
   },
 
   onShow() {
     this.syncPrefs();
+    // 每次进页面重读一次（探测结果在 speech.js 内只做一次并缓存，开销可忽略）；
+    // 后台添加插件并重新编译后，无需改本页代码，开关会自动变为可用。
+    this.setData({ speechAvailable: speech.available() });
   },
 
   syncPrefs() {
@@ -42,9 +47,18 @@ Page({
     this.setData({ econtrast: next ? 'high' : 'normal' });
   },
 
-  // 语音播报：小程序无原生 TTS，真朗读要接「微信同声传译」插件。本轮占位（开关恒为关且置灰）
+  // 语音播报试听：这里【不做】自动播报的持久化偏好 —— 项目铁律是偏好 setter
+  // 必须与 loadPersisted() 成对，本期不扩张这块；不写 storage、不调 app.js 的偏好 setter。
+  // 开关点一下只念一句示例，是否听首页播报由首页那次点击决定。
   onSpeak() {
-    wx.showToast({ title: '即将支持', icon: 'none' });
+    if (!speech.available()) {
+      wx.showToast({ title: '语音播报暂未开通', icon: 'none' });
+      return;
+    }
+    const ok = speech.speak('语音播报已开通，首页可以听今天的天气');
+    if (!ok) {
+      wx.showToast({ title: '播报没能开始，请稍后再点', icon: 'none' });
+    }
   },
 
   // 板块切换在标准版首页（那里有板块 sheet），关怀版不重复实现一份
@@ -67,7 +81,9 @@ Page({
       cancelText: '取消',
       success: (res) => {
         if (!res.confirm) return;
-        if (app && app.setElderMode) app.setElderMode(false);
+        // 不写 elderMode：它是「我的」页「启用关怀模式」开关的持久偏好，退出关怀版不等于
+        // 关掉关怀模式。写 false 会让「我的」页开关跟着关掉、字号/对比度设置区整块收起，
+        // 用户以为设置被吞了。字号与对比度本身存在 elderFont / elderContrast，不受影响。
         wx.reLaunch({ url: '/pages/index/index' });
       },
     });

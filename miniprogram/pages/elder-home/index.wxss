@@ -21,3 +21,18 @@
 .eh__slot-hd { font-size: var(--fs-md); font-weight: 800; color: var(--green-d); }
 .eh__slot-win { font-size: var(--fs-xl); font-weight: 900; margin: 10px 0 6px; color: var(--ink); }
 .eh__slot-sub { font-size: var(--fs-sm); color: var(--ink2); line-height: 1.55; }
+
+/* 「正在播报」态：只改配色，不动 font-size / padding / line-height / border-width / height，
+   所以 .ep__speak 的条高与手指目标尺寸在两种状态下完全一致，不会抖。
+   基座样式见 styles/theme.wxss:258-268（--amber-l 底 + --amber 描边）。
+   播报态把底色换成 --amber、描边同样用 --amber → 描边融进底色，读起来是一整块实心橙，
+   状态变化比「橙底 + 深绿描边」更干净，且两个值都是 tokens 里已定义的变量，零硬编码色值。
+   注意：只用类选择器，不用任何属性选择器。 */
+.ep__speak.is-speaking {
+  background: var(--amber);
+  border-color: var(--amber);
+}
+
+/* 长文案在窄屏 / xl 档允许词内折行，避免溢出；纯排版属性，不改任何几何尺寸。
+   播报态文案 10 字符短于未播报态的 12 字，行数只会减少，不会把条子撑高。 */
+.ep__speak .tx { overflow-wrap: break-word; }

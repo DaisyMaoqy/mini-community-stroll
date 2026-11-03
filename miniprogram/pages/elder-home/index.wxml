@@ -38,10 +38,14 @@
     <view class="eh__slot-sub">{{slot.n}}，带娃晒太阳、护眼睛正合适</view>
   </view>
 
-  <!-- 语音播报条（本轮占位，见 index.js 的 onSpeak 注释） -->
-  <view class="ep__speak" bindtap="onSpeak">
+  <!-- 语音播报条：speaking 由 data.speaking 驱动（实例闩 _speaking 只管防连点）。
+       svg-icon 已在 app.json 全局注册、icons.js 也有 stop，但这里刻意不换图标：
+       两态混用 <text> emoji 与 <svg-icon>（且图标库无喇叭图标）会让图标区宽度/基线
+       不一致，挤动 flex:1 的 .tx，条子会抖。改为只切文案 + is-speaking 类高亮，
+       图标恒定，零尺寸变化。 -->
+  <view class="ep__speak {{speaking ? 'is-speaking' : ''}}" bindtap="onSpeak">
     <text class="ic">🔊</text>
-    <text class="tx">播报今天天气和出门建议</text>
+    <text class="tx">{{speaking ? '正在播报…点一下停止' : '播报今天天气和出门建议'}}</text>
   </view>
 
   <view class="ep__sec">常用</view>
