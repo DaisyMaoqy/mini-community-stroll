@@ -33,6 +33,12 @@
   "usingComponents": {
     "svg-icon": "/components/svg-icon/svg-icon"
   },
+  "plugins": {
+    "WechatSI": {
+      "version": "0.3.10",
+      "provider": "wx069ba97219f66d99"
+    }
+  },
   "requiredPrivateInfos": ["getLocation", "chooseLocation"],
   "permission": {
     "scope.userLocation": {
