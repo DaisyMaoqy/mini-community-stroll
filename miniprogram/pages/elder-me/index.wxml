@@ -7,7 +7,8 @@
   </view>
 
   <view class="ep__card">
-    <view class="ep__setrow">
+    <!-- 分段器独占一行（setrow 的 seg 变体类）：xl 档三档按钮与标签同排会挤爆，折到下一行铺满 -->
+    <view class="ep__setrow ep__setrow--seg">
       <text class="ic">🔠</text>
       <view class="tx">
         <view class="nm">界面字号</view>
@@ -35,9 +36,9 @@
         <view class="nm">语音播报</view>
         <view class="ds">{{speechAvailable ? '点一下听一段示例' : '暂未开通 · 功能还没开放'}}</view>
       </view>
-      <!-- 试听：插件未开通时保持置灰；开通后去掉 dim，点击朗读一句示例。
+      <!-- 试听：插件未开通时按钮置灰（.dim），点了走「暂未开通」toast；开通后正常朗读一句示例。
            这里不是「自动播报」的持久化开关，不写 storage、不调全局偏好 setter。 -->
-      <view class="ep__switch {{speechAvailable ? '' : 'dim'}}" bindtap="onSpeak"></view>
+      <button class="ep__btn ep__btn--soft em__mini {{speechAvailable ? '' : 'dim'}}" bindtap="onSpeak">听一段示例</button>
     </view>
   </view>
 
@@ -54,13 +55,13 @@
 
   <view class="ep__card">
     <view class="ep__sec">👪 家人帮忙（亲友代办）</view>
-    <view class="em__para">
-      可邀请子女成为「亲友」，远程帮您：<br />
-      · 查看今天能不能带娃出门<br />
-      · 设置每日提醒，到时间自动告诉您<br />
-      · 代预约疫苗接种、代看路线
-    </view>
-    <button class="ep__btn ep__btn--soft" bindtap="onInvite">＋ 邀请子女帮忙</button>
+    <!-- 源码换行即排版换行（white-space: pre-wrap）：不用 br 加圆点硬拼，
+         xl 档长句由浏览器按词折行，不会出现词中断锯齿 -->
+    <view class="em__para">可邀请子女成为「亲友」，远程帮您：
+查看今天能不能带娃出门
+设置每日提醒，到时间自动告诉您
+代预约疫苗接种、代看路线</view>
+    <view class="em__para">想让子女远程帮忙？下个版本开放</view>
   </view>
 
   <button class="ep__btn em__exit" bindtap="onExit">↩️ 退出关怀版</button>

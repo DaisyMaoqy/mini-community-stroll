@@ -7,29 +7,29 @@
     <text>遛娃点</text>
   </view>
 
-  <!-- 加载中 -->
-  <view wx:if="{{loading}}" class="ep__card em__state">
-    <view class="em__state-t">⏳ 正在找附近的遛娃点…</view>
+  <!-- 加载中（三态卡样式统一在 styles/theme.wxss 的 ep__state 系列） -->
+  <view wx:if="{{loading}}" class="ep__card ep__state">
+    <view class="ep__state-t">⏳ 正在找附近的遛娃点…</view>
   </view>
 
   <!-- 加载失败 -->
-  <view wx:elif="{{loadError}}" class="ep__card em__state">
-    <view class="em__state-t">🌥️ 遛娃点暂时看不了</view>
-    <view class="em__state-s">网络可能不稳，点下面按钮再试一次</view>
-    <button class="ep__btn em__state-btn" bindtap="onRetry">重新加载</button>
+  <view wx:elif="{{loadError}}" class="ep__card ep__state">
+    <view class="ep__state-t">🌥️ 遛娃点暂时看不了</view>
+    <view class="ep__state-s">网络可能不稳，点下面按钮再试一次</view>
+    <button class="ep__btn ep__state-btn" bindtap="onRetry">重新加载</button>
   </view>
 
   <!-- 空数据 -->
-  <view wx:elif="{{!list.length}}" class="ep__card em__state">
-    <view class="em__state-t">😕 还没有遛娃点</view>
-    <view class="em__state-s">数据还在补充，请稍后再看</view>
+  <view wx:elif="{{!list.length}}" class="ep__card ep__state">
+    <view class="ep__state-t">😕 还没有遛娃点</view>
+    <view class="ep__state-s">数据还在补充，请稍后再看</view>
   </view>
 
   <!-- 列表 -->
   <view wx:else>
     <view wx:for="{{list}}" wx:key="id" class="ep__card em__item">
       <view class="em__hd">
-        <text class="em__ic">{{item.subType === '室内' ? '🏛️' : '🌳'}}</text>
+        <text class="em__ic">{{item.subType.indexOf('室内') > -1 ? '🏛️' : '🌳'}}</text>
         <view class="em__hd-tx">
           <view class="em__name">{{item.name}}</view>
           <view class="em__addr">{{item.address}}</view>
@@ -37,10 +37,11 @@
       </view>
 
       <view class="em__tags">
-        <text class="em__tag em__tag--how">{{item.how || '正在算怎么走…'}}</text>
+        <text class="em__tag em__tag--how">{{item.how || '点「带我去」看路线'}}</text>
         <text wx:if="{{item.subType}}" class="em__tag">{{item.subType}}</text>
-        <!-- 室内不算户外护眼时间，这点对带娃家长是关键信息 -->
-        <text wx:if="{{item.subType === '室内'}}" class="em__tag em__tag--warn">不算护眼时间</text>
+        <!-- 室内不算户外护眼时间，这点对带娃家长是关键信息
+             （用 indexOf 匹配：subType 可能是「室内场馆」这类长类目，严格等值会失配） -->
+        <text wx:if="{{item.subType.indexOf('室内') > -1}}" class="em__tag em__tag--warn">不算护眼时间</text>
         <text wx:if="{{item.stroller}}" class="em__tag">推车可达</text>
       </view>
 

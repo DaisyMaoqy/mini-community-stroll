@@ -66,11 +66,6 @@ Page({
     wx.switchTab({ url: '/pages/index/index' });
   },
 
-  // 家人帮忙（亲友代办）：PRD 里有但属 v15 缺口模块，本轮占位
-  onInvite() {
-    wx.showToast({ title: '即将支持', icon: 'none' });
-  },
-
   // 退出关怀版：回到标准版首页。字号/对比度设置会保留（storage 不清），
   // 下次再进关怀版仍是上次的档位。
   onExit() {

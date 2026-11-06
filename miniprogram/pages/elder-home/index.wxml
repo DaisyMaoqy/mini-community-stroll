@@ -8,8 +8,8 @@
     <text class="ep__blk" bindtap="onBlockTap">{{block || '未设置'}}</text>
   </view>
 
-  <!-- 大判断卡：加载中 / 失败 / 正常 三态互斥 -->
-  <view wx:if="{{loading}}" class="ep__verdict good">
+  <!-- 大判断卡：加载中 / 失败 / 正常 三态互斥（加载态用沙底深字，不复用 good 的绿渐变） -->
+  <view wx:if="{{loading}}" class="ep__verdict ep__verdict--loading">
     <view class="big">⏳ 正在看天气…</view>
     <view class="sub">马上告诉您今天能不能带娃出门</view>
   </view>
@@ -60,7 +60,7 @@
     </view>
   </view>
 
-  <view class="ep__note">数据为雷达估算 · 仅供参考</view>
+  <view class="ep__note">天气为估算，仅供参考</view>
 
   <elder-tabbar current="home"></elder-tabbar>
 </view>

@@ -11,22 +11,22 @@
     我们不存疫苗本，只帮您就近出门打。预约、记录都在粤苗里办。
   </view>
 
-  <!-- 加载中 -->
-  <view wx:if="{{loading}}" class="ep__card ev__state">
-    <view class="ev__state-t">⏳ 正在找附近的接种点…</view>
+  <!-- 加载中（三态卡样式统一在 styles/theme.wxss 的 ep__state 系列） -->
+  <view wx:if="{{loading}}" class="ep__card ep__state">
+    <view class="ep__state-t">⏳ 正在找附近的接种点…</view>
   </view>
 
   <!-- 加载失败 -->
-  <view wx:elif="{{loadError}}" class="ep__card ev__state">
-    <view class="ev__state-t">🌥️ 接种点暂时看不了</view>
-    <view class="ev__state-s">网络可能不稳，点下面按钮再试一次</view>
-    <button class="ep__btn ev__state-btn" bindtap="onRetry">重新加载</button>
+  <view wx:elif="{{loadError}}" class="ep__card ep__state">
+    <view class="ep__state-t">🌥️ 接种点暂时看不了</view>
+    <view class="ep__state-s">网络可能不稳，点下面按钮再试一次</view>
+    <button class="ep__btn ep__state-btn" bindtap="onRetry">重新加载</button>
   </view>
 
   <!-- 空数据 -->
-  <view wx:elif="{{!list.length}}" class="ep__card ev__state">
-    <view class="ev__state-t">😕 还没有接种点</view>
-    <view class="ev__state-s">数据还在补充，请稍后再看</view>
+  <view wx:elif="{{!list.length}}" class="ep__card ep__state">
+    <view class="ep__state-t">😕 还没有接种点</view>
+    <view class="ep__state-s">数据还在补充，请稍后再看</view>
   </view>
 
   <!-- 列表 -->
@@ -41,7 +41,7 @@
       </view>
 
       <view class="ev__tags">
-        <text class="ev__tag">{{item.how || '正在算怎么走…'}}</text>
+        <text class="ev__tag ev__tag--how">{{item.how || '点「带我去」看路线'}}</text>
         <text wx:if="{{item.external}}" class="ev__tag ev__tag--warn">社区外</text>
       </view>
 
@@ -50,16 +50,20 @@
       <view wx:if="{{item.busHint}}" class="ev__hint">{{item.busHint}}</view>
 
       <button class="ep__btn" bindtap="onNav" data-idx="{{index}}">🧭 带我去</button>
-      <!-- 电话：仅当 POI 有真实 phone 字段才出现（当前种子数据全部无 phone，故不会渲染） -->
-      <button
+      <!-- 电话：仅当 POI 有真实 phone 字段才出现（当前种子数据全部无 phone，故不会渲染）。
+           行内号码行整行可点、复用 onCall（必须带 data-idx：onCall 按下标取号码，缺了会静默失灵）；
+           明示号码来源「官方名单」满足 PRD §8.6；触摸高度随字号档 ≥56px。 -->
+      <view
         wx:if="{{item.phone}}"
-        class="ep__btn ep__btn--accent ev__btn-2"
+        class="ev__tel"
         bindtap="onCall"
         data-idx="{{index}}"
-      >📞 打电话</button>
-      <button class="ep__btn ep__btn--soft ev__btn-2" bindtap="onYueMiao">打开粤苗预约</button>
+      >📞 {{item.phone}}<text class="ev__tel-src"> · 官方名单</text></view>
     </view>
   </view>
+
+  <!-- 粤苗预约是页面级动作（不跟某个接种点走），移出卡片、页尾渲染一次，handler 复用现有 onYueMiao -->
+  <button class="ep__btn ep__btn--soft" bindtap="onYueMiao">打开粤苗预约</button>
 
   <view class="ep__note">接种点名单以番禺区疾控公布为准 · 班次以祈福新闻中心公告为准</view>
 

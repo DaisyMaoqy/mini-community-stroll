@@ -5,6 +5,7 @@
     wx:for="{{tabs}}"
     wx:key="key"
     class="etb__item {{item.key === current ? 'etb__item--on' : ''}}"
+    hover-class="etb__item--hover"
     data-key="{{item.key}}"
     bindtap="onTap"
   >

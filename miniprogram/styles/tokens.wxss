@@ -35,6 +35,7 @@ page {
   --amber: #F0A93B;
   --amber-l: #FDF4E3;
   --red: #E26D5C;
+  --red-d: #9B2D22;     /* 深红：关怀版 bad 判断卡渐变终点（theme.wxss 引用） */
   --red-l: #FBEDEA;
 
   /* 间距 */

@@ -19,7 +19,9 @@
   height: calc(78px + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
   background: var(--card);
-  border-top: 2px solid var(--line);
+  /* 上边框用次绿而非 var(--line)：normal 对比档下 --line=#ECEAE2 对白卡只有 ~1.1:1，
+     顶栏与页面内容之间几乎没有分界（组件 wxss 不支持属性选择器，这里只能走 token） */
+  border-top: 2px solid var(--green-m);
   box-shadow: 0 -6px 20px rgba(38, 53, 46, 0.06);
 }
 
@@ -42,3 +44,6 @@
 .etb__item--on {
   color: var(--green);
 }
+
+/* 按压反馈：切 tab 走 redirectTo 整页重建有白屏间隙，必须有即时反馈告诉老人「点上了」 */
+.etb__item--hover { opacity: 0.55; }

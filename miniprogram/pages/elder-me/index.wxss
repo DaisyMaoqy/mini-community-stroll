@@ -1,17 +1,23 @@
 /* pages/elder-me —— 关怀版「我的」私有样式
    共用布局类（.ep*）在 styles/theme.wxss，本文件只写本页独有的几块。 */
+/* 行内小按钮（「去首页切换」/「听一段示例」）：高随字号档走 --h-btn（56/60/64），
+   不再写死 44px —— 触摸目标不达标；两处用法共用，注意别写 width:100%（会顶破 setrow） */
 .em__mini {
   flex: none;
   width: auto;
-  min-height: 44px;
-  padding: 8px 14px;
+  min-height: var(--h-btn);
+  padding: 10px 16px;
   font-size: var(--fs-sm);
 }
+/* 试听按钮未开通时的置灰（对齐 .ep__switch.dim 的 0.45） */
+.em__mini.dim { opacity: 0.45; }
 .em__para {
   font-size: var(--fs-md);
   line-height: 1.7;
   color: var(--ink);
   font-weight: 600;
   margin-bottom: 14px;
+  /* 源码换行即排版换行：wxml 里直接写多行纯文本，不再用 br + 圆点拼 */
+  white-space: pre-wrap;
 }
 .em__exit { margin-top: 4px; }
