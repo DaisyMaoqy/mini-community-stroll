@@ -27,7 +27,12 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 const KB_COLLECTION = "kb_chunks";
 const TOP_K = 4;
-const REFUSE_THRESHOLD = 0.35;
+// 拒答阈值可经环境变量 RAG_REFUSE_THRESHOLD 调整（不填用默认 0.35）——
+// 上线后用 30 题评估表的 badcase 校准时，改环境变量即可，不用改代码重发
+const REFUSE_THRESHOLD = (() => {
+  const v = Number(process.env.RAG_REFUSE_THRESHOLD);
+  return v > 0 && v < 1 ? v : 0.35;
+})();
 
 // 风险信号词：命中即附就医提示（持续扩充）
 const RISK_PATTERNS = [
