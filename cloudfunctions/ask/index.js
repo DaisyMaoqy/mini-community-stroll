@@ -16,12 +16,23 @@
 //      阈值是初始经验值，上线后用 badcase 回归校准（这正是 30 题评估表的用途）
 //
 // 合规定位：科普 + 经验分享，不做诊断/用药建议；系统提示词与拒答文案均含免责声明。
+//
+// ---------- 管理动作 buildKb（替代本地跑 build_kb.js） ----------
+// 背景：本地跑 build_kb.js 需要填 APPID/SECRET 并配置 IP 白名单，成本高。
+// 现在把「建集合 + 种子导入 + 增量生成 embedding」全部放进云函数：
+//   wx.cloud.callFunction({ name:'ask', data:{ action:'buildKb' } })   // 可选 token
+// 每次（最多）处理 BATCH 条缺 embedding 的记录，返回 remaining，重复调用直到 remaining=0。
+// 幂等：集合非空时跳过种子导入；embedding 已有的记录不动。
+// 安全：若环境变量设置了 ASK_ADMIN_TOKEN，则 event.token 必须匹配（不设置则不校验）。
+//
 // 【待你完成】
 //   1. 云开发控制台 → 该云函数 → 环境变量添加 DASHSCOPE_API_KEY（新开 Key，勿用课程笔记里那个）
-//   2. 云数据库建集合 kb_chunks，导入语料（字段见 README-数据格式.md）
-//   3. 语料 30+ 条入库后，为每条生成 embedding 写回（见 tools/build_kb.js）
+//   2. 右键部署 ask（会随包带上 kb.seed.json）
+//   3. 开发者工具 Console 跑 wx.cloud.callFunction({name:'ask', data:{action:'buildKb'}})，
+//      重复到返回 remaining=0（首次调用会自动建集合并导入 80 条种子）
 const cloud = require("wx-server-sdk");
 const https = require("https");
+const kbSeed = require("./kb.seed.json");
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
 const db = cloud.database();
@@ -128,9 +139,66 @@ async function loadKb() {
   return all;
 }
 
+// ---------- buildKb：建集合 + 种子导入 + 增量生成 embedding ----------
+
+const BUILD_BATCH = 25; // 单次调用最多处理条数；80 条种子约需 4 次调用跑完
+
+async function buildKb(event) {
+  // 管理令牌：控制台设置了 ASK_ADMIN_TOKEN 就强制校验（防止裸调烧 API 额度）
+  const adminToken = process.env.ASK_ADMIN_TOKEN;
+  if (adminToken && event.token !== adminToken) {
+    return { success: false, error: "buildKb 需要正确的 token（ASK_ADMIN_TOKEN）" };
+  }
+  try {
+    // 1. 确保集合存在（已存在时 createCollection 会报错，忽略即可）
+    try { await db.createCollection(KB_COLLECTION); } catch (e) { /* 已存在 */ }
+
+    // 2. 集合为空时导入种子（幂等：非空不动，避免与手工导入重复）
+    const cntRes = await db.collection(KB_COLLECTION).count();
+    let seeded = 0;
+    if (cntRes.total === 0) {
+      for (const doc of kbSeed) {
+        await db.collection(KB_COLLECTION).add({ data: Object.assign({}, doc, { embedding: null }) });
+        seeded++;
+      }
+    }
+
+    // 3. 找缺 embedding 的记录，本批最多 BUILD_BATCH 条
+    const all = await loadKb();
+    const pending = all.filter((c) => !Array.isArray(c.embedding));
+    const batch = pending.slice(0, BUILD_BATCH);
+    let embedded = 0, failed = 0;
+    for (const doc of batch) {
+      try {
+        const vec = await embed(doc.question + "\n" + doc.text);
+        await db.collection(KB_COLLECTION).doc(doc._id).update({ data: { embedding: vec } });
+        embedded++;
+      } catch (e) {
+        failed++;
+        console.error("embedding 失败", doc._id, e.message);
+      }
+    }
+
+    // 4. 汇报进度（remaining 让前端/Console 决定是否继续调用）
+    const remaining = pending.length - batch.length;
+    return {
+      success: true, action: "buildKb",
+      total: all.length, seeded, embedded, failed,
+      remaining,
+      done: remaining === 0,
+      note: remaining > 0 ? "还有 " + remaining + " 条待处理，请重复调用" : "全部完成",
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
 // ---------- 主入口 ----------
 
 exports.main = async (event) => {
+  // 管理动作分流（不占问答主链路）
+  if (event.action === "buildKb") return buildKb(event);
+
   const t0 = Date.now();
   const question = (event.question || "").trim();
   const babyAge = typeof event.babyAgeMonths === "number" ? event.babyAgeMonths : null;
