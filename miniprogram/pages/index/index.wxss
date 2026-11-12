@@ -217,3 +217,10 @@
 }
 .elder-banner__text { flex: 1; }
 .elder-banner .sec { font-size: var(--fs-md); }
+
+/* 育儿问答入口卡 —— 单行小卡（复用 .card + flex 行布局，写法对齐关怀版横幅） */
+.ask-entry { display: flex; align-items: center; gap: 12px; }
+.ask-entry:active { opacity: .85; }
+.ask-entry__emoji { font-size: 22px; line-height: 1; flex: none; }
+.ask-entry__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ask-entry__text .sec { font-size: var(--fs-md); }

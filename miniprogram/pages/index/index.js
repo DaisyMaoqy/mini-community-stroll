@@ -416,4 +416,9 @@ Page({
   goElder() {
     wx.navigateTo({ url: '/pages/elder-home/index' });
   },
+
+  // 育儿问答入口（P3）：跳 AI 问答页（云函数 ask，RAG 科普作答）
+  goAsk() {
+    wx.navigateTo({ url: '/pages/ask/index' });
+  },
 });

@@ -1,0 +1,104 @@
+/* pages/ask/index.wxss 育儿问答（视觉对齐 v15：全量引用 styles/tokens.wxss 变量，卡片风对齐首页） */
+
+/* 页面骨架：卡片纵向 16px 间距；底部留白避开固定合规页脚 */
+.ask-page {
+  display: flex; flex-direction: column; gap: var(--gap-lg);
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+}
+
+/* 月龄行：peach 胶囊（配色与首页宝宝胶囊同源）；未设置月龄时降为浅砂胶囊 */
+.baby-row { display: flex; }
+.baby-chip {
+  display: inline-flex; align-items: center;
+  background: var(--peach-l); color: var(--peach-d);
+  font-size: var(--fs-sm); font-weight: 700;
+  padding: 7px 12px; border-radius: 20px;
+}
+.baby-chip-unset { background: var(--sand); color: var(--ink3); font-weight: 600; }
+
+/* 提问卡 */
+.ask-box { display: flex; flex-direction: column; gap: var(--gap-sm); }
+.ask-box__sub { line-height: 1.5; }
+.ask-ta {
+  width: 100%; box-sizing: border-box;
+  background: var(--sand); border-radius: var(--r-sm);
+  padding: 12px 14px; font-size: var(--fs-md); color: var(--ink);
+  line-height: 1.6; min-height: 76px;
+}
+.ask-ta__meta { align-self: flex-end; }
+
+/* 示例问题 chips：仅 idle 态展示；按下轻微缩放反馈 */
+.samples { display: flex; flex-wrap: wrap; gap: var(--gap-sm); }
+.samples__chip {
+  background: var(--green-l); color: var(--green-d);
+  font-size: var(--fs-sm); padding: 8px 13px; border-radius: 999px;
+  transition: transform .15s;
+}
+.samples__chip:active { transform: scale(.96); }
+
+/* 提问按钮：复用全局 .btn-primary（本页未覆盖它），满宽；禁用态半透明 */
+.ask-btn { width: 100%; margin: 4px 0 0; line-height: 1.2; }
+.ask-btn[disabled] {
+  opacity: .5; color: var(--card);
+  background: linear-gradient(135deg, var(--green), var(--green-d));
+}
+
+/* 问答卡：问题行 + 三态回答体 */
+.qa-card { display: flex; flex-direction: column; gap: var(--gap-md); }
+.qa-q {
+  font-size: var(--fs-md); font-weight: 800; color: var(--ink);
+  line-height: 1.55; overflow-wrap: break-word;
+}
+.qa-loading { font-size: var(--fs-sm); }
+.qa-a {
+  font-size: var(--fs-body); color: var(--ink);
+  line-height: 1.75; white-space: pre-wrap; overflow-wrap: break-word;
+}
+
+/* 风险提示行：暖橙底 + 深字（tokens 的 amber-l 与 ink），riskTip 非空即醒目展示 */
+.qa-risk {
+  background: var(--amber-l); color: var(--ink);
+  font-size: var(--fs-sm); font-weight: 700; line-height: 1.55;
+  padding: 10px 12px; border-radius: var(--r-sm);
+  overflow-wrap: break-word;
+}
+
+/* 来源 chips：topic · source 小胶囊 */
+.src-list { display: flex; flex-wrap: wrap; gap: var(--gap-xs); }
+.src-chip {
+  background: var(--sand); color: var(--ink2);
+  font-size: var(--fs-meta); padding: 4px 10px; border-radius: 999px;
+}
+
+/* 拒答态：温和排版（浅砂底、次级墨色） */
+.qa-refuse {
+  background: var(--sand); color: var(--ink2);
+  font-size: var(--fs-body); line-height: 1.65;
+  padding: 12px 14px; border-radius: var(--r-sm);
+  overflow-wrap: break-word;
+}
+
+/* 失败态文案：错误信息透出 */
+.qa-fail {
+  font-size: var(--fs-sm); color: var(--red);
+  line-height: 1.55; overflow-wrap: break-word;
+}
+
+/* 拒答「去接种点」入口 / 失败「重试」共用小按钮：绿色小胶囊，不占满宽 */
+.qa-btn {
+  align-self: flex-start; margin: 0; line-height: 1.2;
+  background: linear-gradient(135deg, var(--green), var(--green-d)); color: var(--card);
+  font-size: var(--fs-sm); font-weight: 600;
+  padding: 9px 20px; border-radius: 999px;
+}
+.qa-btn::after { border: none; }
+.qa-btn:active { opacity: .85; }
+
+/* 合规页脚：固定底部小字，所有态常驻（浅卡底 + 细分隔线） */
+.ask-foot {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+  background: var(--card); border-top: 1px solid var(--line);
+  font-size: var(--fs-meta); color: var(--ink3);
+  text-align: center; line-height: 1.5;
+}

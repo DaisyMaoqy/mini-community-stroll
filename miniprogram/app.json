@@ -9,7 +9,8 @@
     "pages/elder-map/index",
     "pages/elder-me/index",
     "pages/review/index",
-    "pages/setting/index"
+    "pages/setting/index",
+    "pages/ask/index"
   ],
   "window": {
     "backgroundColor": "#EDEBE3",

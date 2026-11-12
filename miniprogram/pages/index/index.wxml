@@ -127,6 +127,16 @@
       </view>
       <svg-icon name="chev" size="18"></svg-icon>
     </view>
+
+    <!-- 育儿问答入口（P3）：单行小卡，整卡点按进入 AI 科普问答 -->
+    <view class="card ask-entry" bindtap="goAsk">
+      <text class="ask-entry__emoji">🧠</text>
+      <view class="ask-entry__text">
+        <view class="sec">育儿问答</view>
+        <view class="muted">有问题，问一问（AI 科普）</view>
+      </view>
+      <svg-icon name="chev" size="18"></svg-icon>
+    </view>
   </block>
 
   <!-- 首屏骨架：仅 onReady 前（首次绘制）显示，盖住 Canvas/组件就位前的空白帧 -->

@@ -1,0 +1,61 @@
+<!-- pages/ask/index.wxml 育儿问答（P3：AI 科普，调用云函数 ask） -->
+<!-- 合规口径 PRD 8.2：页脚常驻「科普非诊疗」提示；riskTip 非空即醒目展示就医提醒 -->
+<view class="container ask-page">
+
+  <!-- 当前宝宝月龄行：有宝宝有生日显示「昵称 · N 个月」，否则「未设置宝宝月龄」 -->
+  <view class="baby-row">
+    <view class="baby-chip {{babyAgeMonths == null ? 'baby-chip-unset' : ''}}">{{babyChip}}</view>
+  </view>
+
+  <!-- 提问卡 -->
+  <view class="card ask-box">
+    <view class="sec">问一问 AI 育儿助手</view>
+    <view class="muted ask-box__sub">喂养、睡眠、发育、健康预警都能问，回答来自权威科普语料</view>
+    <textarea
+      class="ask-ta"
+      value="{{question}}"
+      maxlength="200"
+      auto-height
+      placeholder="例如：宝宝夜里频繁醒怎么办？"
+      bindinput="onQuestion"
+    ></textarea>
+    <view class="ask-ta__meta muted">{{question.length}}/200</view>
+    <!-- 示例问题 chips：仅 idle（还没有任何问答）时展示，点击填入输入框 -->
+    <view class="samples" wx:if="{{history.length === 0}}">
+      <view class="samples__chip" wx:for="{{samples}}" wx:key="*this" data-q="{{item}}" bindtap="fillSample">{{item}}</view>
+    </view>
+    <button class="btn-primary ask-btn" bindtap="ask" loading="{{asking}}" disabled="{{!question || asking}}">提问</button>
+  </view>
+
+  <!-- 会话内问答历史（仅存本页 data，不落盘；新问答追加在下方） -->
+  <view class="card qa-card" wx:for="{{history}}" wx:key="id">
+    <view class="qa-q">Q · {{item.q}}</view>
+
+    <!-- 提问中 -->
+    <view class="qa-loading muted" wx:if="{{item.status === 'loading'}}">AI 正在翻科普语料…</view>
+
+    <!-- 正常回答 -->
+    <block wx:if="{{item.status === 'ans'}}">
+      <view class="qa-risk" wx:if="{{item.riskTip}}">就医提醒：{{item.riskTip}}</view>
+      <view class="qa-a">{{item.answer}}</view>
+      <view class="src-list" wx:if="{{item.sources.length > 0}}">
+        <view class="src-chip" wx:for="{{item.sources}}" wx:for-item="s" wx:for-index="si" wx:key="topic">{{s.topic}} · {{s.source}}</view>
+      </view>
+    </block>
+
+    <!-- 拒答：温和排版 + 去接种点入口 -->
+    <block wx:if="{{item.status === 'refuse'}}">
+      <view class="qa-refuse">{{item.refuseNote}}</view>
+      <button class="qa-btn" bindtap="goVaccine">去接种点问问</button>
+    </block>
+
+    <!-- 失败：错误文案（透出 error） + 原地重试 -->
+    <block wx:if="{{item.status === 'fail'}}">
+      <view class="qa-fail">回答获取失败{{item.error ? '：' + item.error : ''}}</view>
+      <button class="qa-btn" data-i="{{index}}" bindtap="retryAsk">重试</button>
+    </block>
+  </view>
+
+  <!-- 合规页脚：固定底部小字，所有态常驻 -->
+  <view class="ask-foot">内容由 AI 生成，仅为育儿科普参考，不构成医疗建议；宝宝异常请及时就医。</view>
+</view>
