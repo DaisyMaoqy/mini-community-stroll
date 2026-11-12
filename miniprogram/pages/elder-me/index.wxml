@@ -30,11 +30,15 @@
       <view class="ep__switch {{econtrast === 'high' ? 'on' : ''}}" bindtap="toggleContrast"></view>
     </view>
 
-    <view class="ep__setrow">
-      <text class="ic">🔊</text>
-      <view class="tx">
-        <view class="nm">语音播报</view>
-        <view class="ds">{{speechAvailable ? '点一下听一段示例' : '暂未开通 · 功能还没开放'}}</view>
+    <!-- 按钮行动作较宽 → 上下堆叠（setrow 的 stack 变体类）：图标+文案占满整行，按钮落到下一行铺满。
+         同排时左侧文案会被 flex 不收缩的按钮压成每行一个字（375pt 真机已复现）。 -->
+    <view class="ep__setrow ep__setrow--stack">
+      <view class="hd">
+        <text class="ic">🔊</text>
+        <view class="tx">
+          <view class="nm">语音播报</view>
+          <view class="ds">{{speechAvailable ? '点下面按钮听一段示例' : '暂未开通 · 功能还没开放'}}</view>
+        </view>
       </view>
       <!-- 试听：插件未开通时按钮置灰（.dim），点了走「暂未开通」toast；开通后正常朗读一句示例。
            这里不是「自动播报」的持久化开关，不写 storage、不调全局偏好 setter。 -->
@@ -43,11 +47,13 @@
   </view>
 
   <view class="ep__card">
-    <view class="ep__setrow">
-      <text class="ic">📍</text>
-      <view class="tx">
-        <view class="nm">所在板块</view>
-        <view class="ds">{{block || '还没设置'}} · 搬家或带娃去别处，随时改</view>
+    <view class="ep__setrow ep__setrow--stack">
+      <view class="hd">
+        <text class="ic">📍</text>
+        <view class="tx">
+          <view class="nm">所在板块</view>
+          <view class="ds">{{block || '还没设置'}} · 搬家或带娃去别处，随时改</view>
+        </view>
       </view>
       <button class="ep__btn ep__btn--soft em__mini" bindtap="goBlock">去首页切换</button>
     </view>
