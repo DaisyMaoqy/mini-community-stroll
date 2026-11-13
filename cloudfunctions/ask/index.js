@@ -27,9 +27,12 @@
 //
 // 【待你完成】
 //   1. 云开发控制台 → 该云函数 → 环境变量添加 DASHSCOPE_API_KEY（新开 Key，勿用课程笔记里那个）
-//   2. 右键部署 ask（会随包带上 kb.seed.json）
-//   3. 开发者工具 Console 跑 wx.cloud.callFunction({name:'ask', data:{action:'buildKb'}})，
-//      重复到返回 remaining=0（首次调用会自动建集合并导入 80 条种子）
+//   2. ⚠️ 云开发控制台 → 该云函数 → 配置 → 超时时间改成 60 秒。
+//      默认 3 秒会把问答链路（embedding + qwen-plus 生成必然 >3s）和 buildKb 一起掐断，
+//      报 errCode -504003 FUNCTIONS_TIME_LIMIT_EXCEEDED。config.json 里的 timeout 不保证覆盖控制台设置。
+//   3. 右键部署 ask（会随包带上 kb.seed.json）
+//   4. 开发者工具 Console 跑 wx.cloud.callFunction({name:'ask', data:{action:'buildKb'}})，
+//      重复到返回 remaining=0（首次调用会自动建集合、按 question 判重补齐 80 条种子）
 const cloud = require("wx-server-sdk");
 const https = require("https");
 const kbSeed = require("./kb.seed.json");
@@ -141,34 +144,61 @@ async function loadKb() {
 
 // ---------- buildKb：建集合 + 种子导入 + 增量生成 embedding ----------
 
-const BUILD_BATCH = 25; // 单次调用最多处理条数；80 条种子约需 4 次调用跑完
+const BUILD_BATCH = 25;            // 单次最多 embed 条数（60s 超时下的保守上限）
+const BUILD_TIME_RATIO = 0.75;     // 只花掉平台超时预算的 75%，留余量把结果返回出去
 
-async function buildKb(event) {
+// 平台会把函数超时时间注入 context.time_limit_in_ms（3s / 20s / 60s 都可能）。
+// 按它的 75% 定截止时间：超时预算小的时候少做几条，绝不做到一半被平台掐断。
+function buildDeadline(context) {
+  const raw = context && Number(context.time_limit_in_ms);
+  const limit = raw > 0 ? raw : 20000; // 取不到就按 20s 保守估
+  return Date.now() + Math.floor(limit * BUILD_TIME_RATIO) - 500;
+}
+
+// 批量插入（服务端 SDK 支持 data 传数组）；老版本或个别环境不支持时退化为逐条
+async function addDocs(docs) {
+  try {
+    await db.collection(KB_COLLECTION).add({ data: docs });
+  } catch (e) {
+    for (const d of docs) await db.collection(KB_COLLECTION).add({ data: d });
+  }
+}
+
+async function buildKb(event, context) {
   // 管理令牌：控制台设置了 ASK_ADMIN_TOKEN 就强制校验（防止裸调烧 API 额度）
   const adminToken = process.env.ASK_ADMIN_TOKEN;
   if (adminToken && event.token !== adminToken) {
     return { success: false, error: "buildKb 需要正确的 token（ASK_ADMIN_TOKEN）" };
   }
+  const deadline = buildDeadline(context);
+  const timeUp = () => Date.now() >= deadline;
   try {
     // 1. 确保集合存在（已存在时 createCollection 会报错，忽略即可）
     try { await db.createCollection(KB_COLLECTION); } catch (e) { /* 已存在 */ }
 
-    // 2. 集合为空时导入种子（幂等：非空不动，避免与手工导入重复）
-    const cntRes = await db.collection(KB_COLLECTION).count();
+    // 2. 种子补齐：按 question 判重
+    //    比「集合为空才导入」更稳——超时中断留下半份种子时，下一次调用能接着补齐；
+    //    以后语料增加了，重新部署再调用也只会补新增的条目。
+    let all = await loadKb();
+    const existing = new Set(all.map((d) => d.question));
+    const missing = kbSeed
+      .filter((d) => !existing.has(d.question))
+      .map((d) => Object.assign({}, d, { embedding: null }));
     let seeded = 0;
-    if (cntRes.total === 0) {
-      for (const doc of kbSeed) {
-        await db.collection(KB_COLLECTION).add({ data: Object.assign({}, doc, { embedding: null }) });
-        seeded++;
-      }
+    for (let i = 0; i < missing.length; i += 10) {
+      if (i > 0 && timeUp()) break; // 放过第一块：保证每次调用至少有进展，不会空转
+      const chunk = missing.slice(i, i + 10);
+      await addDocs(chunk);
+      seeded += chunk.length;
     }
+    if (seeded > 0) all = await loadKb();
 
-    // 3. 找缺 embedding 的记录，本批最多 BUILD_BATCH 条
-    const all = await loadKb();
+    // 3. 逐条生成 embedding，按条数上限 + 时间预算双重刹车
     const pending = all.filter((c) => !Array.isArray(c.embedding));
-    const batch = pending.slice(0, BUILD_BATCH);
     let embedded = 0, failed = 0;
-    for (const doc of batch) {
+    for (const doc of pending) {
+      if (embedded + failed >= BUILD_BATCH) break;
+      if (embedded + failed > 0 && timeUp()) break;
       try {
         const vec = await embed(doc.question + "\n" + doc.text);
         await db.collection(KB_COLLECTION).doc(doc._id).update({ data: { embedding: vec } });
@@ -180,13 +210,15 @@ async function buildKb(event) {
     }
 
     // 4. 汇报进度（remaining 让前端/Console 决定是否继续调用）
-    const remaining = pending.length - batch.length;
+    const remaining = Math.max(0, pending.length - embedded);
     return {
       success: true, action: "buildKb",
       total: all.length, seeded, embedded, failed,
       remaining,
       done: remaining === 0,
-      note: remaining > 0 ? "还有 " + remaining + " 条待处理，请重复调用" : "全部完成",
+      note: remaining > 0
+        ? "还有 " + remaining + " 条待处理，请重复调用" + (failed ? "（" + failed + " 条失败，下轮重试）" : "")
+        : "全部完成",
     };
   } catch (e) {
     return { success: false, error: e.message };
@@ -195,9 +227,9 @@ async function buildKb(event) {
 
 // ---------- 主入口 ----------
 
-exports.main = async (event) => {
+exports.main = async (event, context) => {
   // 管理动作分流（不占问答主链路）
-  if (event.action === "buildKb") return buildKb(event);
+  if (event.action === "buildKb") return buildKb(event, context);
 
   const t0 = Date.now();
   const question = (event.question || "").trim();
