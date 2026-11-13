@@ -22,8 +22,13 @@
 // 现在把「建集合 + 种子导入 + 增量生成 embedding」全部放进云函数：
 //   wx.cloud.callFunction({ name:'ask', data:{ action:'buildKb' } })   // 可选 token
 // 每次（最多）处理 BATCH 条缺 embedding 的记录，返回 remaining，重复调用直到 remaining=0。
-// 幂等：集合非空时跳过种子导入；embedding 已有的记录不动。
+// 幂等：按 question 判重补种子；embedding 已有的记录不动。
 // 安全：若环境变量设置了 ASK_ADMIN_TOKEN，则 event.token 必须匹配（不设置则不校验）。
+//
+// ---------- 诊断动作 checkKey ----------
+//   wx.cloud.callFunction({ name:'ask', data:{ action:'checkKey' } })
+// 返回 { ok, hasKey, dim | error }：一步就能看出「环境变量有没有读到」+「key 能不能调通」。
+// buildKb 里每条 embedding 的失败原因也会带回 errors 数组（最多 3 条），不用翻云函数日志。
 //
 // 【待你完成】
 //   1. 云开发控制台 → 该云函数 → 环境变量添加 DASHSCOPE_API_KEY（新开 Key，勿用课程笔记里那个）
@@ -164,6 +169,29 @@ async function addDocs(docs) {
   }
 }
 
+// ---------- checkKey：一调用就能看出 key 到底能不能用 ----------
+// 用户侧排查用：返回明确的 ok/error，不用去翻云函数日志。
+async function checkKey() {
+  const t0 = Date.now();
+  const hasKey = !!process.env.DASHSCOPE_API_KEY;
+  try {
+    const vec = await embed("宝宝几个月可以添加辅食");
+    return {
+      success: true, action: "checkKey", ok: true,
+      hasKey, dim: vec.length, latencyMs: Date.now() - t0,
+      note: "key 可用，embedding 维度 " + vec.length,
+    };
+  } catch (e) {
+    return {
+      success: true, action: "checkKey", ok: false,
+      hasKey, error: e.message, latencyMs: Date.now() - t0,
+      note: hasKey
+        ? "环境变量已读到，但调用 DashScope 失败——看 error 字段（额度/模型开通/网络）"
+        : "云函数没读到环境变量 DASHSCOPE_API_KEY（没保存成功，或加到了别的函数/环境上）",
+    };
+  }
+}
+
 async function buildKb(event, context) {
   // 管理令牌：控制台设置了 ASK_ADMIN_TOKEN 就强制校验（防止裸调烧 API 额度）
   const adminToken = process.env.ASK_ADMIN_TOKEN;
@@ -196,6 +224,7 @@ async function buildKb(event, context) {
     // 3. 逐条生成 embedding，按条数上限 + 时间预算双重刹车
     const pending = all.filter((c) => !Array.isArray(c.embedding));
     let embedded = 0, failed = 0;
+    const errSamples = []; // 把失败原因带回给调用方，省得去翻云函数日志
     for (const doc of pending) {
       if (embedded + failed >= BUILD_BATCH) break;
       if (embedded + failed > 0 && timeUp()) break;
@@ -205,6 +234,7 @@ async function buildKb(event, context) {
         embedded++;
       } catch (e) {
         failed++;
+        if (errSamples.length < 3 && errSamples.indexOf(e.message) < 0) errSamples.push(e.message);
         console.error("embedding 失败", doc._id, e.message);
       }
     }
@@ -214,11 +244,14 @@ async function buildKb(event, context) {
     return {
       success: true, action: "buildKb",
       total: all.length, seeded, embedded, failed,
+      errors: errSamples,
       remaining,
       done: remaining === 0,
-      note: remaining > 0
-        ? "还有 " + remaining + " 条待处理，请重复调用" + (failed ? "（" + failed + " 条失败，下轮重试）" : "")
-        : "全部完成",
+      note: failed > 0
+        ? "全部失败，先跑 action:'checkKey' 看 key 状态；失败原因见 errors"
+        : remaining > 0
+          ? "还有 " + remaining + " 条待处理，请重复调用"
+          : "全部完成",
     };
   } catch (e) {
     return { success: false, error: e.message };
@@ -230,6 +263,7 @@ async function buildKb(event, context) {
 exports.main = async (event, context) => {
   // 管理动作分流（不占问答主链路）
   if (event.action === "buildKb") return buildKb(event, context);
+  if (event.action === "checkKey") return checkKey();
 
   const t0 = Date.now();
   const question = (event.question || "").trim();
