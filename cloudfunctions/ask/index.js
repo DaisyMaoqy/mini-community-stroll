@@ -48,7 +48,13 @@ const KB_COLLECTION = "kb_chunks";
 const TOP_K = 4;
 // 函数版本号：每次部署后跑 action:'version' 就能确认云端跑的是不是最新代码
 // （排查「改了没生效」时，先看这个，别靠猜）
-const FN_VERSION = "2026-11-14.1";
+const FN_VERSION = "2026-11-14.2";
+// 模型可经环境变量切换（不改代码就能换 key 的账号/模型）：
+//   RAG_EMBED_MODEL 默认 text-embedding-v3；新账号想用新人免费额度 → 设为 text-embedding-v4
+//   （v3 已不提供新人免费额度；v4 有 100 万 token/90 天，同样支持 1024 维）
+//   RAG_CHAT_MODEL 默认 qwen-plus
+const EMBED_MODEL = process.env.RAG_EMBED_MODEL || "text-embedding-v3";
+const CHAT_MODEL = process.env.RAG_CHAT_MODEL || "qwen-plus";
 // 拒答阈值可经环境变量 RAG_REFUSE_THRESHOLD 调整（不填用默认 0.35）——
 // 上线后用 30 题评估表的 badcase 校准时，改环境变量即可，不用改代码重发
 const REFUSE_THRESHOLD = (() => {
@@ -102,7 +108,7 @@ async function embed(text) {
   const res = await httpsPostJson(
     "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding",
     { Authorization: "Bearer " + key },
-    { model: "text-embedding-v3", input: { text }, dimension: 1024 }
+    { model: EMBED_MODEL, input: { text }, dimension: 1024 }
   );
   if (!res.output || !res.output.embeddings || !res.output.embeddings[0]) {
     throw new Error("embedding 返回异常: " + JSON.stringify(res).slice(0, 200));
@@ -117,7 +123,7 @@ async function chat(prompt) {
     "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
     { Authorization: "Bearer " + key },
     {
-      model: "qwen-plus",
+      model: CHAT_MODEL,
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: prompt },
