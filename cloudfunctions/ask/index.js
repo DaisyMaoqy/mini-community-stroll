@@ -46,6 +46,9 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 const KB_COLLECTION = "kb_chunks";
 const TOP_K = 4;
+// 函数版本号：每次部署后跑 action:'version' 就能确认云端跑的是不是最新代码
+// （排查「改了没生效」时，先看这个，别靠猜）
+const FN_VERSION = "2026-11-14.1";
 // 拒答阈值可经环境变量 RAG_REFUSE_THRESHOLD 调整（不填用默认 0.35）——
 // 上线后用 30 题评估表的 badcase 校准时，改环境变量即可，不用改代码重发
 const REFUSE_THRESHOLD = (() => {
@@ -178,13 +181,13 @@ async function checkKey() {
     const vec = await embed("宝宝几个月可以添加辅食");
     return {
       success: true, action: "checkKey", ok: true,
-      hasKey, dim: vec.length, latencyMs: Date.now() - t0,
+      version: FN_VERSION, hasKey, dim: vec.length, latencyMs: Date.now() - t0,
       note: "key 可用，embedding 维度 " + vec.length,
     };
   } catch (e) {
     return {
       success: true, action: "checkKey", ok: false,
-      hasKey, error: e.message, latencyMs: Date.now() - t0,
+      version: FN_VERSION, hasKey, error: e.message, latencyMs: Date.now() - t0,
       note: hasKey
         ? "环境变量已读到，但调用 DashScope 失败——看 error 字段（额度/模型开通/网络）"
         : "云函数没读到环境变量 DASHSCOPE_API_KEY（没保存成功，或加到了别的函数/环境上）",
@@ -264,6 +267,13 @@ exports.main = async (event, context) => {
   // 管理动作分流（不占问答主链路）
   if (event.action === "buildKb") return buildKb(event, context);
   if (event.action === "checkKey") return checkKey();
+  if (event.action === "version") {
+    return { success: true, action: "version", version: FN_VERSION, supported: ["buildKb", "checkKey", "version"] };
+  }
+  // 未知 action 明确报错：别静默掉进问答分支，最后表现为莫名其妙的「question 为空」
+  if (event.action) {
+    return { success: false, error: "未知 action: " + event.action, version: FN_VERSION, supported: ["buildKb", "checkKey", "version"] };
+  }
 
   const t0 = Date.now();
   const question = (event.question || "").trim();
