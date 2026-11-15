@@ -81,7 +81,9 @@
         ></textarea>
         <view class="ask-ta__meta muted">{{question.length}}/200</view>
       </view>
-      <button class="btn-primary ask-btn" bindtap="ask" loading="{{asking}}" disabled="{{!question || asking}}">提问</button>
+      <!-- size="mini"：基础库官方的「非满宽按钮」模式，从根上关掉 button 默认满宽行为，
+           与 .ask-btn 的 flex:none 双保险——任何基础库版本都不会再吃掉 8:2 比例 -->
+      <button class="btn-primary ask-btn" size="mini" bindtap="ask" loading="{{asking}}" disabled="{{!question || asking}}">提问</button>
     </view>
   </view>
 </view>
