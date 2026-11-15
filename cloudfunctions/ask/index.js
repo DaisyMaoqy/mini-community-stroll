@@ -1,7 +1,8 @@
 // ask —— 育儿问答 RAG 云函数（最小可跑版：月龄前置过滤 + 内存余弦召回 + 置信度拒答）
 // 前端：wx.cloud.callFunction({ name:'ask', data:{ question, babyAgeMonths } })
 // 返回（扁平）：{
-//   success, refused, answer, gate, sources:[{topic, source}], topScore, latencyMs
+//   success, refused, answer, gate, refuseReason(拒答时三选一: out_of_scope|vague|insufficient),
+//   sources:[{topic, source}], topScore, latencyMs
 // }
 //
 // 检索链路（刻意不用向量库）：
@@ -15,13 +16,18 @@
 //   1. 风险信号词前置：发热/抽搐/脱水/体重不增/确诊/治疗/用药等 → 无论检索得分如何，回答强制附就医提示
 //   2. 域分类 + 置信度组合闸（三档分数带）：
 //      - topScore ≥ RAG_HIGH_CONF（默认 0.75）→ 直接回答（gate='high_conf'，大多数正常育儿问题走这条，省一次分类调用）
-//      - 灰区 → 轻量域分类器（RAG_CLASSIFY_MODEL，默认 qwen-turbo，独立 5s 短超时）裁决。注意它是「知识库覆盖范围判定」
+//      - 灰区 → 轻量域分类器（RAG_CLASSIFY_MODEL，默认 qwen-turbo，独立 5s 短超时）三分类裁决。注意它是「知识库覆盖范围判定」
 //        而非「是否育儿话题判定」——30 题拒答里一半本身是宝宝相关的（品牌推荐/遛娃去处/确诊求治疗/纯情绪求助）：
-//        判 'no' → 拒答（gate='classify_refuse'）；判 'yes' → 回答（gate='classify_pass'，救回灰区内真育儿题）；
-//        但 topScore < LOW_CONF（0.40 硬编码）即使 'yes' 也拒答（gate='low_conf_refuse'，防向量为零重叠硬凑资料）
+//        判 'out'（域外）→ 拒答（gate='classify_refuse'，refuseReason='out_of_scope'）；判 'vague'（模糊求助）→ 拒答
+//        （refuseReason='vague'）；判 'yes' → 回答（gate='classify_pass'，救回灰区内真育儿题）；
+//        但 topScore < LOW_CONF（0.40 硬编码）即使 'yes' 也拒答（gate='low_conf_refuse'，refuseReason='insufficient'，
+//        防向量为零重叠硬凑资料）
 //      - 分类器故障/未开通/超时（classifySafe 返回 null）→ 退回 RAG_REFUSE_THRESHOLD 单阈值兜底
-//        （gate='threshold_refuse' / 'threshold_pass'，返回体附 degraded:true 供 eval/监控感知降级）：
+//        （gate='threshold_refuse'（refuseReason='insufficient'）/ 'threshold_pass'，返回体附 degraded:true 供 eval/监控感知降级）：
 //        控制台现设 0.6，它是「分类器故障时的兜底线」而非常态工作线
+//      - 拒答文案按 refuseReason 三分（契约与前端 pages/ask 动作按钮对应）：out_of_scope=域外指引（社区群/办理窗口）、
+//        vague=追问月龄与具体表现、insufficient=域内语料未覆盖（保留就医引导）——
+//        旧版三路共用「咨询儿保医生」，线上实测对政策补贴类问题答非所问
 //
 // 合规定位：科普 + 经验分享，不做诊断/用药建议；系统提示词与拒答文案均含免责声明。
 //
@@ -56,7 +62,7 @@ const KB_COLLECTION = "kb_chunks";
 const TOP_K = 4;
 // 函数版本号：每次部署后跑 action:'version' 就能确认云端跑的是不是最新代码
 // （排查「改了没生效」时，先看这个，别靠猜）
-const FN_VERSION = "2026-11-16.2";
+const FN_VERSION = "2026-11-16.3";
 // 模型可经环境变量切换（不改代码就能换 key 的账号/模型）：
 //   RAG_EMBED_MODEL 默认 text-embedding-v3；新账号想用新人免费额度 → 设为 text-embedding-v4
 //   （v3 已不提供新人免费额度；v4 有 100 万 token/90 天，同样支持 1024 维）
@@ -93,6 +99,20 @@ const SYSTEM_PROMPT =
   "2. 定位是科普和经验分享，不做诊断，不给用药剂量建议；\n" +
   "3. 回答末尾固定附一句：以上为一般性育儿科普，不构成医疗建议，如有异常请及时就医。\n" +
   "4. 用口语化中文回答，控制在 200 字内，分点不超过 3 点。";
+
+// 拒答文案按 refuseReason 分三类（契约与前端 pages/ask 的动作按钮一一对应）：
+//   out_of_scope 域外（政策/品牌/成人健康…）→ 指引去问社区群/办理窗口，不再误提「咨询儿保医生」；
+//   vague 模糊求助 → 追问月龄与具体表现；
+//   insufficient 域内但语料未覆盖 → 保留就医引导。
+// （旧版三路共用一句「咨询儿保医生」，线上实测对政策补贴类问题答非所问）
+const REFUSE_COPY = {
+  out_of_scope:
+    "这个问题超出了我能回答的范围——我主要讲 0-3 岁宝宝的喂养、睡眠、发育、健康和日常照顾；政策办理、产品推荐、成人健康这类问题我这边没有可靠资料。可以问问社区群里有经验的家长，或直接咨询对应的办理窗口。",
+  vague:
+    "我还没太看明白宝宝的具体情况。能补充一下宝宝月龄和具体表现吗？比如发烧多少度、持续几天、精神吃奶怎么样——说清楚一点我再帮你查。",
+  insufficient:
+    "这个问题我暂时没有足够的资料来回答。如果是宝宝的健康问题，可以先观察精神和吃奶情况，拿不准就咨询儿保医生。",
+};
 
 // ---------- DashScope 调用（HTTPS，与 getWeather 同风格，无额外依赖） ----------
 
@@ -163,17 +183,20 @@ async function chat(prompt) {
   return res.choices[0].message.content.trim();
 }
 
-// ---------- 域分类器（拒答第二道闸的灰区裁决） ----------
+// ---------- 域分类器（拒答第二道闸的灰区裁决，三分类） ----------
 // 关键：判的是「知识库覆盖范围」而非「是否育儿话题」——30 题拒答里一半本身是宝宝相关的
 // （品牌推荐/遛娃去处/确诊求治疗/纯情绪求助），按话题判会把它们错误放行。
+// 三分类：'yes'（域内）/ 'out'（域外）/ 'vague'（模糊求助，缺具体症状信息）——
+// 对应拒答 refuseReason：out_of_scope / vague（insufficient 由阈值路径产生）。
 const CLASSIFY_SYSTEM_PROMPT =
   "你是问答范围判定器。知识库可回答的范围：0-3岁宝宝的日常养育，包括宝宝健康科普（症状观察、何时就医、疫苗）、喂养（母乳/辅食/奶量/营养）、睡眠、发育（大运动/出牙/语言）、家庭安全防护、妈妈产后情绪与家庭支持。\n" +
-  "不属于范围（一律判否）：怀孕/孕期问题；家长自身健康（如成人血压）；品牌/产品/地点推荐；政策/政务/补贴/手续；宠物饲养；已确诊疾病求治疗方案或用药剂量；只表达情绪、没有任何具体症状或信息的模糊求助（如\"宝宝这是怎么回事，急死了\"）。\n" +
-  "问题在范围内时只输出 yes，范围外只输出 no。\n" +
-  "必须输出英文 yes 或 no 两个词之一，不要输出任何其他语言或文字，不要解释。";
+  "不属于范围（判 out）：怀孕/孕期问题；家长自身健康（如成人血压）；品牌/产品/地点推荐；政策/政务/补贴/手续；宠物饲养；已确诊疾病求治疗方案或用药剂量。\n" +
+  "只表达情绪、没有任何具体症状或信息的模糊求助（如\"宝宝这是怎么回事，急死了\"）判 vague。\n" +
+  "问题在范围内时只输出 yes，范围外只输出 out，模糊求助只输出 vague。\n" +
+  "必须输出英文 yes、out、vague 三个词之一，不要输出任何其他语言或文字，不要解释。";
 
 // 轻量域分类：qwen-turbo、temperature 0、max_tokens 16（与主回答共用 compatible-mode URL，
-// 靠 model / max_tokens 区分用途）。返回 'yes' / 'no'；输出无法解析时抛错（由 classifySafe 兜住）。
+// 靠 model / max_tokens 区分用途）。返回 'yes' / 'out' / 'vague'；输出无法解析时抛错（由 classifySafe 兜住）。
 // 独立 5s 短超时：灰区最坏链路 classify+chat 各 25s 会贴近 60s 平台预算，超时走 classifySafe→null→兜底
 async function classify(question) {
   const key = process.env.DASHSCOPE_API_KEY;
@@ -194,9 +217,12 @@ async function classify(question) {
   );
   if (!res.choices || !res.choices[0]) throw new Error("classify 返回异常: " + JSON.stringify(res).slice(0, 200));
   const text = (res.choices[0].message.content || "").trim().toLowerCase();
-  // 否定信号优先（no/否/不，中英都收）：若先查肯定，「不是」会被「是」子串误判成 yes；
-  // 纯英文 "yes" 不含否定子串不受影响。两边都无法识别 → 抛错走兜底（可观测，不静默）
-  if (text.indexOf("no") >= 0 || text.indexOf("否") >= 0 || text.indexOf("不") >= 0) return "no";
+  // 三分类解析，顺序关键：
+  // ①先判 vague：若后判，vague 类输出里常带的「不」（如「不确定」）会先落进 out 的否定子串；
+  // ②再判 out（含 no/否/不——兼容旧版二分类模型的 no 输出与中文否定）；
+  // ③最后 yes。都无法识别 → 抛错走兜底（可观测，不静默）
+  if (text.indexOf("vague") >= 0 || text.indexOf("模糊") >= 0) return "vague";
+  if (text.indexOf("out") >= 0 || text.indexOf("no") >= 0 || text.indexOf("否") >= 0 || text.indexOf("不") >= 0) return "out";
   if (text.indexOf("yes") >= 0 || text.indexOf("是") >= 0) return "yes";
   throw new Error("classify 输出无法解析: " + text.slice(0, 50));
 }
@@ -383,27 +409,38 @@ exports.main = async (event, context) => {
     const topScore = scored.length ? scored[0].score : 0;
 
     // 4. 拒答第二道闸：三档分数带 + 域分类器裁决灰区
-    //    （gate 写进返回体，eval 复核时能看出每题走了哪条路）
+    //    （gate 写进返回体，eval 复核时能看出每题走了哪条路；
+    //     refuseReason 三选一：out_of_scope / vague / insufficient，前端按它选文案与动作按钮）
     let gate;
+    let refuseReason = null; // 仅拒答路径有值；回答路径不带该字段
     if (topScore >= HIGH_CONF) {
       // 高置信：正常育儿问题主路径，不调分类器
       gate = "high_conf";
     } else {
       const verdict = await classifySafe(question);
-      if (verdict === "no") {
+      if (verdict === "out") {
+        // 域外（政策/品牌/成人健康/确诊求治等）：拒答 + 域外指引文案
         gate = "classify_refuse";
+        refuseReason = "out_of_scope";
+      } else if (verdict === "vague") {
+        // 模糊求助（无具体症状/信息）：拒答 + 追问补充信息文案
+        gate = "classify_refuse";
+        refuseReason = "vague";
       } else if (verdict === "yes") {
         // 下限保护：向量为零重叠时不能靠分类器硬凑资料回答
         gate = topScore < LOW_CONF ? "low_conf_refuse" : "classify_pass";
+        if (gate === "low_conf_refuse") refuseReason = "insufficient";
       } else {
         // 分类器故障（null）：退回单阈值兜底（控制台现设 0.6）
         gate = topScore < REFUSE_THRESHOLD ? "threshold_refuse" : "threshold_pass";
+        if (gate === "threshold_refuse") refuseReason = "insufficient";
       }
     }
     if (gate === "classify_refuse" || gate === "threshold_refuse" || gate === "low_conf_refuse") {
+      const reason = refuseReason || "insufficient"; // 三路 gate 理论都必赋值，此行为防御性兜底
       const refuseResp = {
-        success: true, refused: true, answer: "", gate,
-        refuseNote: "这个问题我暂时没有足够的资料来回答。宝宝的情况如果持续或加重，建议咨询儿保医生。",
+        success: true, refused: true, answer: "", gate, refuseReason: reason,
+        refuseNote: REFUSE_COPY[reason] || REFUSE_COPY.insufficient,
         sources: [], topScore: Number(topScore.toFixed(3)), latencyMs: Date.now() - t0,
       };
       // 降级标记：只在分类器故障走阈值兜底的路径出现（其余路径不带该字段，保持返回形状轻量）
