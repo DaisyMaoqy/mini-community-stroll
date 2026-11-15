@@ -4,6 +4,8 @@
 // out_of_scope（政策/成人健康/品牌地点推荐等范围外）→ refuseNote + 可问范围提示，不出按钮；
 // vague（模糊求助，缺月龄和具体表现）→ refuseNote + 补全提示，不出按钮。refuseNote 由云端按类给出，前端原样展示。
 // 合规口径 PRD 8.2：所有态页脚常驻「科普非诊疗」提示；riskTip 非空即醒目展示就医提醒。
+// 体验增强：答案打字机（前端逐字上屏动画；云函数 callFunction 非流式整段返回，
+// fullAnswer 一次进 data，answer 只放「已上屏部分」随动画增量更新；riskTip 立即显示，sources 打完再出）。
 const app = getApp();
 
 // 示例问题：口语化改写自 data/kb-guides.json 语料主题（辅食 / 睡眠 / 发育 / 健康预警各一条）
@@ -13,6 +15,10 @@ const SAMPLE_QUESTIONS = [
   '几个月会翻身、走路算正常？',
   '什么时候必须去医院？',
 ];
+
+// 打字机节奏：30ms 一 tick、每 tick 追加 2 字（200 字答案约 3 秒，setData 频率可控）
+const TYPE_TICK_MS = 30;
+const TYPE_STEP = 2;
 
 // 会话内历史记录 id 生成（仅用于 wx:key，不落盘）
 let QA_SEQ = 0;
@@ -24,7 +30,8 @@ Page({
     question: '',
     asking: false,       // 提问中：按钮 loading 态 + 防连点
     samples: SAMPLE_QUESTIONS,
-    history: [],         // [{ id, q, status: 'loading'|'ans'|'refuse'|'fail', answer?, riskTip?, sources?, refuseNote?, refuseReason?, error? }]
+    history: [],         // [{ id, q, status: 'loading'|'ans'|'refuse'|'fail', fullAnswer?, answer?, typed?, riskTip?, sources?, refuseNote?, refuseReason?, error? }]
+    scrollAnchor: '',    // 打字机滚动跟随：双锚点交替值（scroll-into-view 只有值变化才触发滚动，恒定值不滚）
   },
 
   onLoad() {
@@ -41,6 +48,8 @@ Page({
   },
 
   onUnload() {
+    // 打字机计时器必须清（铁律：页面卸载清理，同 InnerAudioContext 教训），再摘监听
+    this._clearTypeTimer();
     // 历史只在内存里，页面卸载即丢（刻意不持久化）；同时摘掉 onUserSync 监听，
     // 否则反复 navigateTo 本页会在 _syncListeners 里越积越多死引用
     this._alive = false;
@@ -76,11 +85,19 @@ Page({
     const q = (this.data.question || '').trim();
     if (!q) return;
     if (this.data.asking) return; // 防连点
+    // 上一条还没打完：立即置满再开新的，保证同屏同时只有一条在打字
+    this._finishTypingNow();
     QA_SEQ += 1;
     const item = { id: 'qa_' + QA_SEQ, q, status: 'loading' };
     const history = this.data.history.concat([item]);
     const i = history.length - 1;
-    this.setData({ asking: true, history });
+    // 新提问滚到新卡：交替一次锚点值（与打字 tick 同机制，值变才触发滚动）
+    this._anchorToggle = !this._anchorToggle;
+    this.setData({
+      asking: true,
+      history,
+      scrollAnchor: this._anchorToggle ? 'anchor-a' : 'anchor-b',
+    });
     this._request(q, i);
   },
 
@@ -121,12 +138,16 @@ Page({
           refuseNote: r.refuseNote || '这个问题暂时不在科普语料范围内',
         });
       } else if (r.success === true) {
+        // 打字机数据模型：fullAnswer（完整答案）一次进 data；answer 只是「已上屏部分」，随动画增量更新
         this._update(i, {
           status: 'ans',
-          answer: (typeof r.answer === 'string') ? r.answer : '',
+          fullAnswer: (typeof r.answer === 'string') ? r.answer : '',
+          answer: '',
+          typed: false,
           riskTip: (typeof r.riskTip === 'string') ? r.riskTip : '',
           sources: Array.isArray(r.sources) ? r.sources : [],
         });
+        this._startTyping(i);
       } else {
         this._update(i, { status: 'fail', error: (typeof r.error === 'string' && r.error) || '云函数返回异常' });
       }
@@ -143,6 +164,70 @@ Page({
     const cur = this.data.history[i] || {};
     const next = Object.assign({}, cur, patch);
     this.setData({ ['history[' + i + ']']: next, asking: false });
+  },
+
+  // ===== 答案打字机（前端动画；拒答/失败态不打字，refuseNote 本来就短直接出） =====
+
+  // 开始对第 i 条做打字机：旧条若还没打完，先立即置满（同屏同时只有最新一条在打）
+  _startTyping(i) {
+    this._finishTypingNow();
+    const item = this.data.history[i];
+    if (!item || item.status !== 'ans') return;
+    const full = item.fullAnswer || '';
+    if (!full) {
+      // 降级：空答案跳过动画直接收尾
+      this.setData({ ['history[' + i + '].answer']: '', ['history[' + i + '].typed']: true });
+      return;
+    }
+    this._typeIdx = i;
+    this._typePos = 0;
+    this._typeTimer = setInterval(() => {
+      if (!this._alive) { this._clearTypeTimer(); return; }
+      if (this._stepTyping()) this._clearTypeTimer();
+    }, TYPE_TICK_MS);
+  },
+
+  // 单个 tick：追加 2 字 + 交替滚动锚点（一次 setData 只动 history[i].answer 路径 + scrollAnchor）；返回是否打完
+  _stepTyping() {
+    const i = this._typeIdx;
+    const item = this.data.history[i];
+    if (!item || item.status !== 'ans') return true; // 记录没了（异常防御）：直接停
+    const full = item.fullAnswer || '';
+    const pos = Math.min((this._typePos || 0) + TYPE_STEP, full.length);
+    this._typePos = pos;
+    const patch = { ['history[' + i + '].answer']: full.slice(0, pos) };
+    if (pos >= full.length) patch['history[' + i + '].typed'] = true;
+    // 双锚点交替：scroll-into-view 只有值变化才触发滚动，恒定值不滚
+    this._anchorToggle = !this._anchorToggle;
+    patch.scrollAnchor = this._anchorToggle ? 'anchor-a' : 'anchor-b';
+    this.setData(patch);
+    return pos >= full.length;
+  },
+
+  // 跳过打字：点答案区（qa-a）立即置全量文本；仅打字中生效，打完点无反应
+  skipTyping(e) {
+    if (!this._typeTimer) return;
+    const i = +e.currentTarget.dataset.i;
+    if (i !== this._typeIdx) return; // 只有正在打字的这条可跳
+    this._finishTypingNow();
+  },
+
+  // 立即置满当前正在打字的这条（新提问 / 跳过共用）
+  _finishTypingNow() {
+    if (!this._typeTimer) return;
+    const i = this._typeIdx;
+    this._clearTypeTimer();
+    if (!this._alive) return;
+    const item = this.data.history[i];
+    if (!item || item.status !== 'ans') return;
+    this.setData({
+      ['history[' + i + '].answer']: item.fullAnswer || '',
+      ['history[' + i + '].typed']: true,
+    });
+  },
+
+  _clearTypeTimer() {
+    if (this._typeTimer) { clearInterval(this._typeTimer); this._typeTimer = null; }
   },
 
   // 拒答态入口：去接种点。

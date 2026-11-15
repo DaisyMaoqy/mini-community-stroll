@@ -1,17 +1,25 @@
 /* pages/ask/index.wxss 育儿问答（视觉对齐 v15：全量引用 styles/tokens.wxss 变量，卡片风对齐首页） */
 
-/* 页面骨架 v2：对话式布局。flex column 顶天立地：历史区 flex:1 + min-height:0 内滚，
-   提问坞是 flex column 的底部块（天然固定且不遮内容，不用 fixed 实现）。
-   padding 归零（覆盖 .container 的 16px）：让坞横向贴满视口，
+/* 页面骨架 v3：三段式布局。flex column 顶天立地：固定头（flex:none）+ 历史区 flex:1 + min-height:0 内滚
+   + 提问坞（flex column 的底部块，天然固定且不遮内容，不用 fixed 实现）。
+   padding 归零（覆盖 .container 的 16px）：让头带与坞横向贴满视口，
    历史区与坞各自的横向留白由 .ask-main / .ask-dock 自己的 padding 管。 */
 .ask-page {
   display: flex; flex-direction: column; height: 100vh; padding: 0;
 }
 
+/* 固定头：月龄行 + 合规文案，常驻可见不随历史滚；背景与坞一致（浅卡底固定带）。
+   不加 border-bottom：卡白底对暖砂页面底色已有清晰分界，克制优先。 */
+.ask-head {
+  flex: none;
+  background: var(--card);
+  padding: 12px 16px 8px; box-sizing: border-box;
+}
+
 /* 历史区：scroll-view 拿到确定高度靠 flex:1 + min-height:0（否则会被内容撑开、页面级溢出） */
 .ask-main {
   flex: 1; min-height: 0;
-  padding: 16px 16px 12px; box-sizing: border-box;
+  padding: 12px 16px 12px; box-sizing: border-box;
 }
 /* 内层纵向列表：管月龄行 / 提问卡头 / 问答卡的间距（scroll-view 直接套 flex 布局不稳） */
 .ask-list { display: flex; flex-direction: column; gap: 12px; }
@@ -74,9 +82,9 @@
   background: linear-gradient(135deg, var(--green), var(--green-d));
 }
 .ask-btn::after { border: none; }
-/* 合规页脚：坞内普通行（背景与分隔线由坞提供），所有态常驻可见 */
+/* 合规页脚：固定头内的普通行（背景由头带提供），常驻可见、不进滚动流 */
 .ask-foot {
-  position: static; padding: 8px 0 0; text-align: center;
+  margin-top: 6px; text-align: center;
   font-size: var(--fs-meta); color: var(--ink3); line-height: 1.5;
 }
 

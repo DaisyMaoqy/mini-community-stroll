@@ -1,16 +1,20 @@
 <!-- pages/ask/index.wxml 育儿问答（P3：AI 科普，调用云函数 ask） -->
-<!-- 布局 v2：对话式。历史区（scroll-view 内滚，页面 disableScroll 关页面级滚动）+ 底部提问坞（flex column 底块，天然固定且不遮内容，不用 fixed） -->
-<!-- 合规口径 PRD 8.2：提问坞底部常驻「科普非诊疗」提示；riskTip 非空即醒目展示就医提醒 -->
+<!-- 布局 v3：三段式。固定头（月龄行 + 合规文案，常驻不滚）+ 历史区（scroll-view 内滚，页面 disableScroll）+ 底部提问坞（flex column 底块，天然固定且不遮内容，不用 fixed） -->
+<!-- 合规口径 PRD 8.2：固定头常驻「科普非诊疗」提示；riskTip 非空即醒目展示就医提醒 -->
 <view class="container ask-page">
 
-  <!-- 历史区：占满剩余高度、内部滚动；月龄行 + 提问卡头（标题/副文案/示例 chips）+ 全部问答卡 -->
-  <scroll-view class="ask-main" scroll-y enhanced show-scrollbar="{{false}}">
-    <view class="ask-list">
+  <!-- 固定头：月龄行 + 合规文案（常驻可见，不随历史滚动） -->
+  <view class="ask-head">
+    <view class="baby-row">
+      <view class="baby-chip {{babyAgeMonths == null ? 'baby-chip-unset' : ''}}">{{babyChip}}</view>
+    </view>
+    <view class="ask-foot">内容由 AI 生成，仅为育儿科普参考，不构成医疗建议；宝宝异常请及时就医。</view>
+  </view>
 
-      <!-- 当前宝宝月龄行：有宝宝有生日显示「昵称 · N 个月」，否则「未设置宝宝月龄」 -->
-      <view class="baby-row">
-        <view class="baby-chip {{babyAgeMonths == null ? 'baby-chip-unset' : ''}}">{{babyChip}}</view>
-      </view>
+  <!-- 历史区：占满剩余高度、内部滚动；提问卡头（标题/副文案/示例 chips）+ 全部问答卡 -->
+  <!-- scroll-into-view 吃双锚点交替值：打字/新提问时滚动跟随（值不变不触发） -->
+  <scroll-view class="ask-main" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollAnchor}}">
+    <view class="ask-list">
 
       <!-- 提问卡头：chips 仅 idle（还没有任何问答）时展示，点击填入底部输入框 -->
       <view class="card ask-box">
@@ -28,11 +32,12 @@
         <!-- 提问中 -->
         <view class="qa-loading muted" wx:if="{{item.status === 'loading'}}">AI 正在翻科普语料…</view>
 
-        <!-- 正常回答 -->
+        <!-- 正常回答：answer 是打字机已上屏部分；点答案区可跳过打字（仅打字中生效） -->
         <block wx:if="{{item.status === 'ans'}}">
           <view class="qa-risk" wx:if="{{item.riskTip}}">就医提醒：{{item.riskTip}}</view>
-          <view class="qa-a">{{item.answer}}</view>
-          <view class="src-list" wx:if="{{item.sources.length > 0}}">
+          <view class="qa-a" data-i="{{index}}" bindtap="skipTyping">{{item.answer}}</view>
+          <!-- sources chips 等打字完成（typed）再出现；riskTip 是就医提醒，立即显示（安全优先） -->
+          <view class="src-list" wx:if="{{item.typed && item.sources.length > 0}}">
             <view class="src-chip" wx:for="{{item.sources}}" wx:for-item="s" wx:for-index="si" wx:key="topic">{{s.topic}} · {{s.source}}</view>
           </view>
         </block>
@@ -55,10 +60,14 @@
         </block>
       </view>
 
+      <!-- 打字机滚动跟随双锚点：0 高占位，scroll-into-view 的值在 anchor-a / anchor-b 间交替才触发滚动 -->
+      <view id="anchor-a"></view>
+      <view id="anchor-b"></view>
     </view>
   </scroll-view>
 
   <!-- 提问坞：一行 = 输入框容器（textarea + 字数提示）+ 右侧窄胶囊「提问」按钮；键盘弹起走微信默认 adjust-position -->
+  <!-- 合规文案已上移至固定头（ask-head），坞内只剩输入行 -->
   <view class="ask-dock">
     <view class="ask-dock__row">
       <view class="ask-ta-wrap">
@@ -74,7 +83,5 @@
       </view>
       <button class="btn-primary ask-btn" bindtap="ask" loading="{{asking}}" disabled="{{!question || asking}}">提问</button>
     </view>
-    <!-- 合规页脚：坞内普通行，所有态常驻可见 -->
-    <view class="ask-foot">内容由 AI 生成，仅为育儿科普参考，不构成医疗建议；宝宝异常请及时就医。</view>
   </view>
 </view>
