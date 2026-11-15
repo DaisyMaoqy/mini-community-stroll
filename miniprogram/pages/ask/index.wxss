@@ -78,6 +78,13 @@
   overflow-wrap: break-word;
 }
 
+/* 拒答辅助提示行（out_of_scope / vague 态）：克制风格，muted 色 + 小字号 + 宽松行高；
+   竖排间距吃 .qa-card 的 gap（12px），不再另加 margin 以免挤压 */
+.qa-refuse__hint {
+  font-size: var(--fs-sm); color: var(--ink3);
+  line-height: 1.65; overflow-wrap: break-word;
+}
+
 /* 失败态文案：错误信息透出 */
 .qa-fail {
   font-size: var(--fs-sm); color: var(--red);

@@ -1,5 +1,8 @@
 // pages/ask/index.js 育儿问答（P3：RAG AI 科普助手，调用云函数 ask；契约冻结不改云函数）
-// 三态口径：正常回答（answer + riskTip + sources）/ 拒答（refuseNote + 去接种点入口）/ 失败（error + 原地重试）。
+// 三态口径：正常回答（answer + riskTip + sources）/ 拒答 / 失败（error + 原地重试）。
+// 拒答按 refuseReason 分三种展示形态：insufficient（域内但语料没覆盖，含字段缺失兜底）→ refuseNote + 去接种点按钮；
+// out_of_scope（政策/成人健康/品牌地点推荐等范围外）→ refuseNote + 可问范围提示，不出按钮；
+// vague（模糊求助，缺月龄和具体表现）→ refuseNote + 补全提示，不出按钮。refuseNote 由云端按类给出，前端原样展示。
 // 合规口径 PRD 8.2：所有态页脚常驻「科普非诊疗」提示；riskTip 非空即醒目展示就医提醒。
 const app = getApp();
 
@@ -21,7 +24,7 @@ Page({
     question: '',
     asking: false,       // 提问中：按钮 loading 态 + 防连点
     samples: SAMPLE_QUESTIONS,
-    history: [],         // [{ id, q, status: 'loading'|'ans'|'refuse'|'fail', answer?, riskTip?, sources?, refuseNote?, error? }]
+    history: [],         // [{ id, q, status: 'loading'|'ans'|'refuse'|'fail', answer?, riskTip?, sources?, refuseNote?, refuseReason?, error? }]
   },
 
   onLoad() {
@@ -93,8 +96,8 @@ Page({
 
   // 调云函数 ask（契约冻结）：data = { question, babyAgeMonths }；月龄未知时显式传 null。
   // 返回扁平结构：正常 { success:true, refused:false, answer, riskTip, sources, ... }；
-  // 拒答 { success:true, refused:true, refuseNote, sources:[] }；失败 { success:false, error }；
-  // 云函数异常时 callFunction 本身 reject，走 catch。
+  // 拒答 { success:true, refused:true, refuseNote, refuseReason, sources:[] }；
+  // 失败 { success:false, error }；云函数异常时 callFunction 本身 reject，走 catch。
   async _request(q, i) {
     try {
       const res = await wx.cloud.callFunction({
@@ -106,8 +109,17 @@ Page({
       });
       const r = (res && res.result) || {};
       if (r.success === true && r.refused === true) {
-        // 拒答：展示 refuseNote，并提供去接种点入口
-        this._update(i, { status: 'refuse', refuseNote: r.refuseNote || '这个问题暂时不在科普语料范围内' });
+        // 拒答：refuseNote 由云端按 refuseReason 分类给出，前端原样展示、不拼文案。
+        // refuseReason 非三值之一（含云端未部署新版时字段缺失）一律兜底 'insufficient'，
+        // 使旧版云函数的表现与现状完全一致（refuseNote + 去接种点按钮）。
+        const reason = (r.refuseReason === 'out_of_scope' || r.refuseReason === 'vague')
+          ? r.refuseReason
+          : 'insufficient';
+        this._update(i, {
+          status: 'refuse',
+          refuseReason: reason,
+          refuseNote: r.refuseNote || '这个问题暂时不在科普语料范围内',
+        });
       } else if (r.success === true) {
         this._update(i, {
           status: 'ans',

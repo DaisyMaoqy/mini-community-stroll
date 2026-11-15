@@ -43,10 +43,15 @@
       </view>
     </block>
 
-    <!-- 拒答：温和排版 + 去接种点入口 -->
+    <!-- 拒答：refuseNote 原样展示，按 refuseReason 分三种形态 -->
     <block wx:if="{{item.status === 'refuse'}}">
       <view class="qa-refuse">{{item.refuseNote}}</view>
-      <button class="qa-btn" bindtap="goVaccine">去接种点问问</button>
+      <!-- insufficient（含字段缺失兜底）：域内但语料没覆盖，维持去接种点入口 -->
+      <button class="qa-btn" wx:if="{{item.refuseReason === 'insufficient'}}" bindtap="goVaccine">去接种点问问</button>
+      <!-- out_of_scope：范围外（政策/成人健康/品牌推荐等），不出按钮，改给可问范围提示 -->
+      <view class="qa-refuse__hint" wx:if="{{item.refuseReason === 'out_of_scope'}}">可以问问我这些：宝宝辅食怎么加 · 夜里频繁醒怎么办 · 几个月会走路算正常</view>
+      <!-- vague：缺月龄和具体表现的模糊求助，不出按钮，提示补全后再问 -->
+      <view class="qa-refuse__hint" wx:if="{{item.refuseReason === 'vague'}}">补充宝宝月龄和具体表现后再问一次</view>
     </block>
 
     <!-- 失败：错误文案（透出 error） + 原地重试 -->
