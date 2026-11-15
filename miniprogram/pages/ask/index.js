@@ -81,6 +81,7 @@ Page({
   },
 
   // 提问：先压一条 loading 记录，云函数回包后原地更新该条；按钮 loading + 防连点
+  // 交互口径对齐主流聊天产品：**发送瞬间**清空输入框 + 收起键盘，不等答案回来才清。
   ask() {
     const q = (this.data.question || '').trim();
     if (!q) return;
@@ -95,9 +96,13 @@ Page({
     this._anchorToggle = !this._anchorToggle;
     this.setData({
       asking: true,
+      question: '', // 发送即清空输入框（字数提示同步归零 0/200）——对齐微信/豆包/ChatGPT 的聊天输入习惯
       history,
       scrollAnchor: this._anchorToggle ? 'anchor-a' : 'anchor-b',
     });
+    // 收起键盘：把纵向空间让给答案（中长回答时键盘挡着看不到打字机效果）。
+    // 基础库低版本无此 API，存在性判断不硬依赖。
+    if (typeof wx.hideKeyboard === 'function') wx.hideKeyboard({ fail: () => {} });
     this._request(q, i);
   },
 

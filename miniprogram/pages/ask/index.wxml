@@ -76,8 +76,11 @@
           value="{{question}}"
           maxlength="200"
           auto-height
+          confirm-type="send"
+          cursor-spacing="24"
           placeholder="例如：宝宝夜里频繁醒怎么办？"
           bindinput="onQuestion"
+          bindconfirm="ask"
         ></textarea>
         <view class="ask-ta__meta muted">{{question.length}}/200</view>
       </view>
