@@ -8,11 +8,11 @@
   display: flex; flex-direction: column; height: 100vh; padding: 0;
 }
 
-/* 固定头：月龄行 + 合规文案，常驻可见不随历史滚；背景与坞一致（浅卡底固定带）。
-   不加 border-bottom：卡白底对暖砂页面底色已有清晰分界，克制优先。 */
+/* 固定头：月龄行 + 合规文案，常驻可见不随历史滚。
+   不设背景：头带透出页面暖砂底色，与历史区融为一体（用户手调后的意图，保留）；
+   也不加 border-bottom——月龄胶囊与合规小字自身已有足够视觉分量，克制优先。 */
 .ask-head {
   flex: none;
-  background: var(--card);
   padding: 12px 16px 8px; box-sizing: border-box;
 }
 
@@ -72,7 +72,11 @@
   line-height: 1.6; min-height: 62px;
 }
 .ask-ta__meta { text-align: right; line-height: 1.2; margin-top: 6px; }
-/* 提问按钮：复用全局 .btn-primary 的渐变底，改窄胶囊与输入框同排（flex:none 固定窄宽，min-width 兜住中文两字不换行） */
+/* 提问按钮：复用全局 .btn-primary 的渐变底，窄胶囊与输入框同排。
+   ⚠️ 别写 .ask-btn.wx-button——wx-button 是编译后的标签名，不在 class 属性里，
+   复合选择器匹配不到任何元素，等于把按钮样式全弄丢（用户手调时踩过，留档防再踩）。
+   8:2 占比由 flex:1(输入) + flex:none(按钮) 天然实现，不写死 width:20%——
+   写死百分比会叠加 min-width:76px，小屏上两头相加横向溢出。 */
 .ask-btn {
   width: auto; margin: 0; flex: none; line-height: 1.2;
   padding: 12px 18px; min-width: 76px; border-radius: var(--r);
