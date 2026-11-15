@@ -73,11 +73,12 @@
   <view class="ask-dock">
     <view class="ask-dock__row">
       <view class="ask-ta-wrap">
+        <!-- 不用 auto-height：输入框固定高度（wxss 定 62px），文本超出 2 行时 textarea 内部滚动——
+             提问坞恒定高度，不会被长问题撑大挤掉历史区（微信聊天输入框同款行为） -->
         <textarea
           class="ask-ta"
           value="{{question}}"
           maxlength="200"
-          auto-height
           confirm-type="send"
           cursor-spacing="24"
           placeholder="例如：宝宝夜里频繁醒怎么办？"

@@ -69,7 +69,7 @@
   width: 100%; box-sizing: border-box;
   background: transparent;
   padding: 0; font-size: var(--fs-md); color: var(--ink);
-  line-height: 1.6; min-height: 62px;
+  line-height: 1.6; height: 62px; /* 定高 ~2 行：超长文本在 textarea 内部滚动，坞不长大（不再用 auto-height） */
 }
 .ask-ta__meta { text-align: right; line-height: 1.2; margin-top: 6px; }
 /* 提问按钮：复用全局 .btn-primary 的渐变底，窄胶囊与输入框同排。
