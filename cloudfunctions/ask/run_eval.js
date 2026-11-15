@@ -31,6 +31,7 @@ const SLEEP_MS = 300; // 每题之间的间隔，别并发轰云函数
 const RISK_PATTERNS = [
   "发热", "高烧", "抽搐", "惊厥", "脱水", "呕吐不止", "腹泻带血",
   "体重不增", "体重下降", "呼吸急促", "囟门", "黄疸加重", "哭闹不止超过",
+  "确诊", "治疗", "用药", "血压", "急死", "怎么治",
 ];
 
 // ---------- 小工具 ----------
@@ -181,7 +182,8 @@ function judge(item, no, out) {
 
   return {
     no, question: item.question, expect: item.expect, expectTopic: item.expectTopic || "",
-    actual, topScore: typeof out.topScore === "number" ? out.topScore : null,
+    actual, gate: typeof out.gate === "string" ? out.gate : "", degraded: out.degraded === true,
+    topScore: typeof out.topScore === "number" ? out.topScore : null,
     latencyMs: typeof out.latencyMs === "number" ? out.latencyMs : null,
     pass, topicHit, risk, reasons,
   };
@@ -215,12 +217,12 @@ async function autoMode(items) {
       r = judge(item, no, out);
     } catch (e) {
       r = { no, question: item.question, expect: item.expect, expectTopic: item.expectTopic || "",
-        actual: "error", topScore: null, latencyMs: null, pass: false, topicHit: false,
+        actual: "error", gate: "", degraded: false, topScore: null, latencyMs: null, pass: false, topicHit: false,
         risk: hasRiskWord(item.question), reasons: [e.message] };
     }
     results.push(r);
     console.log(
-      pad(r.expect, 8) + pad(r.actual, 10) +
+      pad(r.expect, 8) + pad(r.actual, 10) + pad(r.gate || "-", 18) +
       "topScore=" + (r.topScore == null ? "-" : r.topScore.toFixed ? r.topScore.toFixed(3) : r.topScore) + " " +
       pad(r.pass ? "PASS" : "FAIL", 6) +
       (r.reasons.length ? "  [" + r.reasons.join("; ") + "]" : "") +
@@ -240,6 +242,12 @@ async function autoMode(items) {
   console.log("==============================================================");
   console.log("hit 题   : " + hitPass + "/" + hits.length + " 通过（通过率 " + (100 * hitPass / hits.length).toFixed(0) + "%）");
   console.log("refuse 题: " + refusePass + "/" + refuses.length + " 通过（通过率 " + (100 * refusePass / refuses.length).toFixed(0) + "%）");
+  // gate 分布 + 降级计数（69d5ff0 起每题带 gate；threshold_* = 分类器故障/超时走了兜底）
+  const gateCount = {};
+  results.forEach((r) => { const g = r.gate || "(无)"; gateCount[g] = (gateCount[g] || 0) + 1; });
+  console.log("gate 分布: " + Object.keys(gateCount).map((g) => g + "=" + gateCount[g]).join("  "));
+  const degradedN = results.filter((r) => r.degraded === true).length;
+  console.log("降级题数: " + degradedN + "（threshold_* 且 degraded=true = 分类器降级走了兜底；>0 时查 qwen-turbo 开通情况 / RAG_CLASSIFY_MODEL / classify 5s 超时）");
   const topicOk = hits.filter((r) => r.topicHit).length;
   console.log("hit 题主题命中（sources 含 expectTopic）: " + topicOk + "/" + hits.length + "（信息性指标，不计入 pass）");
   console.log("总耗时 " + ((Date.now() - tAll) / 1000).toFixed(1) + "s");

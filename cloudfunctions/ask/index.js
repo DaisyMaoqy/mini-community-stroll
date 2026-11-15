@@ -15,12 +15,13 @@
 //   1. 风险信号词前置：发热/抽搐/脱水/体重不增/确诊/治疗/用药等 → 无论检索得分如何，回答强制附就医提示
 //   2. 域分类 + 置信度组合闸（三档分数带）：
 //      - topScore ≥ RAG_HIGH_CONF（默认 0.75）→ 直接回答（gate='high_conf'，大多数正常育儿问题走这条，省一次分类调用）
-//      - 灰区 → 轻量域分类器（RAG_CLASSIFY_MODEL，默认 qwen-turbo）裁决。注意它是「知识库覆盖范围判定」
+//      - 灰区 → 轻量域分类器（RAG_CLASSIFY_MODEL，默认 qwen-turbo，独立 5s 短超时）裁决。注意它是「知识库覆盖范围判定」
 //        而非「是否育儿话题判定」——30 题拒答里一半本身是宝宝相关的（品牌推荐/遛娃去处/确诊求治疗/纯情绪求助）：
 //        判 'no' → 拒答（gate='classify_refuse'）；判 'yes' → 回答（gate='classify_pass'，救回灰区内真育儿题）；
 //        但 topScore < LOW_CONF（0.40 硬编码）即使 'yes' 也拒答（gate='low_conf_refuse'，防向量为零重叠硬凑资料）
-//      - 分类器故障/未开通（classifySafe 返回 null）→ 退回 RAG_REFUSE_THRESHOLD 单阈值兜底
-//        （gate='threshold_refuse' / 'threshold_pass'）：控制台现设 0.6，它是「分类器故障时的兜底线」而非常态工作线
+//      - 分类器故障/未开通/超时（classifySafe 返回 null）→ 退回 RAG_REFUSE_THRESHOLD 单阈值兜底
+//        （gate='threshold_refuse' / 'threshold_pass'，返回体附 degraded:true 供 eval/监控感知降级）：
+//        控制台现设 0.6，它是「分类器故障时的兜底线」而非常态工作线
 //
 // 合规定位：科普 + 经验分享，不做诊断/用药建议；系统提示词与拒答文案均含免责声明。
 //
@@ -55,7 +56,7 @@ const KB_COLLECTION = "kb_chunks";
 const TOP_K = 4;
 // 函数版本号：每次部署后跑 action:'version' 就能确认云端跑的是不是最新代码
 // （排查「改了没生效」时，先看这个，别靠猜）
-const FN_VERSION = "2026-11-16.1";
+const FN_VERSION = "2026-11-16.2";
 // 模型可经环境变量切换（不改代码就能换 key 的账号/模型）：
 //   RAG_EMBED_MODEL 默认 text-embedding-v3；新账号想用新人免费额度 → 设为 text-embedding-v4
 //   （v3 已不提供新人免费额度；v4 有 100 万 token/90 天，同样支持 1024 维）
@@ -95,7 +96,7 @@ const SYSTEM_PROMPT =
 
 // ---------- DashScope 调用（HTTPS，与 getWeather 同风格，无额外依赖） ----------
 
-function httpsPostJson(url, headers, body) {
+function httpsPostJson(url, headers, body, timeoutMs) {
   return new Promise((resolve, reject) => {
     const u = new URL(url);
     const payload = JSON.stringify(body);
@@ -113,7 +114,9 @@ function httpsPostJson(url, headers, body) {
       }
     );
     req.on("error", reject);
-    req.setTimeout(25000, () => req.destroy(new Error("请求超时")));
+    // 可选独立超时（毫秒，缺省 25000 不变）：classify 传 5000——灰区最坏链路
+    // classify 25s + chat 25s 会贴近 60s 平台预算，超时会以 -504003 整体失败而非走拒答
+    req.setTimeout(timeoutMs || 25000, () => req.destroy(new Error("请求超时")));
     req.write(payload);
     req.end();
   });
@@ -166,10 +169,12 @@ async function chat(prompt) {
 const CLASSIFY_SYSTEM_PROMPT =
   "你是问答范围判定器。知识库可回答的范围：0-3岁宝宝的日常养育，包括宝宝健康科普（症状观察、何时就医、疫苗）、喂养（母乳/辅食/奶量/营养）、睡眠、发育（大运动/出牙/语言）、家庭安全防护、妈妈产后情绪与家庭支持。\n" +
   "不属于范围（一律判否）：怀孕/孕期问题；家长自身健康（如成人血压）；品牌/产品/地点推荐；政策/政务/补贴/手续；宠物饲养；已确诊疾病求治疗方案或用药剂量；只表达情绪、没有任何具体症状或信息的模糊求助（如\"宝宝这是怎么回事，急死了\"）。\n" +
-  "问题在范围内时只输出 yes，范围外只输出 no，不要任何解释。";
+  "问题在范围内时只输出 yes，范围外只输出 no。\n" +
+  "必须输出英文 yes 或 no 两个词之一，不要输出任何其他语言或文字，不要解释。";
 
 // 轻量域分类：qwen-turbo、temperature 0、max_tokens 16（与主回答共用 compatible-mode URL，
-// 靠 model / max_tokens 区分用途）。返回 'yes' / 'no'；输出无法解析时抛错（由 classifySafe 兜住）
+// 靠 model / max_tokens 区分用途）。返回 'yes' / 'no'；输出无法解析时抛错（由 classifySafe 兜住）。
+// 独立 5s 短超时：灰区最坏链路 classify+chat 各 25s 会贴近 60s 平台预算，超时走 classifySafe→null→兜底
 async function classify(question) {
   const key = process.env.DASHSCOPE_API_KEY;
   if (!key) throw new Error("缺少环境变量 DASHSCOPE_API_KEY");
@@ -184,12 +189,15 @@ async function classify(question) {
       ],
       temperature: 0,
       max_tokens: 16,
-    }
+    },
+    5000
   );
   if (!res.choices || !res.choices[0]) throw new Error("classify 返回异常: " + JSON.stringify(res).slice(0, 200));
   const text = (res.choices[0].message.content || "").trim().toLowerCase();
-  if (text.indexOf("yes") >= 0) return "yes";
-  if (text.indexOf("no") >= 0) return "no";
+  // 否定信号优先（no/否/不，中英都收）：若先查肯定，「不是」会被「是」子串误判成 yes；
+  // 纯英文 "yes" 不含否定子串不受影响。两边都无法识别 → 抛错走兜底（可观测，不静默）
+  if (text.indexOf("no") >= 0 || text.indexOf("否") >= 0 || text.indexOf("不") >= 0) return "no";
+  if (text.indexOf("yes") >= 0 || text.indexOf("是") >= 0) return "yes";
   throw new Error("classify 输出无法解析: " + text.slice(0, 50));
 }
 
@@ -393,11 +401,14 @@ exports.main = async (event, context) => {
       }
     }
     if (gate === "classify_refuse" || gate === "threshold_refuse" || gate === "low_conf_refuse") {
-      return {
+      const refuseResp = {
         success: true, refused: true, answer: "", gate,
         refuseNote: "这个问题我暂时没有足够的资料来回答。宝宝的情况如果持续或加重，建议咨询儿保医生。",
         sources: [], topScore: Number(topScore.toFixed(3)), latencyMs: Date.now() - t0,
       };
+      // 降级标记：只在分类器故障走阈值兜底的路径出现（其余路径不带该字段，保持返回形状轻量）
+      if (gate === "threshold_refuse") refuseResp.degraded = true;
+      return refuseResp;
     }
 
     // 5. 组装上下文 + 风险信号检测
@@ -412,12 +423,15 @@ exports.main = async (event, context) => {
       "\n\n参考资料：\n" + context
     );
 
-    return {
+    const answerResp = {
       success: true, refused: false, answer, gate,
       riskTip: hitRisk ? "你的描述中包含需要医生评估的信号，请尽快就医确认。" : "",
       sources: scored.map((s) => ({ topic: s.chunk.topic || "通用", source: s.chunk.source || "" })),
       topScore: Number(topScore.toFixed(3)), latencyMs: Date.now() - t0,
     };
+    // 降级标记：同上，只在分类器故障走阈值兜底的路径出现
+    if (gate === "threshold_pass") answerResp.degraded = true;
+    return answerResp;
   } catch (e) {
     return { success: false, error: e.message };
   }
