@@ -48,7 +48,7 @@ const KB_COLLECTION = "kb_chunks";
 const TOP_K = 4;
 // 函数版本号：每次部署后跑 action:'version' 就能确认云端跑的是不是最新代码
 // （排查「改了没生效」时，先看这个，别靠猜）
-const FN_VERSION = "2026-11-14.2";
+const FN_VERSION = "2026-11-15.1";
 // 模型可经环境变量切换（不改代码就能换 key 的账号/模型）：
 //   RAG_EMBED_MODEL 默认 text-embedding-v3；新账号想用新人免费额度 → 设为 text-embedding-v4
 //   （v3 已不提供新人免费额度；v4 有 100 万 token/90 天，同样支持 1024 维）
@@ -101,16 +101,23 @@ function httpsPostJson(url, headers, body) {
   });
 }
 
-// 文本向量化：text-embedding-v3，1024 维
-async function embed(text) {
+// 文本向量化：百炼原生 text-embedding 接口（1024 维）
+// 请求体形状必须按原生规范：
+//   - input.texts 为数组（旧写法 input.text 会报 InvalidParameter: input.texts should not be null）
+//   - dimension 等参数放在 parameters，顶层不放
+//   - textType 可选：传 "query" / "document" 进 parameters.text_type（v3+ 支持按用途优化向量，
+//     检索质量更好）；不传则不加该字段，保持向后兼容
+async function embed(text, textType) {
   const key = process.env.DASHSCOPE_API_KEY;
   if (!key) throw new Error("缺少环境变量 DASHSCOPE_API_KEY");
+  const parameters = { dimension: 1024, output_type: "dense" };
+  if (textType) parameters.text_type = textType;
   const res = await httpsPostJson(
     "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding",
     { Authorization: "Bearer " + key },
-    { model: EMBED_MODEL, input: { text }, dimension: 1024 }
+    { model: EMBED_MODEL, input: { texts: [text] }, parameters: parameters }
   );
-  if (!res.output || !res.output.embeddings || !res.output.embeddings[0]) {
+  if (!res.output || !res.output.embeddings || !res.output.embeddings[0] || !res.output.embeddings[0].embedding) {
     throw new Error("embedding 返回异常: " + JSON.stringify(res).slice(0, 200));
   }
   return res.output.embeddings[0].embedding;
@@ -238,7 +245,7 @@ async function buildKb(event, context) {
       if (embedded + failed >= BUILD_BATCH) break;
       if (embedded + failed > 0 && timeUp()) break;
       try {
-        const vec = await embed(doc.question + "\n" + doc.text);
+        const vec = await embed(doc.question + "\n" + doc.text, "document");
         await db.collection(KB_COLLECTION).doc(doc._id).update({ data: { embedding: vec } });
         embedded++;
       } catch (e) {
@@ -287,8 +294,8 @@ exports.main = async (event, context) => {
   if (!question) return { success: false, error: "question 为空" };
 
   try {
-    // 1. 问题向量化
-    const qVec = await embed(question);
+    // 1. 问题向量化（query 用途：与 document 语料向量在检索时更区分）
+    const qVec = await embed(question, "query");
 
     // 2. 拉知识库 + 月龄前置过滤（age_start/age_end 为 -1 表示不限月龄）
     const kb = await loadKb();
