@@ -88,6 +88,7 @@ Page({
     if (this.data.asking) return; // 防连点
     // 上一条还没打完：立即置满再开新的，保证同屏同时只有一条在打字
     this._finishTypingNow();
+    this._followPaused = false; // 新提问恢复滚动跟随（滚到新卡）
     QA_SEQ += 1;
     const item = { id: 'qa_' + QA_SEQ, q, status: 'loading' };
     const history = this.data.history.concat([item]);
@@ -202,9 +203,12 @@ Page({
     this._typePos = pos;
     const patch = { ['history[' + i + '].answer']: full.slice(0, pos) };
     if (pos >= full.length) patch['history[' + i + '].typed'] = true;
-    // 双锚点交替：scroll-into-view 只有值变化才触发滚动，恒定值不滚
-    this._anchorToggle = !this._anchorToggle;
-    patch.scrollAnchor = this._anchorToggle ? 'anchor-a' : 'anchor-b';
+    // 双锚点交替：scroll-into-view 只有值变化才触发滚动，恒定值不滚。
+    // 用户回看历史时暂停自动滚底（_followPaused，见 onHistTouch）——强拽回底部会打断翻看
+    if (!this._followPaused) {
+      this._anchorToggle = !this._anchorToggle;
+      patch.scrollAnchor = this._anchorToggle ? 'anchor-a' : 'anchor-b';
+    }
     this.setData(patch);
     return pos >= full.length;
   },
@@ -233,6 +237,25 @@ Page({
 
   _clearTypeTimer() {
     if (this._typeTimer) { clearInterval(this._typeTimer); this._typeTimer = null; }
+  },
+
+  // ===== 回看历史时暂停自动滚底（ChatGPT 同款交互） =====
+  // 打字机每 tick 强制滚底，用户往回翻看会被不停拽回底部——体验痛点。
+  // 程序化的 scroll-into-view 不会触发 touch 事件，所以 bindtouchstart 能可靠区分「用户手势」：
+  // 用户一碰历史区就暂停跟随；滚回列表底部（bindscrolltolower，默认阈值 50px 内）即恢复。
+  // 新提问时 ask() 会重置为跟随（新问题理应滚到新卡）。
+  onHistTouch() { this._followPaused = true; },
+  onHistBottom() { this._followPaused = false; },
+
+  // 长按答案复制全文（wx.setClipboardData 系统自带「内容已复制」toast，不再叠加）。
+  // 打字进行中也复制完整 fullAnswer（家长转发场景要的是全文，不是半截）。
+  copyAnswer(e) {
+    const i = +e.currentTarget.dataset.i;
+    const item = this.data.history[i];
+    if (!item || item.status !== 'ans') return;
+    const text = item.fullAnswer || item.answer || '';
+    if (!text) return;
+    wx.setClipboardData({ data: text, fail: () => {} });
   },
 
   // 拒答态入口：去接种点。

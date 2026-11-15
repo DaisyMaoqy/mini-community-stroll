@@ -12,8 +12,9 @@
   </view>
 
   <!-- 历史区：占满剩余高度、内部滚动；提问卡头（标题/副文案/示例 chips）+ 全部问答卡 -->
-  <!-- scroll-into-view 吃双锚点交替值：打字/新提问时滚动跟随（值不变不触发） -->
-  <scroll-view class="ask-main" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollAnchor}}">
+  <!-- scroll-into-view 吃双锚点交替值：打字/新提问时滚动跟随（值不变不触发）。
+       bindtouchstart / bindscrolltolower：用户一碰历史区暂停自动滚底、滚回底部恢复（ChatGPT 同款） -->
+  <scroll-view class="ask-main" scroll-y enhanced show-scrollbar="{{false}}" scroll-into-view="{{scrollAnchor}}" bindtouchstart="onHistTouch" bindscrolltolower="onHistBottom">
     <view class="ask-list">
 
       <!-- 提问卡头：chips 仅 idle（还没有任何问答）时展示，点击填入底部输入框 -->
@@ -35,7 +36,8 @@
         <!-- 正常回答：answer 是打字机已上屏部分；点答案区可跳过打字（仅打字中生效） -->
         <block wx:if="{{item.status === 'ans'}}">
           <view class="qa-risk" wx:if="{{item.riskTip}}">就医提醒：{{item.riskTip}}</view>
-          <view class="qa-a" data-i="{{index}}" bindtap="skipTyping">{{item.answer}}</view>
+          <!-- 答案区：answer 是打字机已上屏部分；点一下跳过打字（仅打字中生效），长按复制全文 -->
+          <view class="qa-a" data-i="{{index}}" bindtap="skipTyping" bindlongpress="copyAnswer">{{item.answer}}</view>
           <!-- sources chips 等打字完成（typed）再出现；riskTip 是就医提醒，立即显示（安全优先） -->
           <view class="src-list" wx:if="{{item.typed && item.sources.length > 0}}">
             <view class="src-chip" wx:for="{{item.sources}}" wx:for-item="s" wx:for-index="si" wx:key="topic">{{s.topic}} · {{s.source}}</view>
