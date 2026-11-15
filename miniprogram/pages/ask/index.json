@@ -1,4 +1,5 @@
 {
   "usingComponents": {},
-  "navigationBarTitleText": "育儿问答"
+  "navigationBarTitleText": "育儿问答",
+  "disableScroll": true
 }

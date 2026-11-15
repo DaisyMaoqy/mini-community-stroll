@@ -1,10 +1,20 @@
 /* pages/ask/index.wxss 育儿问答（视觉对齐 v15：全量引用 styles/tokens.wxss 变量，卡片风对齐首页） */
 
-/* 页面骨架：卡片纵向 16px 间距；底部留白避开固定合规页脚 */
+/* 页面骨架 v2：对话式布局。flex column 顶天立地：历史区 flex:1 + min-height:0 内滚，
+   提问坞是 flex column 的底部块（天然固定且不遮内容，不用 fixed 实现）。
+   padding 归零（覆盖 .container 的 16px）：让坞横向贴满视口，
+   历史区与坞各自的横向留白由 .ask-main / .ask-dock 自己的 padding 管。 */
 .ask-page {
-  display: flex; flex-direction: column; gap: var(--gap-lg);
-  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; height: 100vh; padding: 0;
 }
+
+/* 历史区：scroll-view 拿到确定高度靠 flex:1 + min-height:0（否则会被内容撑开、页面级溢出） */
+.ask-main {
+  flex: 1; min-height: 0;
+  padding: 16px 16px 12px; box-sizing: border-box;
+}
+/* 内层纵向列表：管月龄行 / 提问卡头 / 问答卡的间距（scroll-view 直接套 flex 布局不稳） */
+.ask-list { display: flex; flex-direction: column; gap: 12px; }
 
 /* 月龄行：peach 胶囊（配色与首页宝宝胶囊同源）；未设置月龄时降为浅砂胶囊 */
 .baby-row { display: flex; }
@@ -16,16 +26,9 @@
 }
 .baby-chip-unset { background: var(--sand); color: var(--ink3); font-weight: 600; }
 
-/* 提问卡 */
+/* 提问卡头（标题 / 副文案 / 示例 chips）：输入框已移到底部提问坞 */
 .ask-box { display: flex; flex-direction: column; gap: var(--gap-sm); }
 .ask-box__sub { line-height: 1.5; }
-.ask-ta {
-  width: 100%; box-sizing: border-box;
-  background: var(--sand); border-radius: var(--r-sm);
-  padding: 12px 14px; font-size: var(--fs-md); color: var(--ink);
-  line-height: 1.6; min-height: 76px;
-}
-.ask-ta__meta { align-self: flex-end; }
 
 /* 示例问题 chips：仅 idle 态展示；按下轻微缩放反馈 */
 .samples { display: flex; flex-wrap: wrap; gap: var(--gap-sm); }
@@ -36,14 +39,48 @@
 }
 .samples__chip:active { transform: scale(.96); }
 
-/* 提问按钮：复用全局 .btn-primary（本页未覆盖它），满宽；禁用态半透明 */
-.ask-btn { width: 100%; margin: 4px 0 0; line-height: 1.2; }
+/* ===== 提问坞：flex column 底块 ===== */
+/* ⚠️ calc 里含 env() 的容器必须显式 box-sizing:border-box，否则安全区算两遍（elder-tabbar 踩过的坑） */
+.ask-dock {
+  flex: none;
+  background: var(--card); border-top: 1px solid var(--line);
+  padding: 12px 16px calc(8px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+/* 一行排布：输入框容器（flex:1 可收缩）+ 右侧窄按钮（flex:none 不被压缩），底端对齐 */
+.ask-dock__row { display: flex; align-items: flex-end; gap: 10px; }
+/* 输入框容器：砂底 + 圆角收到容器上（textarea 透明化），字数提示落在框内底部右侧。
+   刻意用「流式排布」而不是 absolute 覆盖 textarea：textarea 在部分基础库/真机上是原生组件，
+   绝对定位的 view 压上去可能被它盖住或触发层级问题。 */
+.ask-ta-wrap {
+  flex: 1; min-width: 0; box-sizing: border-box;
+  background: var(--sand); border-radius: var(--r-sm);
+  padding: 12px 14px 8px;
+}
+.ask-ta {
+  width: 100%; box-sizing: border-box;
+  background: transparent;
+  padding: 0; font-size: var(--fs-md); color: var(--ink);
+  line-height: 1.6; min-height: 62px;
+}
+.ask-ta__meta { text-align: right; line-height: 1.2; margin-top: 6px; }
+/* 提问按钮：复用全局 .btn-primary 的渐变底，改窄胶囊与输入框同排（flex:none 固定窄宽，min-width 兜住中文两字不换行） */
+.ask-btn {
+  width: auto; margin: 0; flex: none; line-height: 1.2;
+  padding: 12px 18px; min-width: 76px; border-radius: var(--r);
+}
 .ask-btn[disabled] {
   opacity: .5; color: var(--card);
   background: linear-gradient(135deg, var(--green), var(--green-d));
 }
+.ask-btn::after { border: none; }
+/* 合规页脚：坞内普通行（背景与分隔线由坞提供），所有态常驻可见 */
+.ask-foot {
+  position: static; padding: 8px 0 0; text-align: center;
+  font-size: var(--fs-meta); color: var(--ink3); line-height: 1.5;
+}
 
-/* 问答卡：问题行 + 三态回答体 */
+/* ===== 历史区问答卡：问题行 + 三态回答体 ===== */
 .qa-card { display: flex; flex-direction: column; gap: var(--gap-md); }
 .qa-q {
   font-size: var(--fs-md); font-weight: 800; color: var(--ink);
@@ -100,12 +137,3 @@
 }
 .qa-btn::after { border: none; }
 .qa-btn:active { opacity: .85; }
-
-/* 合规页脚：固定底部小字，所有态常驻（浅卡底 + 细分隔线） */
-.ask-foot {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
-  padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
-  background: var(--card); border-top: 1px solid var(--line);
-  font-size: var(--fs-meta); color: var(--ink3);
-  text-align: center; line-height: 1.5;
-}
