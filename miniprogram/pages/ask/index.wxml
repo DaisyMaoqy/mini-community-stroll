@@ -44,7 +44,7 @@
           </view>
         </block>
 
-        <!-- 拒答：refuseNote 原样展示，按 refuseReason 分三种形态 -->
+        <!-- 拒答：refuseNote 原样展示，按 refuseReason 分四种形态 -->
         <block wx:if="{{item.status === 'refuse'}}">
           <view class="qa-refuse">{{item.refuseNote}}</view>
           <!-- insufficient（含字段缺失兜底）：域内但语料没覆盖，维持去接种点入口 -->
@@ -53,6 +53,8 @@
           <view class="qa-refuse__hint" wx:if="{{item.refuseReason === 'out_of_scope'}}">可以问问我这些：宝宝辅食怎么加 · 夜里频繁醒怎么办 · 几个月会走路算正常</view>
           <!-- vague：缺月龄和具体表现的模糊求助，不出按钮，提示补全后再问 -->
           <view class="qa-refuse__hint" wx:if="{{item.refuseReason === 'vague'}}">补充宝宝月龄和具体表现后再问一次</view>
+          <!-- nonsense：输入预检识别乱拼/误粘贴，专属文案由云端 refuseNote 给出，不出按钮、不启动打字机 -->
+          <!-- 不加 hint：云端 refuseNote 已自带清空重输引导，避免同一张卡重复展示同一句 -->
         </block>
 
         <!-- 失败：错误文案（透出 error） + 原地重试 -->

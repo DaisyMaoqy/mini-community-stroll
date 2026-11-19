@@ -1,8 +1,11 @@
 // pages/ask/index.js 育儿问答（P3：RAG AI 科普助手，调用云函数 ask；契约冻结不改云函数）
 // 三态口径：正常回答（answer + riskTip + sources）/ 拒答 / 失败（error + 原地重试）。
-// 拒答按 refuseReason 分三种展示形态：insufficient（域内但语料没覆盖，含字段缺失兜底）→ refuseNote + 去接种点按钮；
+// 拒答按 refuseReason 分四种展示形态：insufficient（域内但语料没覆盖，含字段缺失兜底）→ refuseNote + 去接种点按钮；
 // out_of_scope（政策/成人健康/品牌地点推荐等范围外）→ refuseNote + 可问范围提示，不出按钮；
-// vague（模糊求助，缺月龄和具体表现）→ refuseNote + 补全提示，不出按钮。refuseNote 由云端按类给出，前端原样展示。
+// vague（模糊求助，缺月龄和具体表现）→ refuseNote + 补全提示，不出按钮；
+// nonsense（输入预检识别乱拼/误粘贴）→ 轻提示卡 + 清空重输弱提示，不出按钮。
+// refuseNote 由云端按类给出，前端原样展示；nonsense 文案首选返回体 refuseNote（云端 2026-11-16.4 沿用拒答体形状，不带 refuseCopy），
+// refuseCopy 仅作可选别名兼容（云端不必提供），两者都没有才用本地兜底文案。
 // 合规口径 PRD 8.2：所有态页脚常驻「科普非诊疗」提示；riskTip 非空即醒目展示就医提醒。
 // 体验增强：答案打字机（前端逐字上屏动画；云函数 callFunction 非流式整段返回，
 // fullAnswer 一次进 data，answer 只放「已上屏部分」随动画增量更新；riskTip 立即显示，sources 打完再出）。
@@ -19,6 +22,9 @@ const SAMPLE_QUESTIONS = [
 // 打字机节奏：30ms 一 tick、每 tick 追加 2 字（200 字答案约 3 秒，setData 频率可控）
 const TYPE_TICK_MS = 30;
 const TYPE_STEP = 2;
+
+// nonsense 拒答的本地兜底文案：云端未带 refuseNote（或可选别名 refuseCopy）时才用（前端不主动拼业务文案）
+const NONSENSE_COPY = '这个问题我好像没看懂，可能误粘贴了别的内容。清空输入框，重新用一句话描述宝宝的情况，我再帮你查～';
 
 // 会话内历史记录 id 生成（仅用于 wx:key，不落盘）
 let QA_SEQ = 0;
@@ -119,7 +125,7 @@ Page({
 
   // 调云函数 ask（契约冻结）：data = { question, babyAgeMonths }；月龄未知时显式传 null。
   // 返回扁平结构：正常 { success:true, refused:false, answer, riskTip, sources, ... }；
-  // 拒答 { success:true, refused:true, refuseNote, refuseReason, sources:[] }；
+  // 拒答 { success:true, refused:true, refuseNote, refuseReason, sources:[] }（nonsense 文案同样走 refuseNote；refuseCopy 仅可选别名）；
   // 失败 { success:false, error }；云函数异常时 callFunction 本身 reject，走 catch。
   async _request(q, i) {
     try {
@@ -133,15 +139,19 @@ Page({
       const r = (res && res.result) || {};
       if (r.success === true && r.refused === true) {
         // 拒答：refuseNote 由云端按 refuseReason 分类给出，前端原样展示、不拼文案。
-        // refuseReason 非三值之一（含云端未部署新版时字段缺失）一律兜底 'insufficient'，
-        // 使旧版云函数的表现与现状完全一致（refuseNote + 去接种点按钮）。
-        const reason = (r.refuseReason === 'out_of_scope' || r.refuseReason === 'vague')
+        // refuseReason 非四值之一（含云端未部署新版时字段缺失）一律兜底 'insufficient'，
+        // 使旧版云函数的表现与现状完全一致（refuseNote + 去接种点按钮）；
+        // 反向兼容：旧前端拿到新版 nonsense 也只会落到这个兜底，不崩（只是没有专属形态）。
+        const reason = (r.refuseReason === 'out_of_scope' || r.refuseReason === 'vague' || r.refuseReason === 'nonsense')
           ? r.refuseReason
           : 'insufficient';
+        const note = (reason === 'nonsense')
+          ? ((typeof r.refuseNote === 'string' && r.refuseNote) || (typeof r.refuseCopy === 'string' && r.refuseCopy) || NONSENSE_COPY)
+          : (r.refuseNote || '这个问题暂时不在科普语料范围内');
         this._update(i, {
           status: 'refuse',
           refuseReason: reason,
-          refuseNote: r.refuseNote || '这个问题暂时不在科普语料范围内',
+          refuseNote: note,
         });
       } else if (r.success === true) {
         // 打字机数据模型：fullAnswer（完整答案）一次进 data；answer 只是「已上屏部分」，随动画增量更新
