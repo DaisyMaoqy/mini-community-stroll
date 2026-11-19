@@ -14,9 +14,11 @@
 // 拒答设计（第 0 道闸 + 两道闸 + 三档分数带；30 题校准结论：hit 20/20、refuse 0/10，
 //   两侧 topScore 重叠区间 0.582~0.667，单阈值已到极限，故加域分类闸）：
 //   0. 确定性输入预检（looksNonsense，入口、任何 http 调用之前）：空串 / 实义字符 <2 /
-//      同一片段粘贴 2~6 遍的刷屏串 / 超 500 字 → 直接拒答（gate='input_precheck'，
-//      refuseReason='nonsense'）。线上对抗测试发现垃圾串内嵌强语料关键词时 topScore 可 ≥0.75，
-//      走 high_conf 绕过域分类闸生成奇怪回答；这类输入不该花 embedding 的钱，也不交给概率模型碰运气。
+//      同一短语连续重复 ≥3 遍的周期刷屏串（含夹空格/换行的粘贴）/ 超 500 字 → 直接拒答
+//      （gate='input_precheck'，refuseReason='nonsense'）。线上对抗测试发现垃圾串内嵌强语料
+//      关键词时 topScore 可 ≥0.75，走 high_conf 绕过域分类闸生成奇怪回答；短单元（<12 字）
+//      重复还会让旧「总长反推单元」规则漏判，退化成答非所问的 insufficient 拒答。
+//      这类输入不该花 embedding 的钱，也不交给概率模型碰运气。
 //      规则刻意保守，只拦「几乎不可能是问题」的形态（「哈哈哈哈」等交给分类器）。
 //   1. 风险信号词前置：发热/抽搐/脱水/体重不增/确诊/治疗/用药等 → 无论检索得分如何，回答强制附就医提示
 //   2. 域分类 + 置信度组合闸（三档分数带）：
@@ -68,7 +70,7 @@ const KB_COLLECTION = "kb_chunks";
 const TOP_K = 4;
 // 函数版本号：每次部署后跑 action:'version' 就能确认云端跑的是不是最新代码
 // （排查「改了没生效」时，先看这个，别靠猜）
-const FN_VERSION = "2026-11-16.4";
+const FN_VERSION = "2026-11-16.5";
 // 模型可经环境变量切换（不改代码就能换 key 的账号/模型）：
 //   RAG_EMBED_MODEL 默认 text-embedding-v3；新账号想用新人免费额度 → 设为 text-embedding-v4
 //   （v3 已不提供新人免费额度；v4 有 100 万 token/90 天，同样支持 1024 维）
@@ -137,24 +139,46 @@ function refuseResponse(gate, reason, topScore, t0) {
 }
 
 // ---------- 第 0 道闸：确定性输入预检（零 API、零延迟，入口处执行） ----------
-// 背景：线上有人把「什么时候必须去医院？失败：错误文案（透出 error） + 原地重试」粘贴 5 遍
-// 做对抗测试。垃圾串里内嵌「去医院」等强语料关键词，embedding 后 topScore 竟 ≥ HIGH_CONF，
-// 直接走 high_conf 绕过域分类闸，生成了奇怪回答。纯字符串规则在入口拦掉，省 embedding 调用。
-// 规则刻意保守：只拦「几乎不可能是问题」的形态，其余（含「哈哈哈哈」）交给分类器。
+// 背景：线上对抗测试把一句话粘贴多遍当问题提交。首例「什么时候必须去医院？失败：错误文案…」×5
+// 内嵌「去医院」等强语料关键词，embedding 后 topScore 竟 ≥ HIGH_CONF，直接走 high_conf
+// 绕过域分类闸生成奇怪回答。第二例「已自带清空重输引导」×5（9 字短单元）暴露旧规则缺陷：
+// 用「总长/k 反推单元长度 + probe≥12」判刷屏，单元短于 12 字时永远进不了检测，于是落到
+// 检索链路，变成一句答非所问的 insufficient 拒答（还带「去接种点问问」按钮）。
+// 现改为周期检测：折叠空白后枚举单元长度，不再依赖总长反推，短单元 / 夹空格换行的粘贴都能命中。
+// 规则刻意保守：只拦「几乎不可能是问题」的形态（「哈哈哈哈」等交给分类器）。
 function looksNonsense(raw) {
   const q = String(raw == null ? "" : raw).trim();
   if (!q) return true;                                              // a. trim 后为空
   // b. 实义字符 <2：拦「？？？」「。。。」这类纯符号；阈值取 2 而非更大——
   //    「吐奶」这种 2 字正常问题必须放行
   if ((q.match(/[\u4e00-\u9fa5a-zA-Z0-9]/g) || []).length < 2) return true;
-  // c. 重复刷屏：k=2..6 试切，probe 是「假设的输入单元」，第二段与它逐字相同即判粘贴刷屏。
-  //    k=5 时 probe 正好是「同一片段粘贴 5 遍」里的那一遍；probe≥12 防止「哈哈哈哈」误伤。
-  for (let k = 2; k <= 6; k++) {
-    const unitLen = Math.floor(q.length / k);
-    const probe = q.slice(0, unitLen);
-    if (probe.length >= 12 && q.slice(unitLen, unitLen * 2) === probe) return true;
-  }
   if (q.length > 500) return true;                                 // d. 前端 maxlength=200，云端兜底
+  // c. 重复刷屏：整串是否由「同一短语连续重复」构成的周期串。
+  //    - 先折叠所有空白：粘贴夹带的空格/换行不应打断周期判断（实测用例带 \n 也要拦）。
+  //    - 枚举单元长度 p（≥4 字）：下限排除「哈哈哈哈」「怎么办怎么办」这类短叠词，
+  //      它们不是「一段话被粘贴多遍」，交给分类器处理。
+  //    - 两档拦截（保守）：短单元（4~7 字）须连续重复 ≥3 次；长单元（≥8 字）重复 2 次即拦
+  //      ——长片段复制两遍几乎不可能是正常提问，同时保住旧规则 k=2 能拦的能力。
+  //    - 整串须由该单元周期构成（允许末尾残缺半段），避免「含重复措辞的正常问题」被误伤。
+  //    - 不再用「总长/k 反推单元长度」：那种写法只在严格等分时成立，短单元/带分隔符必漏。
+  const s = q.replace(/\s+/g, "");
+  const MIN_UNIT = 4;
+  let maxUnit = Math.floor(s.length / 2);          // 至少能重复 2 次
+  if (maxUnit > 200) maxUnit = 200;                // 单元不必超过 200 字，控住最坏枚举量
+  for (let p = MIN_UNIT; p <= maxUnit; p++) {
+    const unit = s.slice(0, p);
+    let full = 1;                                  // 已确认的完整重复段数（含首段）
+    let periodic = true;
+    for (let off = p; off < s.length; off += p) {
+      const seg = s.slice(off, off + p);
+      if (seg === unit) { full++; continue; }
+      // 末尾残缺半段（粘贴被截断）允许；但必须是最后一段且是单元前缀
+      if (off + p >= s.length && seg && unit.indexOf(seg) === 0) break;
+      periodic = false; break;
+    }
+    const hit = full >= 3 || (full >= 2 && p >= 8);
+    if (periodic && hit) return true;
+  }
   return false;
 }
 
