@@ -1,7 +1,7 @@
 // ask —— 育儿问答 RAG 云函数（最小可跑版：月龄前置过滤 + 内存余弦召回 + 置信度拒答）
 // 前端：wx.cloud.callFunction({ name:'ask', data:{ question, babyAgeMonths } })
 // 返回（扁平）：{
-//   success, refused, answer, gate, refuseReason(拒答时三选一: out_of_scope|vague|insufficient),
+//   success, refused, answer, gate, refuseReason(拒答时四选一: out_of_scope|vague|insufficient|nonsense),
 //   sources:[{topic, source}], topScore, latencyMs
 // }
 //
@@ -11,8 +11,13 @@
 //   已知边界：云数据库 get 单次上限 1000 条，>1000 需分页拉取（当前规模不会触发，
 //   但 kbChunks 分页逻辑已预留，防止知识库增长后静默截断导致「召回变差」难排查）。
 //
-// 拒答设计（两道闸 + 三档分数带；30 题校准结论：hit 20/20、refuse 0/10，
+// 拒答设计（第 0 道闸 + 两道闸 + 三档分数带；30 题校准结论：hit 20/20、refuse 0/10，
 //   两侧 topScore 重叠区间 0.582~0.667，单阈值已到极限，故加域分类闸）：
+//   0. 确定性输入预检（looksNonsense，入口、任何 http 调用之前）：空串 / 实义字符 <2 /
+//      同一片段粘贴 2~6 遍的刷屏串 / 超 500 字 → 直接拒答（gate='input_precheck'，
+//      refuseReason='nonsense'）。线上对抗测试发现垃圾串内嵌强语料关键词时 topScore 可 ≥0.75，
+//      走 high_conf 绕过域分类闸生成奇怪回答；这类输入不该花 embedding 的钱，也不交给概率模型碰运气。
+//      规则刻意保守，只拦「几乎不可能是问题」的形态（「哈哈哈哈」等交给分类器）。
 //   1. 风险信号词前置：发热/抽搐/脱水/体重不增/确诊/治疗/用药等 → 无论检索得分如何，回答强制附就医提示
 //   2. 域分类 + 置信度组合闸（三档分数带）：
 //      - topScore ≥ RAG_HIGH_CONF（默认 0.75）→ 直接回答（gate='high_conf'，大多数正常育儿问题走这条，省一次分类调用）
@@ -25,8 +30,9 @@
 //      - 分类器故障/未开通/超时（classifySafe 返回 null）→ 退回 RAG_REFUSE_THRESHOLD 单阈值兜底
 //        （gate='threshold_refuse'（refuseReason='insufficient'）/ 'threshold_pass'，返回体附 degraded:true 供 eval/监控感知降级）：
 //        控制台现设 0.6，它是「分类器故障时的兜底线」而非常态工作线
-//      - 拒答文案按 refuseReason 三分（契约与前端 pages/ask 动作按钮对应）：out_of_scope=域外指引（社区群/办理窗口）、
-//        vague=追问月龄与具体表现、insufficient=域内语料未覆盖（保留就医引导）——
+//      - 拒答文案按 refuseReason 四分（契约与前端 pages/ask 动作按钮对应）：out_of_scope=域外指引（社区群/办理窗口）、
+//        vague=追问月龄与具体表现、insufficient=域内语料未覆盖（保留就医引导）、
+//        nonsense=疑似误粘贴（提示清空输入框重来）——
 //        旧版三路共用「咨询儿保医生」，线上实测对政策补贴类问题答非所问
 //
 // 合规定位：科普 + 经验分享，不做诊断/用药建议；系统提示词与拒答文案均含免责声明。
@@ -62,7 +68,7 @@ const KB_COLLECTION = "kb_chunks";
 const TOP_K = 4;
 // 函数版本号：每次部署后跑 action:'version' 就能确认云端跑的是不是最新代码
 // （排查「改了没生效」时，先看这个，别靠猜）
-const FN_VERSION = "2026-11-16.3";
+const FN_VERSION = "2026-11-16.4";
 // 模型可经环境变量切换（不改代码就能换 key 的账号/模型）：
 //   RAG_EMBED_MODEL 默认 text-embedding-v3；新账号想用新人免费额度 → 设为 text-embedding-v4
 //   （v3 已不提供新人免费额度；v4 有 100 万 token/90 天，同样支持 1024 维）
@@ -100,10 +106,11 @@ const SYSTEM_PROMPT =
   "3. 回答末尾固定附一句：以上为一般性育儿科普，不构成医疗建议，如有异常请及时就医。\n" +
   "4. 用口语化中文回答，控制在 200 字内，分点不超过 3 点。";
 
-// 拒答文案按 refuseReason 分三类（契约与前端 pages/ask 的动作按钮一一对应）：
+// 拒答文案按 refuseReason 分四类（契约与前端 pages/ask 的动作按钮一一对应）：
 //   out_of_scope 域外（政策/品牌/成人健康…）→ 指引去问社区群/办理窗口，不再误提「咨询儿保医生」；
 //   vague 模糊求助 → 追问月龄与具体表现；
-//   insufficient 域内但语料未覆盖 → 保留就医引导。
+//   insufficient 域内但语料未覆盖 → 保留就医引导；
+//   nonsense 疑似误粘贴/刷屏 → 提示清空输入框重来。
 // （旧版三路共用一句「咨询儿保医生」，线上实测对政策补贴类问题答非所问）
 const REFUSE_COPY = {
   out_of_scope:
@@ -112,7 +119,44 @@ const REFUSE_COPY = {
     "我还没太看明白宝宝的具体情况。能补充一下宝宝月龄和具体表现吗？比如发烧多少度、持续几天、精神吃奶怎么样——说清楚一点我再帮你查。",
   insufficient:
     "这个问题我暂时没有足够的资料来回答。如果是宝宝的健康问题，可以先观察精神和吃奶情况，拿不准就咨询儿保医生。",
+  nonsense:
+    "这个问题我好像没看懂，可能误粘贴了别的内容。清空输入框，重新用一句话描述宝宝的情况，我再帮你查～",
 };
+
+// 拒答返回体统一构造：预检（input_precheck）与三档分数带的拒答路径共用同一形状，
+// 避免两处字段漂移（前端按 refused / refuseReason / refuseNote 消费）。
+// degraded 只在分类器故障走阈值兜底时出现——预检是确定性判断，不属于降级。
+function refuseResponse(gate, reason, topScore, t0) {
+  const resp = {
+    success: true, refused: true, answer: "", gate, refuseReason: reason,
+    refuseNote: REFUSE_COPY[reason] || REFUSE_COPY.insufficient,
+    sources: [], topScore: Number(topScore.toFixed(3)), latencyMs: Date.now() - t0,
+  };
+  if (gate === "threshold_refuse") resp.degraded = true;
+  return resp;
+}
+
+// ---------- 第 0 道闸：确定性输入预检（零 API、零延迟，入口处执行） ----------
+// 背景：线上有人把「什么时候必须去医院？失败：错误文案（透出 error） + 原地重试」粘贴 5 遍
+// 做对抗测试。垃圾串里内嵌「去医院」等强语料关键词，embedding 后 topScore 竟 ≥ HIGH_CONF，
+// 直接走 high_conf 绕过域分类闸，生成了奇怪回答。纯字符串规则在入口拦掉，省 embedding 调用。
+// 规则刻意保守：只拦「几乎不可能是问题」的形态，其余（含「哈哈哈哈」）交给分类器。
+function looksNonsense(raw) {
+  const q = String(raw == null ? "" : raw).trim();
+  if (!q) return true;                                              // a. trim 后为空
+  // b. 实义字符 <2：拦「？？？」「。。。」这类纯符号；阈值取 2 而非更大——
+  //    「吐奶」这种 2 字正常问题必须放行
+  if ((q.match(/[\u4e00-\u9fa5a-zA-Z0-9]/g) || []).length < 2) return true;
+  // c. 重复刷屏：k=2..6 试切，probe 是「假设的输入单元」，第二段与它逐字相同即判粘贴刷屏。
+  //    k=5 时 probe 正好是「同一片段粘贴 5 遍」里的那一遍；probe≥12 防止「哈哈哈哈」误伤。
+  for (let k = 2; k <= 6; k++) {
+    const unitLen = Math.floor(q.length / k);
+    const probe = q.slice(0, unitLen);
+    if (probe.length >= 12 && q.slice(unitLen, unitLen * 2) === probe) return true;
+  }
+  if (q.length > 500) return true;                                 // d. 前端 maxlength=200，云端兜底
+  return false;
+}
 
 // ---------- DashScope 调用（HTTPS，与 getWeather 同风格，无额外依赖） ----------
 
@@ -387,7 +431,15 @@ exports.main = async (event, context) => {
   const t0 = Date.now();
   const question = (event.question || "").trim();
   const babyAge = typeof event.babyAgeMonths === "number" ? event.babyAgeMonths : null;
+  // 空问题保持既有 success:false 错误契约（前端与 t1 依赖）；looksNonsense 内仍保留规则 a 作函数级防御
   if (!question) return { success: false, error: "question 为空" };
+
+  // 第 0 道闸：确定性输入预检——必须在任何 http 调用（embedding / classify / chat）之前，
+  // 命中即拒答，不花 API、不进概率模型。返回体与既有拒答同形状，但不带 degraded
+  // （这是确定性判断，不是分类器降级）。
+  if (looksNonsense(question)) {
+    return refuseResponse("input_precheck", "nonsense", 0, t0);
+  }
 
   try {
     // 1. 问题向量化（query 用途：与 document 语料向量在检索时更区分）
@@ -410,7 +462,8 @@ exports.main = async (event, context) => {
 
     // 4. 拒答第二道闸：三档分数带 + 域分类器裁决灰区
     //    （gate 写进返回体，eval 复核时能看出每题走了哪条路；
-    //     refuseReason 三选一：out_of_scope / vague / insufficient，前端按它选文案与动作按钮）
+    //     本闸内 refuseReason 三选一：out_of_scope / vague / insufficient，
+    //     前端按它选文案与动作按钮；第 0 道闸另有 nonsense）
     let gate;
     let refuseReason = null; // 仅拒答路径有值；回答路径不带该字段
     if (topScore >= HIGH_CONF) {
@@ -438,14 +491,7 @@ exports.main = async (event, context) => {
     }
     if (gate === "classify_refuse" || gate === "threshold_refuse" || gate === "low_conf_refuse") {
       const reason = refuseReason || "insufficient"; // 三路 gate 理论都必赋值，此行为防御性兜底
-      const refuseResp = {
-        success: true, refused: true, answer: "", gate, refuseReason: reason,
-        refuseNote: REFUSE_COPY[reason] || REFUSE_COPY.insufficient,
-        sources: [], topScore: Number(topScore.toFixed(3)), latencyMs: Date.now() - t0,
-      };
-      // 降级标记：只在分类器故障走阈值兜底的路径出现（其余路径不带该字段，保持返回形状轻量）
-      if (gate === "threshold_refuse") refuseResp.degraded = true;
-      return refuseResp;
+      return refuseResponse(gate, reason, topScore, t0);
     }
 
     // 5. 组装上下文 + 风险信号检测
