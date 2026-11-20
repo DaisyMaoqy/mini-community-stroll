@@ -184,6 +184,15 @@ page { --h-btn: 56px; --h-row: 56px; }
   box-sizing: border-box;
 }
 
+/* 卡片列表容器（elder-vac / elder-map 的 wx:for 列表必须套这个类）。
+   ⚠️ 不能用裸 <view> 包列表：.elder-page 的 gap 只作用于直接子元素，裸容器内部
+   是普通块流 → 多张 2px 边框卡片零间距贴死，双线粘连 + 圆角互切（真机截图已踩）。 */
+.ep__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
 /* 大按钮：高度随字号档变大（56 / 60 / 64） */
 .ep__btn {
   width: 100%;

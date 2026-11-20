@@ -25,8 +25,8 @@
     <view class="ep__state-s">数据还在补充，请稍后再看</view>
   </view>
 
-  <!-- 列表 -->
-  <view wx:else>
+  <!-- 列表（必须套 .ep__list：裸容器内部卡片零间距，2px 边框会贴成双线） -->
+  <view wx:else class="ep__list">
     <view wx:for="{{list}}" wx:key="id" class="ep__card em__item">
       <view class="em__hd">
         <text class="em__ic">{{item.subType.indexOf('室内') > -1 ? '🏛️' : '🌳'}}</text>
